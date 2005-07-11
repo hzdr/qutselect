@@ -1,0 +1,91 @@
+#/* vim:set ts=2 nowrap: ****************************************************
+#
+# qRDesktop - A simple Qt4 based GUI frontend for rdesktop
+# Copyright (C) 2005 by Jens Langner <Jens.Langner@light-speed.de>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# $Id$
+#
+#**************************************************************************/
+
+AC_PREREQ(2.57)
+AC_INIT(qrdesktop, 1.0, Jens.Langner@light-speed.de, qrdesktop-1.0)
+AC_COPYRIGHT(Copyright (c) 2005 by Jens Langner <Jens.Langner@light-speed.de>)
+AC_REVISION($Revision$)
+AC_CONFIG_SRCDIR([src/main.cpp])
+AC_CONFIG_HEADER([src/includes/config.h])
+
+# Checks for host
+AC_MSG_CHECKING(for host operating system)
+AC_SUBST(HOST_OS, `uname -s`)
+AC_MSG_RESULT(${HOST_OS})
+
+# Checks for host processor type
+AC_MSG_CHECKING(for host system processor type)
+AC_SUBST(HOST_CPU, `uname -p`)
+AC_MSG_RESULT(${HOST_CPU})
+
+# Checks for programs.
+AC_PROG_CXX
+AC_GNU_SOURCE
+
+# Check for the QT libraries
+AC_PATH_QT4_LIB
+AC_PATH_QT4_INC
+AC_ENABLE_STATIC_QT
+
+# own macros
+AC_C_BIGENDIAN
+AC_ENABLE_DEBUG
+AC_ANSI_COLOR
+
+# checking gcc version
+AC_PROG_GCC_VERSION
+
+# Checks for some tools which we need
+AC_PATH_PROG(QMAKE_PATH, qmake, no, [$PATH:$QTDIR/bin:/usr/qt/bin:/usr/local/qt/bin:/Developer/qt/bin])
+if test $QMAKE_PATH = "no"; then
+	AC_MSG_ERROR([Cannot find qmake, check your PATH env settings])
+fi
+AC_PATH_PROG(MKDIR_PATH, mkdir)
+AC_PATH_PROG(CP_PATH, cp)
+AC_PATH_PROG(MV_PATH, mv)
+AC_PATH_PROG(TAR_PATH, tar)
+AC_PATH_PROG(GZIP_PATH, gzip)
+AC_PATH_PROG(RM_PATH, rm)
+AC_PATH_PROG(CHMOD_PATH, chmod)
+
+# Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS([stdlib.h])
+
+# CXX specifics
+AC_CXX_NAMESPACES
+AC_CXX_STATIC_CAST
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_HEADER_TIME
+AC_STRUCT_TM
+
+# Checks for library functions.
+AC_FUNC_MALLOC
+
+AC_PROG_MAKE_SET
+
+AC_CONFIG_FILES([Makefile m4/Makefile src/qrdesktop.pro])
+
+AC_OUTPUT

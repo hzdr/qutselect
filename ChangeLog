@@ -1,0 +1,11 @@
+-------------------------------------------------
+qRDesktop - A Qt4 graphical frontend for rdesktop
+-------------------------------------------------
+// vim:set ts=2 nowrap:
+
+$Id$
+$Source$
+
+2005-07-11  Jens Langner <Jens.Langner@light-speed.de>
+
+  * initial checkin and 1.0 release
