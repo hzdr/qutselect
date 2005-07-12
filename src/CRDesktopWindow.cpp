@@ -127,7 +127,7 @@ CRDesktopWindow::CRDesktopWindow()
 	layout->addLayout(buttonLayout,								6, 0, 1, 2);
 	setLayout(layout);
 
-	setWindowTitle(tr("qRDesktop v1.0 - (c) 2005 Jens Langner"));
+	setWindowTitle(tr("qRDesktop v1.1 - (c) 2005 Jens Langner"));
 }
 
 void CRDesktopWindow::startButtonPressed(void)
@@ -161,7 +161,7 @@ void CRDesktopWindow::startButtonPressed(void)
 		commandString += "-a 24 ";
 
 	// add some general options
-	commandString += "-r sound:local -E -x lan -N -P ";
+	commandString += "-r sound:local -E -x lan -N -P -C ";
 
 	// add the serverName
 	commandString += serverName;

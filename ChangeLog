@@ -6,6 +6,12 @@ qRDesktop - A Qt4 graphical frontend for rdesktop
 $Id$
 $Source$
 
+2005-07-12  Jens Langner <Jens.Langner@light-speed.de>
+
+  * added "-C" option to default rdesktop execution to make
+	  sure a private colormap is always used so that on 8bit displays
+		more colors will be available.
+
 2005-07-11  Jens Langner <Jens.Langner@light-speed.de>
 
   * initial checkin and 1.0 release
