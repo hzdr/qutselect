@@ -23,14 +23,18 @@
 
 #include "CRDesktopWindow.h"
 
+#include <QApplication>
 #include <QLabel>
 #include <QButtonGroup>
 #include <QComboBox>
+#include <QDesktopWidget>
 #include <QGridLayout>
 #include <QPushButton>
 #include <QRadioButton>
 #include <QProcess>
+#include <QSound>
 #include <QString>
+#include <QStringList>
 
 #include <iostream>
 
@@ -60,6 +64,17 @@ CRDesktopWindow::CRDesktopWindow()
 	m_pScreenResolutionBox->addItem("1152x900");
 	m_pScreenResolutionBox->addItem("1280x1024");
 	m_pScreenResolutionBox->addItem("Fullscreen");
+
+	// we check the desktopwidget of the Application for the current screen height/width
+	QDesktopWidget* desktopWidget = QApplication::desktop();
+	if(desktopWidget->width() > 1280)
+		m_pScreenResolutionBox->setCurrentIndex(3);
+	else if(desktopWidget->width() > 1152)
+		m_pScreenResolutionBox->setCurrentIndex(2);
+	else if(desktopWidget->width() > 1024)
+		m_pScreenResolutionBox->setCurrentIndex(1);
+	else
+		m_pScreenResolutionBox->setCurrentIndex(0);
 
 	// color depth selection
 	m_pColorsLabel = new QLabel(tr("Colors:"));
@@ -127,7 +142,7 @@ CRDesktopWindow::CRDesktopWindow()
 	layout->addLayout(buttonLayout,								6, 0, 1, 2);
 	setLayout(layout);
 
-	setWindowTitle(tr("qRDesktop v1.1 - (c) 2005 Jens Langner"));
+	setWindowTitle(tr("qRDesktop v1.2 - (c) 2005 Jens Langner"));
 }
 
 void CRDesktopWindow::startButtonPressed(void)
@@ -136,42 +151,67 @@ void CRDesktopWindow::startButtonPressed(void)
 	QString serverName = m_pServerListBox->currentText().section(" ", 0, 0);
 	QString resolution = m_pScreenResolutionBox->currentText().section(" ", 0, 0);
 
-	// form the commandString
-	QString commandString;
-	commandString = "rdesktop ";
-	
+	// lets generate the commandline options stringlist
+	QStringList arguments;
+
 	// check the resolution combobox
 	if(resolution == "Fullscreen")
-		commandString += "-f ";
+		arguments << "-f";
 	else
-		commandString += "-g " + resolution + " ";
+		arguments << "-g" << resolution;
 
 	// check the keyboard selection
 	if(m_pGermanKeyboardButton->isChecked())
-		commandString += "-k de ";
+		arguments << "-k" << "de";
 	else if(m_pEnglishKeyboardButton->isChecked())
-		commandString += "-k en-us ";
+		arguments << "-k" << "en-us";
 
-	// check color settings
+	// now we try to find out how many colors the current PaintDevice supports
+	// and if it supports only 8bit color depth, then we have to set the private
+	// colormap option for rdesktop
+	QPixmap pixmap;
 	if(m_p8bitColorsButton->isChecked())
-		commandString += "-a 8 ";
+	{
+		arguments << "-a" << "8";
+
+		if(pixmap.depth() <= 8)
+			arguments << "-C";
+	}
 	else if(m_p16bitColorsButton->isChecked())
-		commandString += "-a 16 ";
+	{
+		arguments << "-a" << "16";
+
+		if(pixmap.depth() < 16)
+			arguments << "-C";	
+	}
 	else if(m_p24bitColorsButton->isChecked())
-		commandString += "-a 24 ";
+	{
+		arguments << "-a" << "24";
+
+		if(pixmap.depth() < 24)
+			arguments << "-C";		
+	}
+
+	// we add sound redirection
+	arguments << "-r" << "sound:local";
 
 	// add some general options
-	commandString += "-r sound:local -E -x lan -N -P -C ";
-
-	// add the serverName
-	commandString += serverName;
+	arguments << "-E";
+	arguments << "-x" << "lan";
+	arguments << "-N";
+	arguments << "-P";
+	arguments << "-d" << "FZR";
+	
+	// add last but not least the final terminal server hostname
+	arguments << serverName;
 
 	// now output the string to the user
-	std::cout << "executing: " << commandString.toAscii().constData() << std::endl;
+	QString args = arguments.join(" ");
+	std::cout << "executing: 'rdesktop " << args.toAscii().constData() << "'" << std::endl;
 	
 	// now we can create a QProcess object and start "rdesktop"
 	// accordingly
-	QProcess::startDetached(commandString);
+	QProcess::startDetached("rdesktop", arguments);
 
 	close();
 }
