@@ -28,6 +28,7 @@
 #include <QButtonGroup>
 #include <QComboBox>
 #include <QDesktopWidget>
+#include <QKeyEvent>
 #include <QGridLayout>
 #include <QPushButton>
 #include <QRadioButton>
@@ -142,7 +143,7 @@ CRDesktopWindow::CRDesktopWindow()
 	layout->addLayout(buttonLayout,								6, 0, 1, 2);
 	setLayout(layout);
 
-	setWindowTitle(tr("qRDesktop v1.2 - (c) 2005 Jens Langner"));
+	setWindowTitle(tr("qRDesktop v1.3 - (c) 2005 Jens Langner"));
 }
 
 void CRDesktopWindow::startButtonPressed(void)
@@ -214,4 +215,33 @@ void CRDesktopWindow::startButtonPressed(void)
 	QProcess::startDetached("rdesktop", arguments);
 
 	close();
+}
+
+void CRDesktopWindow::keyPressEvent(QKeyEvent* e)
+{
+	// we check wheter the user has pressed ESC or RETURN
+	switch(e->key())
+	{
+		case Qt::Key_Escape:
+		{
+			close();
+			e->accept();
+
+			return;
+		}
+		break;
+
+		case Qt::Key_Return:
+		case Qt::Key_Enter:
+		{
+			startButtonPressed();
+			e->accept();
+
+			return;
+		}
+		break;
+	}
+
+	// unknown key pressed
+	e->ignore();
 }

@@ -8,6 +8,9 @@ $Source$
 
 2005-07-13  Jens Langner <Jens.Langner@light-speed.de>
 
+  * added ESC and RETURN key recognition such that the application
+    will immediately react on the key press of return/enter and
+    escape and either start rdesktop or quit the application.
   * added automatic color depth recognition to either set the
     private colormode option '-C' or not. Previously '-C' was
     always set.

@@ -30,6 +30,7 @@
 class QCloseEvent;
 class QLabel;
 class QComboBox;
+class QKeyEvent;
 class QRadioButton;
 class QPushButton;
 
@@ -39,6 +40,9 @@ class CRDesktopWindow : public QWidget
 
   public:
     CRDesktopWindow();
+
+		// overloaded methods
+		void keyPressEvent(QKeyEvent* e);
 
 	private slots:
 		void startButtonPressed(void);
