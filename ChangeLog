@@ -8,6 +8,11 @@ $Source$
 
 2005-07-13  Jens Langner <Jens.Langner@light-speed.de>
 
+  * added ability to save user specific settings on each use of
+    the application via a QSettings object. Now qrdesktop will save
+    the position, the servername, the resolution, the color depth
+    and the chosen keyboard layout on each rdesktop execution. So
+    each user should have his own private settings now.
   * added ESC and RETURN key recognition such that the application
     will immediately react on the key press of return/enter and
     escape and either start rdesktop or quit the application.

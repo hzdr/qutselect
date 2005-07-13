@@ -30,9 +30,11 @@
 #include <QDesktopWidget>
 #include <QKeyEvent>
 #include <QGridLayout>
+#include <QPoint>
 #include <QPushButton>
 #include <QRadioButton>
 #include <QProcess>
+#include <QSettings>
 #include <QSound>
 #include <QString>
 #include <QStringList>
@@ -41,6 +43,10 @@
 
 CRDesktopWindow::CRDesktopWindow()
 {
+	// create a QSettings object to receive the users specific settings
+	// written the last time the user used that application
+	QSettings settings("fz-rossendorf.de", "qrdesktop");
+
 	// we put a logo at the top
 	m_pLogoLabel = new QLabel();
 	m_pLogoLabel->setPixmap(QPixmap(":/images/banner-en.png"));
@@ -57,6 +63,23 @@ CRDesktopWindow::CRDesktopWindow()
 	m_pServerListBox->addItem("fwbts01.ad - Printer");
 	m_pServerListBox->addItem("fwbfs01.ad - (Admin only)");
 
+	// now we check the QSettings of the user and which server he last used
+	if(settings.value("serverused").isValid())
+	{
+		QString lastServerUsed = settings.value("serverused").toString().toLower();
+
+		// now we iterate through our combobox items and check if there is 
+		// one with the last server used hostname
+		for(int i=0; i < m_pServerListBox->count(); i++)
+		{
+			if(m_pServerListBox->itemText(i).section(" ", 0, 0).toLower() == lastServerUsed)
+			{
+				m_pServerListBox->setCurrentIndex(i);
+				break;
+			}
+		}
+	}
+
 	// selection of the screen depth
 	m_pScreenResolutionLabel = new QLabel(tr("Resolution:"));
 	m_pScreenResolutionBox = new QComboBox();
@@ -66,22 +89,45 @@ CRDesktopWindow::CRDesktopWindow()
 	m_pScreenResolutionBox->addItem("1280x1024");
 	m_pScreenResolutionBox->addItem("Fullscreen");
 
-	// we check the desktopwidget of the Application for the current screen height/width
-	QDesktopWidget* desktopWidget = QApplication::desktop();
-	if(desktopWidget->width() > 1280)
-		m_pScreenResolutionBox->setCurrentIndex(3);
-	else if(desktopWidget->width() > 1152)
-		m_pScreenResolutionBox->setCurrentIndex(2);
-	else if(desktopWidget->width() > 1024)
-		m_pScreenResolutionBox->setCurrentIndex(1);
+	// we check the QSettings for "resolution" and see if we
+	// can use it or not
+	if(settings.value("resolution").isValid())
+	{
+		QString resolution = settings.value("resolution").toString();
+
+		if(resolution.toLower() == "fullscreen")
+			m_pScreenResolutionBox->setCurrentIndex(4);
+		else
+		{
+			int width = resolution.section("x", 0, 0).toInt();
+
+			if(width >= 1280)
+				m_pScreenResolutionBox->setCurrentIndex(3);
+			else if(width >= 1152)
+				m_pScreenResolutionBox->setCurrentIndex(2);
+			else if(width >= 1024)
+				m_pScreenResolutionBox->setCurrentIndex(1);
+			else
+				m_pScreenResolutionBox->setCurrentIndex(0);
+		}
+	}
 	else
-		m_pScreenResolutionBox->setCurrentIndex(0);
+	{
+		QDesktopWidget* desktopWidget = QApplication::desktop();
+		if(desktopWidget->width() > 1280)
+			m_pScreenResolutionBox->setCurrentIndex(3);
+		else if(desktopWidget->width() > 1152)
+			m_pScreenResolutionBox->setCurrentIndex(2);
+		else if(desktopWidget->width() > 1024)
+			m_pScreenResolutionBox->setCurrentIndex(1);
+		else
+			m_pScreenResolutionBox->setCurrentIndex(0);
+	}
 
 	// color depth selection
 	m_pColorsLabel = new QLabel(tr("Colors:"));
 	m_p8bitColorsButton = new QRadioButton(tr("256"));
 	m_p16bitColorsButton = new QRadioButton(tr("65535"));
-	m_p16bitColorsButton->setChecked(true);
 	m_p24bitColorsButton = new QRadioButton(tr("Millions"));
 	QButtonGroup* colorsGroup = new QButtonGroup();
 	colorsGroup->addButton(m_p8bitColorsButton);
@@ -95,10 +141,26 @@ CRDesktopWindow::CRDesktopWindow()
 	colorButtonLayout->addWidget(m_p24bitColorsButton);
 	colorButtonLayout->addStretch(1);
 
+	// now we check the QSettings for the last selected color depth
+	int depth = settings.value("colordepth", 16).toInt();
+	switch(depth)
+	{
+		case 8:
+			m_p8bitColorsButton->setChecked(true);
+		break;
+
+		case 24:
+			m_p24bitColorsButton->setChecked(true);
+		break;
+
+		default:
+			m_p16bitColorsButton->setChecked(true);
+		break;
+	}
+
 	// keyboard layout selection radiobuttons
 	m_pKeyboardLabel = new QLabel(tr("Keyboard:"));
 	m_pGermanKeyboardButton = new QRadioButton(tr("German"));
-	m_pGermanKeyboardButton->setChecked(true);
 	m_pEnglishKeyboardButton = new QRadioButton(tr("English"));
 	QButtonGroup* keyboardGroup = new QButtonGroup();
 	keyboardGroup->addButton(m_pGermanKeyboardButton);
@@ -109,6 +171,13 @@ CRDesktopWindow::CRDesktopWindow()
 	keyboardButtonLayout->addWidget(m_pGermanKeyboardButton);
 	keyboardButtonLayout->addWidget(m_pEnglishKeyboardButton);
 	keyboardButtonLayout->addStretch(1);
+
+	// check the QSettings for the last used keyboard layout
+	QString keyboard = settings.value("keyboard", "de").toString();
+	if(keyboard.toLower() == "en-us")
+		m_pEnglishKeyboardButton->setChecked(true);
+	else
+		m_pGermanKeyboardButton->setChecked(true);
 
 	// put a frame right before our buttons
 	QFrame* buttonFrame = new QFrame();
@@ -143,15 +212,27 @@ CRDesktopWindow::CRDesktopWindow()
 	layout->addLayout(buttonLayout,								6, 0, 1, 2);
 	setLayout(layout);
 
+	// check if the QSettings contains any info about the last position
+	move(settings.value("position", QPoint(10, 10)).toPoint());
+
 	setWindowTitle(tr("qRDesktop v1.3 - (c) 2005 Jens Langner"));
 }
 
 void CRDesktopWindow::startButtonPressed(void)
 {
-	// get some required data
-	QString serverName = m_pServerListBox->currentText().section(" ", 0, 0);
-	QString resolution = m_pScreenResolutionBox->currentText().section(" ", 0, 0);
+	// during setup we go and save the current setup of
+	// affairs to a QSettings object
+	QSettings settings("fz-rossendorf.de", "qrdesktop");
+	settings.setValue("position", pos());
 
+	// get the currently selected server name
+	QString serverName = m_pServerListBox->currentText().section(" ", 0, 0);
+	settings.setValue("serverused", serverName.toLower());
+	
+	// get the currently selected resolution
+	QString resolution = m_pScreenResolutionBox->currentText().section(" ", 0, 0);
+	settings.setValue("resolution", resolution.toLower());
+	
 	// lets generate the commandline options stringlist
 	QStringList arguments;
 
@@ -163,9 +244,15 @@ void CRDesktopWindow::startButtonPressed(void)
 
 	// check the keyboard selection
 	if(m_pGermanKeyboardButton->isChecked())
+	{
 		arguments << "-k" << "de";
+		settings.setValue("keyboard", "de");
+	}
 	else if(m_pEnglishKeyboardButton->isChecked())
+	{
 		arguments << "-k" << "en-us";
+		settings.setValue("keyboard", "en-us");
+	}
 
 	// now we try to find out how many colors the current PaintDevice supports
 	// and if it supports only 8bit color depth, then we have to set the private
@@ -177,6 +264,8 @@ void CRDesktopWindow::startButtonPressed(void)
 
 		if(pixmap.depth() <= 8)
 			arguments << "-C";
+
+		settings.setValue("colordepth", 8);
 	}
 	else if(m_p16bitColorsButton->isChecked())
 	{
@@ -184,6 +273,8 @@ void CRDesktopWindow::startButtonPressed(void)
 
 		if(pixmap.depth() < 16)
 			arguments << "-C";	
+
+		settings.setValue("colordepth", 16);
 	}
 	else if(m_p24bitColorsButton->isChecked())
 	{
@@ -191,6 +282,8 @@ void CRDesktopWindow::startButtonPressed(void)
 
 		if(pixmap.depth() < 24)
 			arguments << "-C";		
+
+		settings.setValue("colordepth", 24);
 	}
 
 	// we add sound redirection
