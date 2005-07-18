@@ -45,9 +45,26 @@ int main(int argc, char* argv[])
 	// let us generate the console application object now.
   QApplication app(argc, argv);
 
-	// now we instanciate our main CLMacq class
-	CRDesktopWindow mainWin;
-	mainWin.show();
+	// now we check wheter the user requests some options
+	// to be enabled
+	bool dtLoginCall = false;
+	if(argc > 1)
+	{
+		if(QString(argv[1]).toLower() == "-dtlogin")
+			dtLoginCall = true;
+	}
+
+	// now we instanciate our main CRDesktopWindow class
+	CRDesktopWindow* mainWin = new CRDesktopWindow(dtLoginCall);
+	if(dtLoginCall)
+	{
+		mainWin->setKeepAlive(true);
+		mainWin->setFullScreenOnly(true);
+	}
+
+	// show the mainwindow now
+	mainWin->show();
+
 		
 	// now we do execute our application
 	returnCode = app.exec();

@@ -41,7 +41,9 @@
 
 #include <iostream>
 
-CRDesktopWindow::CRDesktopWindow()
+CRDesktopWindow::CRDesktopWindow(bool noUserPosition)
+	: m_bKeepAlive(false),
+		m_bNoUserPosition(noUserPosition)
 {
 	// create a QSettings object to receive the users specific settings
 	// written the last time the user used that application
@@ -213,9 +215,25 @@ CRDesktopWindow::CRDesktopWindow()
 	setLayout(layout);
 
 	// check if the QSettings contains any info about the last position
-	move(settings.value("position", QPoint(10, 10)).toPoint());
+	if(noUserPosition)
+		move(QPoint(10, 10));
+	else
+		move(settings.value("position", QPoint(10, 10)).toPoint());
 
-	setWindowTitle(tr("qRDesktop v1.3 - (c) 2005 Jens Langner"));
+	setWindowTitle(tr("qRDesktop v1.4 - (c) 2005 Jens Langner"));
+}
+
+void CRDesktopWindow::setFullScreenOnly(const bool on)
+{
+	if(on)
+	{
+		m_pScreenResolutionBox->setCurrentIndex(4); // full screen
+		m_pScreenResolutionBox->setEnabled(false);
+	}
+	else
+	{
+		m_pScreenResolutionBox->setEnabled(true);
+	}
 }
 
 void CRDesktopWindow::startButtonPressed(void)
@@ -223,7 +241,10 @@ void CRDesktopWindow::startButtonPressed(void)
 	// during setup we go and save the current setup of
 	// affairs to a QSettings object
 	QSettings settings("fz-rossendorf.de", "qrdesktop");
-	settings.setValue("position", pos());
+
+	// save the current position of the GUI
+	if(m_bNoUserPosition == false)
+		settings.setValue("position", pos());
 
 	// get the currently selected server name
 	QString serverName = m_pServerListBox->currentText().section(" ", 0, 0);
@@ -235,6 +256,7 @@ void CRDesktopWindow::startButtonPressed(void)
 	
 	// lets generate the commandline options stringlist
 	QStringList arguments;
+	arguments << "rdesktop";
 
 	// check the resolution combobox
 	if(resolution == "Fullscreen")
@@ -301,13 +323,15 @@ void CRDesktopWindow::startButtonPressed(void)
 
 	// now output the string to the user
 	QString args = arguments.join(" ");
-	std::cout << "executing: 'rdesktop " << args.toAscii().constData() << "'" << std::endl;
+	std::cout << "executing: 'nice " << args.toAscii().constData() << "'" << std::endl;
 	
 	// now we can create a QProcess object and start "rdesktop"
-	// accordingly
-	QProcess::startDetached("rdesktop", arguments);
+	// accordingly in nice mode
+	QProcess::startDetached("nice", arguments);
 
-	close();
+	// depending on the keepalive state we either close the GUI immediately or keep it open
+	if(m_bKeepAlive == false)
+		close();
 }
 
 void CRDesktopWindow::keyPressEvent(QKeyEvent* e)

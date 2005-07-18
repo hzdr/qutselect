@@ -39,7 +39,11 @@ class CRDesktopWindow : public QWidget
   Q_OBJECT
 
   public:
-    CRDesktopWindow();
+    CRDesktopWindow(bool noUserPosition = false);
+
+		// set methods
+		void setKeepAlive(const bool on)			{ m_bKeepAlive = on; }
+		void setFullScreenOnly(const bool on);
 
 		// overloaded methods
 		void keyPressEvent(QKeyEvent* e);
@@ -62,6 +66,9 @@ class CRDesktopWindow : public QWidget
 		QRadioButton* m_pEnglishKeyboardButton;
 		QPushButton*	m_pQuitButton;
 		QPushButton*	m_pStartButton;
+
+		bool					m_bKeepAlive;
+		bool					m_bNoUserPosition;
 };
 
 #endif /* CRDESKTOPWINDOW_H */
