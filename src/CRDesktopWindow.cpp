@@ -58,7 +58,7 @@ CRDesktopWindow::CRDesktopWindow(bool noUserPosition)
 	// the we need a combobox for the different server a user can select
 	m_pServerListLabel = new QLabel(tr("Terminal Server:"));
 	m_pServerListBox = new QComboBox();
-	m_pServerListBox->addItem("fwbts.ad");
+	//m_pServerListBox->addItem("fwbts.ad");
 	m_pServerListBox->addItem("fwbts04.ad - Allgemein");
 	m_pServerListBox->addItem("fwbts02.ad - Micropet");
 	m_pServerListBox->addItem("fwbts03.ad - Micropet");
@@ -220,7 +220,7 @@ CRDesktopWindow::CRDesktopWindow(bool noUserPosition)
 	else
 		move(settings.value("position", QPoint(10, 10)).toPoint());
 
-	setWindowTitle(tr("qRDesktop v1.4 - (c) 2005 Jens Langner"));
+	setWindowTitle(tr("qRDesktop v1.5 - (c) 2005 Jens Langner"));
 }
 
 void CRDesktopWindow::setFullScreenOnly(const bool on)
