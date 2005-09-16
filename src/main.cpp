@@ -69,6 +69,7 @@ int main(int argc, char* argv[])
 	{
 		mainWin->setKeepAlive(true);
 		mainWin->setFullScreenOnly(true);
+		mainWin->setQuitText(QObject::tr("Logout"));
 	}
 
 	// show the mainwindow now

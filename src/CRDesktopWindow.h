@@ -25,6 +25,7 @@
 #define CRDESKTOPWINDOW_H
 
 #include <QMainWindow>
+#include <QPushButton>
 
 // forward declarations
 class QCloseEvent;
@@ -32,7 +33,6 @@ class QLabel;
 class QComboBox;
 class QKeyEvent;
 class QRadioButton;
-class QPushButton;
 class QSettings;
 
 class CRDesktopWindow : public QMainWindow
@@ -46,6 +46,7 @@ class CRDesktopWindow : public QMainWindow
 		// set methods
 		void setKeepAlive(const bool on)			{ m_bKeepAlive = on; }
 		void setFullScreenOnly(const bool on);
+		void setQuitText(const QString& str)	{ m_pQuitButton->setText(str); }
 
 		// overloaded methods
 		void keyPressEvent(QKeyEvent* e);
