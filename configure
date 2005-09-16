@@ -314,7 +314,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS HOST_OS HOST_CPU CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT CC CFLAGS ac_ct_CC CPP QT_LDFLAGS QT_LIBDIR LIB_QT QT_INCLUDES QT_INCDIR QTLINK_LEVEL COMPILE_LEVEL ANSI_COLOR GCC_VERSION QMAKE_PATH MKDIR_PATH CP_PATH MV_PATH TAR_PATH GZIP_PATH RM_PATH CHMOD_PATH EGREP LIBOBJS SET_MAKE LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS HOST_OS HOST_CPU CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT CC CFLAGS ac_ct_CC CPP QT_LDFLAGS QT_LIBDIR LIB_QT QT_INCLUDES QT_INCDIR QMAKE_PATH QTLINK_LEVEL RTDEBUG_LDFLAGS RTDEBUG_LIBDIR LIB_RTDEBUG RTDEBUG_INCLUDES RTDEBUG_INCDIR COMPILE_LEVEL ANSI_COLOR GCC_VERSION MKDIR_PATH CP_PATH MV_PATH TAR_PATH GZIP_PATH RM_PATH CHMOD_PATH EGREP LIBOBJS SET_MAKE LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -855,7 +855,8 @@ if test -n "$ac_init_help"; then
 Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-  --enable-static-qt      turn on static linking of QT libs [default=no]
+  --enable-static-qt      turn on static linking of Qt libs [default=no]
+  --enable-static-rtdebug turn on static linking of rtdebug lib [default=no]
   --enable-debug          turn on debugging mode [default=no]
   --disable-ansi-color    ansi-color terminal output should be disabled
                           [default=no]
@@ -863,8 +864,11 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-qt-lib           where the Qt4 libraries are located.
-  --with-qt-inc           where the Qt4 headers are located.
+  --with-qt4-lib          where the Qt4 libraries are located.
+  --with-qt4-inc          where the Qt4 includes are located.
+  --with-qt4-qmake        where the Qt4 qmake binary is located.
+  --with-rtdebug-lib      where the librtdebug library is located.
+  --with-rtdebug-inc      where the librtdebug headers are located.
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -2883,9 +2887,9 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-# Check whether --with-qt-lib or --without-qt-lib was given.
-if test "${with_qt_lib+set}" = set; then
-  withval="$with_qt_lib"
+# Check whether --with-qt4-lib or --without-qt4-lib was given.
+if test "${with_qt4_lib+set}" = set; then
+  withval="$with_qt4_lib"
   ac_qt_libraries="$withval"
 else
   ac_qt_libraries=""
@@ -2902,8 +2906,8 @@ else
   qt_libdir=
 
       if test -z "$ac_qt_libraries"; then
-    qt_library_dirs="/usr/local/qt4/lib \
-										 /usr/lib/qt4 \
+    qt_library_dirs="/usr/lib/qt4 \
+										 /usr/local/qt4/lib \
 										 /usr/local/qt/lib \
                      /usr/local/lib/qt4 \
                      /usr/local/lib/qt \
@@ -3001,8 +3005,8 @@ fi
     have_qt_lib="no"
     echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
-    { { echo "$as_me:$LINENO: error: Cannot find required Qt4 libraries in linker path. Try --with-qt-lib to specify the path, manualy." >&5
-echo "$as_me: error: Cannot find required Qt4 libraries in linker path. Try --with-qt-lib to specify the path, manualy." >&2;}
+    { { echo "$as_me:$LINENO: error: Cannot find required Qt4 libraries in linker path. Try --with-qt4-lib to specify the path, manualy." >&5
+echo "$as_me: error: Cannot find required Qt4 libraries in linker path. Try --with-qt4-lib to specify the path, manualy." >&2;}
    { (exit 1); exit 1; }; }
   else
     have_qt_lib="yes"
@@ -3023,9 +3027,9 @@ echo "${ECHO_T}yes, $ac_qt_libname in $ac_qt_libdir found." >&6
 echo $ECHO_N "checking for Qt4 includes... $ECHO_C" >&6
 
 
-# Check whether --with-qt-inc or --without-qt-inc was given.
-if test "${with_qt_inc+set}" = set; then
-  withval="$with_qt_inc"
+# Check whether --with-qt4-inc or --without-qt4-inc was given.
+if test "${with_qt4_inc+set}" = set; then
+  withval="$with_qt4_inc"
   qt_include_dirs="$withval"
 else
   qt_include_dirs=""
@@ -3038,8 +3042,8 @@ else
 
         if test -z "$qt_include_dirs"; then
       qt_include_dirs="\
-				/usr/local/qt4/include \
 			  /usr/include/qt4/ \
+				/usr/local/qt4/include \
         /usr/lib/qt/include \
         /usr/include/qt \
         /usr/local/qt/include \
@@ -3071,8 +3075,8 @@ fi
     have_qt_inc="no"
     echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
-    { echo "$as_me:$LINENO: WARNING: Qt4 include directory not found, you may run into problems. Try --with-qt-inc to specify the path, manualy." >&5
-echo "$as_me: WARNING: Qt4 include directory not found, you may run into problems. Try --with-qt-inc to specify the path, manualy." >&2;}
+    { echo "$as_me:$LINENO: WARNING: Qt4 include directory not found, you may run into problems. Try --with-qt4-inc to specify the path, manualy." >&5
+echo "$as_me: WARNING: Qt4 include directory not found, you may run into problems. Try --with-qt4-inc to specify the path, manualy." >&2;}
   else
     have_qt_inc="yes"
     echo "$as_me:$LINENO: result: yes, in $ac_cv_header_qtinc" >&5
@@ -3085,14 +3089,100 @@ echo "${ECHO_T}yes, in $ac_cv_header_qtinc" >&6
 
 
 
-	echo "$as_me:$LINENO: checking whether to link the QT library static" >&5
-echo $ECHO_N "checking whether to link the QT library static... $ECHO_C" >&6
+
+# Check whether --with-qt4-qmake or --without-qt4-qmake was given.
+if test "${with_qt4_qmake+set}" = set; then
+  withval="$with_qt4_qmake"
+  ac_qt_qmake="$withval"
+else
+  ac_qt_qmake=""
+fi;
+
+  if test -z "$ac_qt_qmake"; then
+    # Extract the first word of "qmake", so it can be a program name with args.
+set dummy qmake; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_path_QMAKE_PATH+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  case $QMAKE_PATH in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_QMAKE_PATH="$QMAKE_PATH" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="/usr/lib/qt4/bin:/usr/local/qt4/bin:/usr/bin:/usr/X11R6/bin:/usr/lib/qt/bin:/usr/local/qt/bin:/Developer/qt4/bin:$PATH
+    "
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_QMAKE_PATH="$as_dir/$ac_word$ac_exec_ext"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+  test -z "$ac_cv_path_QMAKE_PATH" && ac_cv_path_QMAKE_PATH="qmake"
+  ;;
+esac
+fi
+QMAKE_PATH=$ac_cv_path_QMAKE_PATH
+
+if test -n "$QMAKE_PATH"; then
+  echo "$as_me:$LINENO: result: $QMAKE_PATH" >&5
+echo "${ECHO_T}$QMAKE_PATH" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  else
+    echo "$as_me:$LINENO: checking for qmake" >&5
+echo $ECHO_N "checking for qmake... $ECHO_C" >&6
+
+    if test -f $ac_qt_qmake && test -x $ac_qt_qmake; then
+      QMAKE_PATH=$ac_qt_qmake
+    else
+      { { echo "$as_me:$LINENO: error: --with-qt4-qmake expects path and name of the qmake tool
+      " >&5
+echo "$as_me: error: --with-qt4-qmake expects path and name of the qmake tool
+      " >&2;}
+   { (exit 1); exit 1; }; }
+    fi
+
+    echo "$as_me:$LINENO: result: $QMAKE_PATH" >&5
+echo "${ECHO_T}$QMAKE_PATH" >&6
+  fi
+
+  if test -z "$QMAKE_PATH"; then
+    { { echo "$as_me:$LINENO: error: couldn't find Qt4 qmake. Please use --with-qt4-qmake" >&5
+echo "$as_me: error: couldn't find Qt4 qmake. Please use --with-qt4-qmake" >&2;}
+   { (exit 1); exit 1; }; }
+  fi
+
+  		qmake_vers=`"$QMAKE_PATH" -v 2>&1 | grep "Qt version 4"`
+  if test -z "$qmake_vers"; then
+    { { echo "$as_me:$LINENO: error: didn't find the correct Qt4 version of qmake, Please use --with-qt4-qmake" >&5
+echo "$as_me: error: didn't find the correct Qt4 version of qmake, Please use --with-qt4-qmake" >&2;}
+   { (exit 1); exit 1; }; }
+  fi
+
+
+
+
+	echo "$as_me:$LINENO: checking whether to link the Qt library static" >&5
+echo $ECHO_N "checking whether to link the Qt library static... $ECHO_C" >&6
 	# Check whether --enable-static-qt or --disable-static-qt was given.
 if test "${enable_static_qt+set}" = set; then
   enableval="$enable_static_qt"
   case "${enableval}" in
-									yes) test_on_enable_static_qt=yes	;;
-									no)	 test_on_enable_static_qt=no	;;
+									yes) test_on_enable_static_qt=yes ;;
+									no)  test_on_enable_static_qt=no	 ;;
 									*)	 { { echo "$as_me:$LINENO: error: bad value ${enableval} for --enable-static-qt" >&5
 echo "$as_me: error: bad value ${enableval} for --enable-static-qt" >&2;}
    { (exit 1); exit 1; }; } ;;
@@ -3102,7 +3192,233 @@ else
 fi;
 
 	if test "$test_on_enable_static_qt" = "yes"; then
-		QTLINK_LEVEL="${QTLINK_LEVEL} staticqt"
+		QTLINK_LEVEL="${QTLINK_LEVEL} staticconfig"
+		echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+	else
+		QTLINK_LEVEL="${QTLINK_LEVEL}"
+		echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+	fi
+
+
+
+
+# Check for the runtime debug library
+
+
+
+# Check whether --with-rtdebug-lib or --without-rtdebug-lib was given.
+if test "${with_rtdebug_lib+set}" = set; then
+  withval="$with_rtdebug_lib"
+  ac_rtdebug_libraries="$withval"
+else
+  ac_rtdebug_libraries=""
+fi;
+
+  echo "$as_me:$LINENO: checking for runtime debugging library" >&5
+echo $ECHO_N "checking for runtime debugging library... $ECHO_C" >&6
+
+  if test "${ac_cv_lib_rtdebuglib+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+
+  rtdebug_libdir=
+
+      if test -z "$ac_rtdebug_libraries"; then
+    rtdebug_library_dirs="$rtdebug_library_dirs \
+												/usr/local/petlib/lib \
+												/usr/local/petlib/lib/rtdebug \
+		                    /usr/local/lib \
+												/usr/local/lib/rtdebug \
+		                    /usr/lib \
+		                    /usr/lib/rtdebug \
+		                    /Developer/rtdebug/lib"
+  else
+    rtdebug_library_dirs="$ac_rtdebug_libraries"
+  fi
+
+    save_LDFLAGS="$LDFLAGS"
+  save_LIBS="$LIBS"
+
+  rtdebug_found="0"
+  ac_rtdebug_libdir=
+  ac_rtdebug_libname="-lrtdebug"
+
+  LIBS="$ac_rtdebug_libname $save_LIBS"
+  for rtdebug_dir in $rtdebug_library_dirs; do
+    LDFLAGS="-L$rtdebug_dir $save_LDFLAGS"
+    cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+main ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  rtdebug_found="1"
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+rtdebug_found="0"
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+    if test $rtdebug_found = 1; then
+      ac_rtdebug_libdir="$rtdebug_dir"
+      break;
+    else
+      echo "tried $rtdebug_dir" >&5
+    fi
+  done
+
+    LDFLAGS="$save_LDFLAGS"
+  LIBS="$save_LIBS"
+
+  ac_cv_lib_rtdebuglib="ac_rtdebug_libname=$ac_rtdebug_libname ac_rtdebug_libdir=$ac_rtdebug_libdir"
+
+fi
+
+
+  eval "$ac_cv_lib_rtdebuglib"
+
+    if test -z "$ac_rtdebug_libdir"; then
+    have_rtdebug_lib="no"
+    echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+    { { echo "$as_me:$LINENO: error: Cannot find required runtime debugging library in linker path.
+Try --with-rtdebug-lib to specify the path, manually." >&5
+echo "$as_me: error: Cannot find required runtime debugging library in linker path.
+Try --with-rtdebug-lib to specify the path, manually." >&2;}
+   { (exit 1); exit 1; }; }
+  else
+    have_rtdebug_lib="yes"
+    echo "$as_me:$LINENO: result: yes, $ac_rtdebug_libname in $ac_rtdebug_libdir found." >&5
+echo "${ECHO_T}yes, $ac_rtdebug_libname in $ac_rtdebug_libdir found." >&6
+  fi
+
+  RTDEBUG_LDFLAGS="-L$ac_rtdebug_libdir"
+  RTDEBUG_LIBDIR="$ac_rtdebug_libdir"
+  LIB_RTDEBUG="$ac_rtdebug_libname"
+
+
+
+
+
+
+  echo "$as_me:$LINENO: checking for librtdebug includes" >&5
+echo $ECHO_N "checking for librtdebug includes... $ECHO_C" >&6
+
+
+# Check whether --with-rtdebug-inc or --without-rtdebug-inc was given.
+if test "${with_rtdebug_inc+set}" = set; then
+  withval="$with_rtdebug_inc"
+  rtdebug_include_dirs="$withval"
+else
+  rtdebug_include_dirs=""
+fi;
+
+  if test "${ac_cv_header_rtdebuginc+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+
+        if test -z "$rtdebug_include_dirs"; then
+
+                  rtdebug_include_dirs="\
+			  /usr/local/petlib/include \
+				/usr/local/petlib/include/rtdebug \
+        /usr/local/rtdebug/include \
+        /usr/include/rtdebug \
+        /usr/lib/rtdebug/include \
+        /usr/local/include/rtdebug"
+    fi
+
+    for rtdebug_dir in $rtdebug_include_dirs; do
+      if test -r "$rtdebug_dir/CRTDebug.h"; then
+        if test -r "$rtdebug_dir/rtdebug.h"; then
+          ac_rtdebug_includes=$rtdebug_dir
+          break;
+        fi
+      fi
+    done
+
+    ac_cv_header_rtdebuginc=$ac_rtdebug_includes
+
+
+fi
+
+
+  if test -z "$ac_cv_header_rtdebuginc"; then
+    have_rtdebug_inc="no"
+    echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+    { echo "$as_me:$LINENO: WARNING: librtdebug include directory not found, you may run into problems.
+Try --with-rtdebug-inc to specify the path, manually." >&5
+echo "$as_me: WARNING: librtdebug include directory not found, you may run into problems.
+Try --with-rtdebug-inc to specify the path, manually." >&2;}
+  else
+    have_rtdebug_inc="yes"
+    echo "$as_me:$LINENO: result: yes, in $ac_cv_header_rtdebuginc" >&5
+echo "${ECHO_T}yes, in $ac_cv_header_rtdebuginc" >&6
+  fi
+
+  RTDEBUG_INCLUDES="-I$ac_cv_header_rtdebuginc"
+  RTDEBUG_INCDIR="$ac_cv_header_rtdebuginc"
+
+
+
+
+	echo "$as_me:$LINENO: checking whether to link the rtdebug library static" >&5
+echo $ECHO_N "checking whether to link the rtdebug library static... $ECHO_C" >&6
+	# Check whether --enable-static-rtdebug or --disable-static-rtdebug was given.
+if test "${enable_static_rtdebug+set}" = set; then
+  enableval="$enable_static_rtdebug"
+  case "${enableval}" in
+									yes) test_on_enable_static_rtdebug=yes	;;
+									no)	 test_on_enable_static_rtdebug=no	;;
+									*)	 { { echo "$as_me:$LINENO: error: bad value ${enableval} for --enable-static-rtdebug" >&5
+echo "$as_me: error: bad value ${enableval} for --enable-static-rtdebug" >&2;}
+   { (exit 1); exit 1; }; } ;;
+								esac
+else
+  test_on_enable_static_rtdebug=no
+fi;
+
+	if test "$test_on_enable_static_rtdebug" = "yes"; then
+		QTLINK_LEVEL="${QTLINK_LEVEL} staticrtdebug"
 		echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
 	else
@@ -3429,7 +3745,7 @@ echo $ECHO_N "checking for gcc version... $ECHO_C" >&6
 		   cc_version="v. ?.??, bad"
 			 cc_verc_fail=yes
 			 ;;
-		 2.95.[2-9]|2.95.[2-9][-.]*|3.[0-9]|3.[0-9].[0-9]|4.[0-9].[0-9])
+		 2.95.[2-9]|2.95.[2-9][-.]*|3.[0-9]*|3.[0-9].[0-9]*|4.[0-9].[0-9]*)
 			 _cc_major=`echo $cc_version | cut -d '.' -f 1`
 			 _cc_minor=`echo $cc_version | cut -d '.' -f 2`
 			 _cc_mini=`echo $cc_version | cut -d '.' -f 3`
@@ -3468,52 +3784,6 @@ echo "$as_me: error: gcc was not found '$CC'" >&2;}
 
 
 # Checks for some tools which we need
-# Extract the first word of "qmake", so it can be a program name with args.
-set dummy qmake; ac_word=$2
-echo "$as_me:$LINENO: checking for $ac_word" >&5
-echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
-if test "${ac_cv_path_QMAKE_PATH+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  case $QMAKE_PATH in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_QMAKE_PATH="$QMAKE_PATH" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-as_dummy="$PATH:$QTDIR/bin:/usr/qt/bin:/usr/local/qt/bin:/Developer/qt/bin"
-for as_dir in $as_dummy
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_exec_ext in '' $ac_executable_extensions; do
-  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_QMAKE_PATH="$as_dir/$ac_word$ac_exec_ext"
-    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-done
-
-  test -z "$ac_cv_path_QMAKE_PATH" && ac_cv_path_QMAKE_PATH="no"
-  ;;
-esac
-fi
-QMAKE_PATH=$ac_cv_path_QMAKE_PATH
-
-if test -n "$QMAKE_PATH"; then
-  echo "$as_me:$LINENO: result: $QMAKE_PATH" >&5
-echo "${ECHO_T}$QMAKE_PATH" >&6
-else
-  echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-fi
-
-if test $QMAKE_PATH = "no"; then
-	{ { echo "$as_me:$LINENO: error: Cannot find qmake, check your PATH env settings" >&5
-echo "$as_me: error: Cannot find qmake, check your PATH env settings" >&2;}
-   { (exit 1); exit 1; }; }
-fi
 # Extract the first word of "mkdir", so it can be a program name with args.
 set dummy mkdir; ac_word=$2
 echo "$as_me:$LINENO: checking for $ac_word" >&5
@@ -5485,11 +5755,16 @@ s,@QT_LIBDIR@,$QT_LIBDIR,;t t
 s,@LIB_QT@,$LIB_QT,;t t
 s,@QT_INCLUDES@,$QT_INCLUDES,;t t
 s,@QT_INCDIR@,$QT_INCDIR,;t t
+s,@QMAKE_PATH@,$QMAKE_PATH,;t t
 s,@QTLINK_LEVEL@,$QTLINK_LEVEL,;t t
+s,@RTDEBUG_LDFLAGS@,$RTDEBUG_LDFLAGS,;t t
+s,@RTDEBUG_LIBDIR@,$RTDEBUG_LIBDIR,;t t
+s,@LIB_RTDEBUG@,$LIB_RTDEBUG,;t t
+s,@RTDEBUG_INCLUDES@,$RTDEBUG_INCLUDES,;t t
+s,@RTDEBUG_INCDIR@,$RTDEBUG_INCDIR,;t t
 s,@COMPILE_LEVEL@,$COMPILE_LEVEL,;t t
 s,@ANSI_COLOR@,$ANSI_COLOR,;t t
 s,@GCC_VERSION@,$GCC_VERSION,;t t
-s,@QMAKE_PATH@,$QMAKE_PATH,;t t
 s,@MKDIR_PATH@,$MKDIR_PATH,;t t
 s,@CP_PATH@,$CP_PATH,;t t
 s,@MV_PATH@,$MV_PATH,;t t

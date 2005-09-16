@@ -28,26 +28,39 @@
 #include <QButtonGroup>
 #include <QComboBox>
 #include <QDesktopWidget>
+#include <QDir>
+#include <QFile>
 #include <QKeyEvent>
 #include <QGridLayout>
+#include <QMessageBox>
 #include <QPoint>
 #include <QPushButton>
 #include <QRadioButton>
 #include <QProcess>
+#include <QRegExp>
 #include <QSettings>
 #include <QSound>
 #include <QString>
 #include <QStringList>
+#include <QTextStream>
 
 #include <iostream>
+
+#include <rtdebug.h>
 
 CRDesktopWindow::CRDesktopWindow(bool noUserPosition)
 	: m_bKeepAlive(false),
 		m_bNoUserPosition(noUserPosition)
 {
+	ENTER();
+
+  // create the central widget to which we are going to add everything
+  QWidget* centralWidget = new QWidget;
+  setCentralWidget(centralWidget);
+
 	// create a QSettings object to receive the users specific settings
 	// written the last time the user used that application
-	QSettings settings("fz-rossendorf.de", "qrdesktop");
+	m_pSettings = new QSettings("fz-rossendorf.de", "qrdesktop");
 
 	// we put a logo at the top
 	m_pLogoLabel = new QLabel();
@@ -58,17 +71,31 @@ CRDesktopWindow::CRDesktopWindow(bool noUserPosition)
 	// the we need a combobox for the different server a user can select
 	m_pServerListLabel = new QLabel(tr("Terminal Server:"));
 	m_pServerListBox = new QComboBox();
-	//m_pServerListBox->addItem("fwbts.ad");
-	m_pServerListBox->addItem("fwbts04.ad - Allgemein");
-	m_pServerListBox->addItem("fwbts02.ad - Micropet");
-	m_pServerListBox->addItem("fwbts03.ad - Micropet");
-	m_pServerListBox->addItem("fwbts01.ad - Printer");
-	m_pServerListBox->addItem("fwbfs01.ad - (Admin only)");
+
+	// now we try to open the serverlist file and add the items to our comobox
+	QFile serverListFile(QDir(QApplication::instance()->applicationDirPath()).absoluteFilePath("qrdesktop.slist"));
+	if(serverListFile.open(QFile::ReadOnly))
+	{
+		QTextStream in(&serverListFile);
+
+		while(in.atEnd() == false)
+		{
+			QString cline = in.readLine().trimmed();
+
+			// skip any comment line starting with '#'
+			if(cline.at(0) != '#')
+				m_pServerListBox->addItem(cline.section(QRegExp("\\s+"), 0, 0)+" - "+cline.section(QRegExp("\\s+"), 1));
+		}
+		
+		serverListFile.close();
+	}
+	else
+		m_pServerListBox->setEditable(true);
 
 	// now we check the QSettings of the user and which server he last used
-	if(settings.value("serverused").isValid())
+	if(m_pSettings->value("serverused").isValid())
 	{
-		QString lastServerUsed = settings.value("serverused").toString().toLower();
+		QString lastServerUsed = m_pSettings->value("serverused").toString().toLower();
 
 		// now we iterate through our combobox items and check if there is 
 		// one with the last server used hostname
@@ -93,9 +120,9 @@ CRDesktopWindow::CRDesktopWindow(bool noUserPosition)
 
 	// we check the QSettings for "resolution" and see if we
 	// can use it or not
-	if(settings.value("resolution").isValid())
+	if(m_pSettings->value("resolution").isValid())
 	{
-		QString resolution = settings.value("resolution").toString();
+		QString resolution = m_pSettings->value("resolution").toString();
 
 		if(resolution.toLower() == "fullscreen")
 			m_pScreenResolutionBox->setCurrentIndex(4);
@@ -144,7 +171,7 @@ CRDesktopWindow::CRDesktopWindow(bool noUserPosition)
 	colorButtonLayout->addStretch(1);
 
 	// now we check the QSettings for the last selected color depth
-	int depth = settings.value("colordepth", 16).toInt();
+	int depth = m_pSettings->value("colordepth", 16).toInt();
 	switch(depth)
 	{
 		case 8:
@@ -175,7 +202,7 @@ CRDesktopWindow::CRDesktopWindow(bool noUserPosition)
 	keyboardButtonLayout->addStretch(1);
 
 	// check the QSettings for the last used keyboard layout
-	QString keyboard = settings.value("keyboard", "de").toString();
+	QString keyboard = m_pSettings->value("keyboard", "de").toString();
 	if(keyboard.toLower() == "en-us")
 		m_pEnglishKeyboardButton->setChecked(true);
 	else
@@ -212,19 +239,32 @@ CRDesktopWindow::CRDesktopWindow(bool noUserPosition)
 	layout->addLayout(keyboardButtonLayout,				4, 1);
 	layout->addWidget(buttonFrame,								5, 0, 1, 2);
 	layout->addLayout(buttonLayout,								6, 0, 1, 2);
-	setLayout(layout);
+	centralWidget->setLayout(layout);
 
 	// check if the QSettings contains any info about the last position
 	if(noUserPosition)
 		move(QPoint(10, 10));
 	else
-		move(settings.value("position", QPoint(10, 10)).toPoint());
+		move(m_pSettings->value("position", QPoint(10, 10)).toPoint());
 
-	setWindowTitle(tr("qRDesktop v1.5 - (c) 2005 Jens Langner"));
+	setWindowTitle(tr("qRDesktop v1.6 - (c) 2005 Jens Langner"));
+
+	LEAVE();
+}
+
+CRDesktopWindow::~CRDesktopWindow()
+{
+	ENTER();
+
+	delete m_pSettings;
+	
+	LEAVE();
 }
 
 void CRDesktopWindow::setFullScreenOnly(const bool on)
 {
+	ENTER();
+
 	if(on)
 	{
 		m_pScreenResolutionBox->setCurrentIndex(4); // full screen
@@ -234,25 +274,25 @@ void CRDesktopWindow::setFullScreenOnly(const bool on)
 	{
 		m_pScreenResolutionBox->setEnabled(true);
 	}
+
+	LEAVE();
 }
 
 void CRDesktopWindow::startButtonPressed(void)
 {
-	// during setup we go and save the current setup of
-	// affairs to a QSettings object
-	QSettings settings("fz-rossendorf.de", "qrdesktop");
+	ENTER();
 
 	// save the current position of the GUI
-	if(m_bNoUserPosition == false)
-		settings.setValue("position", pos());
+	//if(m_bNoUserPosition == false)
+		m_pSettings->setValue("position", pos());
 
 	// get the currently selected server name
 	QString serverName = m_pServerListBox->currentText().section(" ", 0, 0);
-	settings.setValue("serverused", serverName.toLower());
+	m_pSettings->setValue("serverused", serverName.toLower());
 	
 	// get the currently selected resolution
 	QString resolution = m_pScreenResolutionBox->currentText().section(" ", 0, 0);
-	settings.setValue("resolution", resolution.toLower());
+	m_pSettings->setValue("resolution", resolution.toLower());
 	
 	// lets generate the commandline options stringlist
 	QStringList arguments;
@@ -268,12 +308,12 @@ void CRDesktopWindow::startButtonPressed(void)
 	if(m_pGermanKeyboardButton->isChecked())
 	{
 		arguments << "-k" << "de";
-		settings.setValue("keyboard", "de");
+		m_pSettings->setValue("keyboard", "de");
 	}
 	else if(m_pEnglishKeyboardButton->isChecked())
 	{
 		arguments << "-k" << "en-us";
-		settings.setValue("keyboard", "en-us");
+		m_pSettings->setValue("keyboard", "en-us");
 	}
 
 	// now we try to find out how many colors the current PaintDevice supports
@@ -287,7 +327,7 @@ void CRDesktopWindow::startButtonPressed(void)
 		if(pixmap.depth() <= 8)
 			arguments << "-C";
 
-		settings.setValue("colordepth", 8);
+		m_pSettings->setValue("colordepth", 8);
 	}
 	else if(m_p16bitColorsButton->isChecked())
 	{
@@ -296,7 +336,7 @@ void CRDesktopWindow::startButtonPressed(void)
 		if(pixmap.depth() < 16)
 			arguments << "-C";	
 
-		settings.setValue("colordepth", 16);
+		m_pSettings->setValue("colordepth", 16);
 	}
 	else if(m_p24bitColorsButton->isChecked())
 	{
@@ -305,7 +345,7 @@ void CRDesktopWindow::startButtonPressed(void)
 		if(pixmap.depth() < 24)
 			arguments << "-C";		
 
-		settings.setValue("colordepth", 24);
+		m_pSettings->setValue("colordepth", 24);
 	}
 
 	// we add sound redirection
@@ -332,10 +372,14 @@ void CRDesktopWindow::startButtonPressed(void)
 	// depending on the keepalive state we either close the GUI immediately or keep it open
 	if(m_bKeepAlive == false)
 		close();
+
+	LEAVE();
 }
 
 void CRDesktopWindow::keyPressEvent(QKeyEvent* e)
 {
+	ENTER();
+	
 	// we check wheter the user has pressed ESC or RETURN
 	switch(e->key())
 	{
@@ -361,4 +405,6 @@ void CRDesktopWindow::keyPressEvent(QKeyEvent* e)
 
 	// unknown key pressed
 	e->ignore();
+
+	LEAVE();
 }

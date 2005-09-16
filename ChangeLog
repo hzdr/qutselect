@@ -6,6 +6,14 @@ qRDesktop - A Qt4 graphical frontend for rdesktop
 $Id$
 $Source$
 
+2005-08-16  Jens Langner <Jens.Langner@light-speed.de>
+
+  * the displayed serverlist is now read from an eventually existing
+	  "qrdesktop.slist" file instead of having the serverlist hardcoded.
+  * changed CRDesktopWindow class to be inheriented from QMainWindow
+  * fixed a Qt 4.0.1 related bug where the use of two QSettings() objects
+	  caused the application to hang if used in -dtlogin mode.
+	
 2005-07-18  Jens Langner <Jens.Langner@light-speed.de>
 
   * added "-dtlogin" option which automatically ensures that qrdesktop

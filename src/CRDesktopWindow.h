@@ -24,7 +24,7 @@
 #ifndef CRDESKTOPWINDOW_H
 #define CRDESKTOPWINDOW_H
 
-#include <QWidget>
+#include <QMainWindow>
 
 // forward declarations
 class QCloseEvent;
@@ -33,13 +33,15 @@ class QComboBox;
 class QKeyEvent;
 class QRadioButton;
 class QPushButton;
+class QSettings;
 
-class CRDesktopWindow : public QWidget
+class CRDesktopWindow : public QMainWindow
 {
   Q_OBJECT
 
   public:
     CRDesktopWindow(bool noUserPosition = false);
+		~CRDesktopWindow();
 
 		// set methods
 		void setKeepAlive(const bool on)			{ m_bKeepAlive = on; }
@@ -66,6 +68,7 @@ class CRDesktopWindow : public QWidget
 		QRadioButton* m_pEnglishKeyboardButton;
 		QPushButton*	m_pQuitButton;
 		QPushButton*	m_pStartButton;
+		QSettings*		m_pSettings;
 
 		bool					m_bKeepAlive;
 		bool					m_bNoUserPosition;

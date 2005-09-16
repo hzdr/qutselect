@@ -28,6 +28,7 @@
 #include "config.h"
 
 #include <iostream>
+#include <rtdebug.h>
 
 using namespace std;
 
@@ -38,6 +39,14 @@ int main(int argc, char* argv[])
   // You want this, unless you mix streams output with C output.
   // Read  http://gcc.gnu.org/onlinedocs/libstdc++/27_io/howto.html#8 for an explanation.
   std::ios::sync_with_stdio(false);
+
+  // before we start anything serious, we need to initialize our
+  // debug class
+	#if defined(DEBUG)
+  CRTDebug::instance();
+	#endif
+
+	ENTER();
 
 	// lets init the resource (images and so on)
 	Q_INIT_RESOURCE(qrdesktop);
@@ -65,9 +74,14 @@ int main(int argc, char* argv[])
 	// show the mainwindow now
 	mainWin->show();
 
-		
 	// now we do execute our application
 	returnCode = app.exec();
+
+	RETURN(returnCode);
+
+	#if defined(DEBUG)
+	CRTDebug::destroy();
+	#endif
 
   return returnCode;
 }

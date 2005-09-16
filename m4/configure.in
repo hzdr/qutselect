@@ -45,7 +45,13 @@ AC_GNU_SOURCE
 # Check for the QT libraries
 AC_PATH_QT4_LIB
 AC_PATH_QT4_INC
+AC_PATH_QT4_QMAKE
 AC_ENABLE_STATIC_QT
+
+# Check for the runtime debug library
+AC_PATH_RTDEBUG_LIB
+AC_PATH_RTDEBUG_INC
+AC_ENABLE_STATIC_RTDEBUG
 
 # own macros
 AC_C_BIGENDIAN
@@ -56,10 +62,6 @@ AC_ANSI_COLOR
 AC_PROG_GCC_VERSION
 
 # Checks for some tools which we need
-AC_PATH_PROG(QMAKE_PATH, qmake, no, [$PATH:$QTDIR/bin:/usr/qt/bin:/usr/local/qt/bin:/Developer/qt/bin])
-if test $QMAKE_PATH = "no"; then
-	AC_MSG_ERROR([Cannot find qmake, check your PATH env settings])
-fi
 AC_PATH_PROG(MKDIR_PATH, mkdir)
 AC_PATH_PROG(CP_PATH, cp)
 AC_PATH_PROG(MV_PATH, mv)
