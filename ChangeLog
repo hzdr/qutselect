@@ -4,7 +4,13 @@ qRDesktop - A Qt4 graphical frontend for rdesktop
 // vim:set ts=2 nowrap:
 
 $Id$
-$Source$
+
+2006-05-31  Jens Langner <Jens.Langner@light-speed.de>
+
+  * lang: added german translation of qrdesktop and enabled it per default.
+	* misc: enabled qrdesktop to also use the new "uttsc" terminal server
+		client from SUN. Now the .slist file can have an additional option to
+		specify the specific RDP command tool which should be used.
 
 2005-08-16  Jens Langner <Jens.Langner@light-speed.de>
 

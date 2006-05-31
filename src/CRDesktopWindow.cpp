@@ -43,10 +43,13 @@
 #include <QString>
 #include <QStringList>
 #include <QTextStream>
+#include <QPushButton>
 
 #include <iostream>
 
 #include <rtdebug.h>
+
+#include "config.h"
 
 CRDesktopWindow::CRDesktopWindow(bool noUserPosition)
 	: m_bKeepAlive(false),
@@ -73,24 +76,7 @@ CRDesktopWindow::CRDesktopWindow(bool noUserPosition)
 	m_pServerListBox = new QComboBox();
 
 	// now we try to open the serverlist file and add the items to our comobox
-	QFile serverListFile(QDir(QApplication::instance()->applicationDirPath()).absoluteFilePath("qrdesktop.slist"));
-	if(serverListFile.open(QFile::ReadOnly))
-	{
-		QTextStream in(&serverListFile);
-
-		while(in.atEnd() == false)
-		{
-			QString cline = in.readLine().trimmed();
-
-			// skip any comment line starting with '#'
-			if(cline.at(0) != '#')
-				m_pServerListBox->addItem(cline.section(QRegExp("\\s+"), 0, 0)+" - "+cline.section(QRegExp("\\s+"), 1));
-		}
-		
-		serverListFile.close();
-	}
-	else
-		m_pServerListBox->setEditable(true);
+	loadServerList();
 
 	// now we check the QSettings of the user and which server he last used
 	if(m_pSettings->value("serverused").isValid())
@@ -247,7 +233,7 @@ CRDesktopWindow::CRDesktopWindow(bool noUserPosition)
 	else
 		move(m_pSettings->value("position", QPoint(10, 10)).toPoint());
 
-	setWindowTitle(tr("qRDesktop v1.6 - (c) 2005 Jens Langner"));
+	setWindowTitle("qRDesktop v" PACKAGE_VERSION " - (c) 2005-2006 FZ-Rossendorf");
 
 	LEAVE();
 }
@@ -287,87 +273,115 @@ void CRDesktopWindow::startButtonPressed(void)
 		m_pSettings->setValue("position", pos());
 
 	// get the currently selected server name
-	QString serverName = m_pServerListBox->currentText().section(" ", 0, 0);
-	m_pSettings->setValue("serverused", serverName.toLower());
+	QString serverName = m_pServerListBox->currentText().section(" ", 0, 0).toLower();
+	m_pSettings->setValue("serverused", serverName);
 	
 	// get the currently selected resolution
-	QString resolution = m_pScreenResolutionBox->currentText().section(" ", 0, 0);
-	m_pSettings->setValue("resolution", resolution.toLower());
-	
-	// lets generate the commandline options stringlist
-	QStringList arguments;
-	arguments << "rdesktop";
+	QString resolution = m_pScreenResolutionBox->currentText().section(" ", 0, 0).toLower();
+	m_pSettings->setValue("resolution", resolution);
 
-	// check the resolution combobox
-	if(resolution == "Fullscreen")
-		arguments << "-f";
-	else
-		arguments << "-g" << resolution;
+	// get the keyboard layout the user wants to have
+	QString keyLayout = m_pGermanKeyboardButton->isChecked() ? "de" : "en-us";
+	m_pSettings->setValue("keyboard", keyLayout);
 
-	// check the keyboard selection
-	if(m_pGermanKeyboardButton->isChecked())
-	{
-		arguments << "-k" << "de";
-		m_pSettings->setValue("keyboard", "de");
-	}
-	else if(m_pEnglishKeyboardButton->isChecked())
-	{
-		arguments << "-k" << "en-us";
-		m_pSettings->setValue("keyboard", "en-us");
-	}
-
-	// now we try to find out how many colors the current PaintDevice supports
-	// and if it supports only 8bit color depth, then we have to set the private
-	// colormap option for rdesktop
-	QPixmap pixmap;
+	// get the color depth
+	short colorDepth;
 	if(m_p8bitColorsButton->isChecked())
-	{
-		arguments << "-a" << "8";
-
-		if(pixmap.depth() <= 8)
-			arguments << "-C";
-
-		m_pSettings->setValue("colordepth", 8);
-	}
+		colorDepth = 8;
 	else if(m_p16bitColorsButton->isChecked())
+		colorDepth = 16;
+	else
+		colorDepth = 24;
+
+	m_pSettings->setValue("colordepth", colorDepth);
+
+	// now we try to find out which RDP version should be used
+	// for that server and construct the argumentlist different
+	QStringList cmd;
+	QPixmap pixmap;
+	switch(m_ServerList[serverName])
 	{
-		arguments << "-a" << "16";
+		case RDESKTOP:
+		{
+			cmd << "rdesktop"; // command to execute
 
-		if(pixmap.depth() < 16)
-			arguments << "-C";	
+			// geomety setup
+			if(resolution == "fullscreen")
+				cmd << "-f";
+			else
+				cmd << "-g" << resolution;
 
-		m_pSettings->setValue("colordepth", 16);
+			// keyboard layout
+			cmd << "-k" << keyLayout;
+
+			// color depth setup
+			cmd << "-a" << QString::number(colorDepth);
+
+			// check if private colormap is needed
+			if(pixmap.depth() < colorDepth || pixmap.depth() == 8)
+				cmd << "-C";			
+
+			// we add sound redirection
+			cmd << "-r" << "sound:local";
+
+			// disable encryption
+			cmd << "-E";
+
+			// enable LAN speed
+			cmd << "-x" << "lan";
+
+			// enable NUM-Lock synchronization
+			cmd << "-N";
+
+			// use persistent bitmap chaching
+			cmd << "-P";
+
+			// set the FZR domain as default
+			cmd << "-d" << "FZR";			
+		}
+		break;
+
+		case UTTSC:
+		{
+			cmd << "/opt/SUNWuttsc/bin/uttsc"; // command to execute
+
+			// geometry setup
+			if(resolution == "fullscreen")
+				cmd << "-m";
+			else
+				cmd << "-g" << resolution;
+
+			// keyboard layout
+			cmd << "-l" << keyLayout;
+
+			// color depth setup
+			cmd << "-A" << QString::number(colorDepth);
+
+			// add sound redirection but with low quality
+			cmd << "-r sound:low";
+
+			// disable the RDP data compression
+			cmd << "-z";
+
+			// now we have to get the username and
+			// we do that by analyzing the USER env variable
+			char* userName = getenv("USER");
+			if(userName != NULL && *userName != '\0')
+				cmd << "-u" << QString(userName);
+		}
+		break;
 	}
-	else if(m_p24bitColorsButton->isChecked())
-	{
-		arguments << "-a" << "24";
-
-		if(pixmap.depth() < 24)
-			arguments << "-C";		
-
-		m_pSettings->setValue("colordepth", 24);
-	}
-
-	// we add sound redirection
-	arguments << "-r" << "sound:local";
-
-	// add some general options
-	arguments << "-E";
-	arguments << "-x" << "lan";
-	arguments << "-N";
-	arguments << "-P";
-	arguments << "-d" << "FZR";
 	
 	// add last but not least the final terminal server hostname
-	arguments << serverName;
+	cmd << serverName;
 
 	// now output the string to the user
-	QString args = arguments.join(" ");
+	QString args = cmd.join(" ");
 	std::cout << "executing: 'nice " << args.toAscii().constData() << "'" << std::endl;
 	
 	// now we can create a QProcess object and start "rdesktop"
 	// accordingly in nice mode
-	QProcess::startDetached("nice", arguments);
+	QProcess::startDetached("nice", cmd);
 
 	// depending on the keepalive state we either close the GUI immediately or keep it open
 	if(m_bKeepAlive == false)
@@ -405,6 +419,46 @@ void CRDesktopWindow::keyPressEvent(QKeyEvent* e)
 
 	// unknown key pressed
 	e->ignore();
+
+	LEAVE();
+}
+
+void CRDesktopWindow::loadServerList()
+{
+	ENTER();
+
+	// clear the serverList map first
+	m_ServerList.clear();
+
+	QFile serverListFile(QDir(QApplication::instance()->applicationDirPath()).absoluteFilePath("qrdesktop.slist"));
+	if(serverListFile.open(QFile::ReadOnly))
+	{
+		QTextStream in(&serverListFile);
+		QRegExp regexp("^(\\S+)\\s+(\\S+)\\s+(.*)");
+		QString curLine;
+
+		while((curLine = in.readLine()).isNull() == false)
+		{
+			// skip any comment line starting with '#'
+			if(curLine.at(0) != '#' && regexp.indexIn(curLine) > -1)
+			{
+				QString hostname = regexp.cap(1).toLower();
+				QString rdptype = regexp.cap(2).toLower();
+				QString description = regexp.cap(3).simplified();
+
+				if(rdptype == "uttsc")
+					m_ServerList[hostname] = UTTSC;
+				else
+					m_ServerList[hostname] = RDESKTOP;
+
+				m_pServerListBox->addItem(hostname+" - "+description);
+			}
+		}
+		
+		serverListFile.close();
+	}
+	else
+		m_pServerListBox->setEditable(true);
 
 	LEAVE();
 }

@@ -22,6 +22,8 @@
 **************************************************************************/
 
 #include <QApplication>
+#include <QTranslator>
+#include <QLocale>
 
 #include "CRDesktopWindow.h"
 
@@ -43,7 +45,11 @@ int main(int argc, char* argv[])
   // before we start anything serious, we need to initialize our
   // debug class
 	#if defined(DEBUG)
-  CRTDebug::instance();
+	#if defined(ANSI_COLOR)
+	CRTDebug::instance()->setHighlighting(true);
+	#else
+	CRTDebug::instance()->setHighlighting(false);
+	#endif
 	#endif
 
 	ENTER();
@@ -53,6 +59,32 @@ int main(int argc, char* argv[])
 
 	// let us generate the console application object now.
   QApplication app(argc, argv);
+
+	W("active language: %d (%s)", QLocale::system().language(), QLocale::system().name().toAscii().constData());
+
+	// we now load & initialize eventually existing
+	// translation files for the system's default
+	QTranslator qtTranslator;
+	if(qtTranslator.load(":/lang/qt_de"))
+		D("successfully loaded 'qt_de' translation file.");
+	else if(qtTranslator.load(":/lang/qt_"+QLocale::system().name()))
+		D("successfully loaded 'qt_%s' translation file.", QLocale::system().name().toAscii().constData());
+	else
+		E("couldn't load any Qt translation file.");
+
+	// install the translator
+	app.installTranslator(&qtTranslator);
+
+	QTranslator myTranslator;
+	if(myTranslator.load(":/lang/qrdesktop_de"))
+		D("successfully loaded 'qrdesktop_de' translation file.");
+	else if(myTranslator.load(":/lang/qrdesktop_"+QLocale::system().name()))
+		D("successfully loaded 'qrdesktop_%s' translation file.", QLocale::system().name().toAscii().constData());
+	else
+		E("couldn't load any qrdesktop translation file.");
+
+	// install the translator
+	app.installTranslator(&myTranslator);	
 
 	// now we check wheter the user requests some options
 	// to be enabled

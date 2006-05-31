@@ -1,5 +1,7 @@
 <!DOCTYPE RCC><RCC version="1.0">
   <qresource prefix="">
     <file>images/banner-en.png</file>
+    <file>lang/qrdesktop_de.qm</file>
+    <file>lang/qt_de.qm</file>		
   </qresource>
 </RCC>

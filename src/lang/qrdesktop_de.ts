@@ -1,0 +1,56 @@
+<!DOCTYPE TS><TS>
+<context>
+    <name>CRDesktopWindow</name>
+    <message>
+        <source>Terminal Server:</source>
+        <translation>Terminal Server:</translation>
+    </message>
+    <message>
+        <source>Resolution:</source>
+        <translation>Auflösung:</translation>
+    </message>
+    <message>
+        <source>Colors:</source>
+        <translation>Farben:</translation>
+    </message>
+    <message>
+        <source>256</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>65535</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Millions</source>
+        <translation>Millionen</translation>
+    </message>
+    <message>
+        <source>Keyboard:</source>
+        <translation>Tastatur:</translation>
+    </message>
+    <message>
+        <source>German</source>
+        <translation>Deutsch</translation>
+    </message>
+    <message>
+        <source>English</source>
+        <translation>Englisch</translation>
+    </message>
+    <message>
+        <source>Quit</source>
+        <translation>Beenden</translation>
+    </message>
+    <message>
+        <source>Connect</source>
+        <translation>Verbinden</translation>
+    </message>
+</context>
+<context>
+    <name>QObject</name>
+    <message>
+        <source>Logout</source>
+        <translation></translation>
+    </message>
+</context>
+</TS>

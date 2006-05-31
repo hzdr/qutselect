@@ -26,6 +26,7 @@
 
 #include <QMainWindow>
 #include <QPushButton>
+#include <QMap>
 
 // forward declarations
 class QCloseEvent;
@@ -34,12 +35,15 @@ class QComboBox;
 class QKeyEvent;
 class QRadioButton;
 class QSettings;
+class QPushButton;
 
 class CRDesktopWindow : public QMainWindow
 {
   Q_OBJECT
 
   public:
+		enum RDPType { UTTSC=0, RDESKTOP };
+
     CRDesktopWindow(bool noUserPosition = false);
 		~CRDesktopWindow();
 
@@ -50,6 +54,9 @@ class CRDesktopWindow : public QMainWindow
 
 		// overloaded methods
 		void keyPressEvent(QKeyEvent* e);
+
+	private:
+		void loadServerList();
 
 	private slots:
 		void startButtonPressed(void);
@@ -70,6 +77,8 @@ class CRDesktopWindow : public QMainWindow
 		QPushButton*	m_pQuitButton;
 		QPushButton*	m_pStartButton;
 		QSettings*		m_pSettings;
+
+		QMap<QString, RDPType> m_ServerList;
 
 		bool					m_bKeepAlive;
 		bool					m_bNoUserPosition;

@@ -22,12 +22,13 @@
 #**************************************************************************/
 
 # main variables
-TEMPLATE	= app
-CONFIG	 *= qt thread warn_on @ANSI_COLOR@ @QTLINK_LEVEL@
-QT				= gui core
-TARGET		= qrdesktop
-VERSION		= 1.0
-DESTDIR		= ../
+TEMPLATE		= app
+CONFIG		 *= qt thread warn_on @ANSI_COLOR@ @QTLINK_LEVEL@
+QT					= gui core
+QMAKE_QMAKE = @QMAKE_PATH@
+TARGET			= qrdesktop
+VERSION			= @PACKAGE_VERSION@
+DESTDIR			= ../
 
 # directory specification
 OBJECTS_DIR = .obj
@@ -124,6 +125,7 @@ win32 {
 
 # Input
 RESOURCES = qrdesktop.qrc
+TRANSLATIONS = lang/qrdesktop_de.ts
 
 HEADERS = CRDesktopWindow.h
            
