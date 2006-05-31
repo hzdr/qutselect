@@ -277,7 +277,8 @@ void CRDesktopWindow::startButtonPressed(void)
 	
 	// get the currently selected resolution
 	QString resolution = m_pScreenResolutionBox->currentText().section(" ", 0, 0).toLower();
-	m_pSettings->setValue("resolution", resolution);
+	if(m_pScreenResolutionBox->isEnabled())
+		m_pSettings->setValue("resolution", resolution);
 
 	// get the keyboard layout the user wants to have
 	QString keyLayout = m_pGermanKeyboardButton->isChecked() ? "de" : "en-us";
