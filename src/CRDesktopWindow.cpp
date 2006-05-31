@@ -269,8 +269,7 @@ void CRDesktopWindow::startButtonPressed(void)
 	ENTER();
 
 	// save the current position of the GUI
-	//if(m_bNoUserPosition == false)
-		m_pSettings->setValue("position", pos());
+	m_pSettings->setValue("position", pos());
 
 	// get the currently selected server name
 	QString serverName = m_pServerListBox->currentText().section(" ", 0, 0).toLower();
@@ -294,6 +293,9 @@ void CRDesktopWindow::startButtonPressed(void)
 		colorDepth = 24;
 
 	m_pSettings->setValue("colordepth", colorDepth);
+
+	// sync the QSettings
+	m_pSettings->sync();
 
 	// now we try to find out which RDP version should be used
 	// for that server and construct the argumentlist different
