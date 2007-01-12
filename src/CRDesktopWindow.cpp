@@ -1,7 +1,7 @@
 /* vim:set ts=2 nowrap: ****************************************************
 
  qRDesktop - A simple Qt4 based GUI frontend for rdesktop
- Copyright (C) 2005 by Jens Langner <Jens.Langner@light-speed.de>
+ Copyright (C) 2005-2007 by Jens Langner <Jens.Langner@light-speed.de>
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -233,7 +233,7 @@ CRDesktopWindow::CRDesktopWindow(bool noUserPosition)
 	else
 		move(m_pSettings->value("position", QPoint(10, 10)).toPoint());
 
-	setWindowTitle("qRDesktop v" PACKAGE_VERSION " - (c) 2005-2006 FZ-Rossendorf");
+	setWindowTitle("qRDesktop v" PACKAGE_VERSION " - (c) 2005-2007 fzd.de");
 
 	LEAVE();
 }
@@ -333,8 +333,10 @@ void CRDesktopWindow::startButtonPressed(void)
 			// enable LAN speed
 			cmd << "-x" << "lan";
 
-			// enable NUM-Lock synchronization
-			cmd << "-N";
+			// we don't enable NUM-Lock synchronization
+			// as this seems to prevent the correct use of
+			// the NUM lock at all.
+			//cmd << "-N";
 
 			// use persistent bitmap chaching
 			cmd << "-P";

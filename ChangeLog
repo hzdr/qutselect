@@ -5,6 +5,12 @@ qRDesktop - A Qt4 graphical frontend for rdesktop
 
 $Id$
 
+2007-01-12  Jens Langner <Jens.Langner@light-speed.de>
+
+  * CRDesktopWindow.cpp: removed the per default added "-N" option for
+    enabling the NUM-lock synchronization. It seems to prevent some users
+    from actually using the numeric pad at all.
+
 2006-05-31  Jens Langner <Jens.Langner@light-speed.de>
 
   * lang: added german translation of qrdesktop and enabled it per default.
