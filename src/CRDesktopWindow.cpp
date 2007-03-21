@@ -334,7 +334,7 @@ void CRDesktopWindow::startButtonPressed(void)
 
 			// keyboard layout
       if(keyLayout == "de-DE")
-			  cmd << "-k de";
+			  cmd << "-k" << "de";
       else
         cmd << "-k" << keyLayout;
 
@@ -382,7 +382,7 @@ void CRDesktopWindow::startButtonPressed(void)
 			cmd << "-r" << "sound:low";
 
       // enable smartcard redirection
-      cmd << "-r" << "scard:on";
+      //cmd << "-r" << "scard:on";
 
 			// disable the RDP data compression
 			cmd << "-z";
@@ -400,7 +400,7 @@ void CRDesktopWindow::startButtonPressed(void)
       cmd << "-D" << "cursorshadow";
 
 			// set the FZR domain as default
-			cmd << "-d " << "FZR";			      
+			cmd << "-d" << "FZR";			      
 		}
 		break;
 	}

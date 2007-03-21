@@ -1,11 +1,12 @@
 # Serverlist for qrdesktop
 # 
-# HOSTNAME		RDP-CMD		DESCRIPTION
-fwbts01.ad		rdesktop	Allgemein 1
-fwbts02.ad		rdesktop	Allgemein 2
-fwbts03.ad		rdesktop	(Admin only)
-fwbts04.ad		rdesktop	Spezialsoftware
-fwbts05.ad		rdesktop	Medizin (UKD VPN)
-fwbts07.ad		rdesktop	Micropet
-fwbps01.ad		rdesktop	(Admin only)
-fwbfs01.ad		rdesktop	(Admin only)
+# HOSTNAME		DESCRIPTION
+fwbts01.ad		Allgemein 1
+fwbts02.ad		Allgemein 2
+fwbts03.ad		(Admin only)
+fwbts04.ad		Spezialsoftware
+fwbts05.ad		Medizin (UKD VPN)
+fwbts06.ad     Micropet
+fwbts07.ad     Micropet
+fwbps01.ad		(Admin only)
+fwbfs01.ad		(Admin only)
