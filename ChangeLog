@@ -5,6 +5,13 @@ qRDesktop - A Qt4 graphical frontend for rdesktop
 
 $Id$
 
+2007-03-21  Jens Langner <Jens.Langner@light-speed.de>
+
+  * CRDesktopWindow.cpp: removed the uttsc/rdesktop information from the
+    .slist file and added some 'magic' to automatically search for the
+    the possibility to use the SunRay 'uttsc' terminal server client
+    instead.
+	 
 2007-01-12  Jens Langner <Jens.Langner@light-speed.de>
 
   * CRDesktopWindow.cpp: removed the per default added "-N" option for
@@ -14,18 +21,18 @@ $Id$
 2006-05-31  Jens Langner <Jens.Langner@light-speed.de>
 
   * lang: added german translation of qrdesktop and enabled it per default.
-	* misc: enabled qrdesktop to also use the new "uttsc" terminal server
-		client from SUN. Now the .slist file can have an additional option to
-		specify the specific RDP command tool which should be used.
+  * misc: enabled qrdesktop to also use the new "uttsc" terminal server
+	 client from SUN. Now the .slist file can have an additional option to
+	 specify the specific RDP command tool which should be used.
 
 2005-08-16  Jens Langner <Jens.Langner@light-speed.de>
 
   * In "-dtlogin" mode, the Quit button is now called "Logout".
   * the displayed serverlist is now read from an eventually existing
-	  "qrdesktop.slist" file instead of having the serverlist hardcoded.
+	 "qrdesktop.slist" file instead of having the serverlist hardcoded.
   * changed CRDesktopWindow class to be inheriented from QMainWindow
   * fixed a Qt 4.0.1 related bug where the use of two QSettings() objects
-	  caused the application to hang if used in -dtlogin mode.
+	 caused the application to hang if used in -dtlogin mode.
 	
 2005-07-18  Jens Langner <Jens.Langner@light-speed.de>
 

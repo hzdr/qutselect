@@ -281,7 +281,7 @@ void CRDesktopWindow::startButtonPressed(void)
 		m_pSettings->setValue("resolution", resolution);
 
 	// get the keyboard layout the user wants to have
-	QString keyLayout = m_pGermanKeyboardButton->isChecked() ? "de" : "en-us";
+	QString keyLayout = m_pGermanKeyboardButton->isChecked() ? "de-DE" : "en-US";
 	m_pSettings->setValue("keyboard", keyLayout);
 
 	// get the color depth
@@ -302,7 +302,25 @@ void CRDesktopWindow::startButtonPressed(void)
 	// for that server and construct the argumentlist different
 	QStringList cmd;
 	QPixmap pixmap;
-	switch(m_ServerList[serverName])
+
+  // now we either use 'rdesktop' or 'uttsc' (SunRay RDP client)
+  // depending on the "SUN_SUNRAY_TOKEN" environment variable
+  enum RDPType rdpType = RDESKTOP;
+
+  // check the env variable and that uttsc exists
+  if(QFileInfo("/opt/SUNWuttsc/bin/uttsc").exists() &&
+     getenv("SUN_SUNRAY_TOKEN"))
+  {
+    // it seems we are running on a sunray. However, we do
+    // have to check wheter we have an 8bit screen or not because
+    // the uttsc client seems not to be able to open an 16bit
+    // RDP session even if '-C' for a private colourmap is used
+    if(pixmap.depth() >= colorDepth)
+      rdpType = UTTSC;
+  }
+
+  // now compose the command and execute the correct TSC
+	switch(rdpType)
 	{
 		case RDESKTOP:
 		{
@@ -315,7 +333,10 @@ void CRDesktopWindow::startButtonPressed(void)
 				cmd << "-g" << resolution;
 
 			// keyboard layout
-			cmd << "-k" << keyLayout;
+      if(keyLayout == "de-DE")
+			  cmd << "-k de";
+      else
+        cmd << "-k" << keyLayout;
 
 			// color depth setup
 			cmd << "-a" << QString::number(colorDepth);
@@ -332,11 +353,6 @@ void CRDesktopWindow::startButtonPressed(void)
 
 			// enable LAN speed
 			cmd << "-x" << "lan";
-
-			// we don't enable NUM-Lock synchronization
-			// as this seems to prevent the correct use of
-			// the NUM lock at all.
-			//cmd << "-N";
 
 			// use persistent bitmap chaching
 			cmd << "-P";
@@ -363,7 +379,10 @@ void CRDesktopWindow::startButtonPressed(void)
 			cmd << "-A" << QString::number(colorDepth);
 
 			// add sound redirection but with low quality
-			cmd << "-r sound:low";
+			cmd << "-r" << "sound:low";
+
+      // enable smartcard redirection
+      cmd << "-r" << "scard:on";
 
 			// disable the RDP data compression
 			cmd << "-z";
@@ -373,6 +392,15 @@ void CRDesktopWindow::startButtonPressed(void)
 			char* userName = getenv("USER");
 			if(userName != NULL && *userName != '\0')
 				cmd << "-u" << QString(userName);
+
+      // disable certain things in window per default
+      cmd << "-D" << "wallpaper";
+      cmd << "-D" << "menuanimations";
+      cmd << "-D" << "theming";
+      cmd << "-D" << "cursorshadow";
+
+			// set the FZR domain as default
+			cmd << "-d " << "FZR";			      
 		}
 		break;
 	}
@@ -432,14 +460,11 @@ void CRDesktopWindow::loadServerList()
 {
 	ENTER();
 
-	// clear the serverList map first
-	m_ServerList.clear();
-
 	QFile serverListFile(QDir(QApplication::instance()->applicationDirPath()).absoluteFilePath("qrdesktop.slist"));
 	if(serverListFile.open(QFile::ReadOnly))
 	{
 		QTextStream in(&serverListFile);
-		QRegExp regexp("^(\\S+)\\s+(\\S+)\\s+(.*)");
+		QRegExp regexp("^(\\S+)\\s+(.*)");
 		QString curLine;
 
 		while((curLine = in.readLine()).isNull() == false)
@@ -448,13 +473,7 @@ void CRDesktopWindow::loadServerList()
 			if(curLine.at(0) != '#' && regexp.indexIn(curLine) > -1)
 			{
 				QString hostname = regexp.cap(1).toLower();
-				QString rdptype = regexp.cap(2).toLower();
-				QString description = regexp.cap(3).simplified();
-
-				if(rdptype == "uttsc")
-					m_ServerList[hostname] = UTTSC;
-				else
-					m_ServerList[hostname] = RDESKTOP;
+				QString description = regexp.cap(2).simplified();
 
 				m_pServerListBox->addItem(hostname+" - "+description);
 			}

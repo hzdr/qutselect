@@ -42,7 +42,7 @@ class CRDesktopWindow : public QMainWindow
   Q_OBJECT
 
   public:
-		enum RDPType { UTTSC=0, RDESKTOP };
+		enum RDPType { RDESKTOP=0, UTTSC };
 
     CRDesktopWindow(bool noUserPosition = false);
 		~CRDesktopWindow();
@@ -77,8 +77,6 @@ class CRDesktopWindow : public QMainWindow
 		QPushButton*	m_pQuitButton;
 		QPushButton*	m_pStartButton;
 		QSettings*		m_pSettings;
-
-		QMap<QString, RDPType> m_ServerList;
 
 		bool					m_bKeepAlive;
 		bool					m_bNoUserPosition;
