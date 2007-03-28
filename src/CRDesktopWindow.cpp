@@ -303,22 +303,33 @@ void CRDesktopWindow::startButtonPressed(void)
 	QStringList cmd;
 	QPixmap pixmap;
 
+  //////////////////////////////////////////////////////////////
   // now we either use 'rdesktop' or 'uttsc' (SunRay RDP client)
   // depending on the "SUN_SUNRAY_TOKEN" environment variable
+  // and other certain things like colordepth and dtlogin session
   enum RDPType rdpType = RDESKTOP;
 
-  // check the env variable and that uttsc exists
-  if(QFileInfo("/opt/SUNWuttsc/bin/uttsc").exists() &&
-     getenv("SUN_SUNRAY_TOKEN"))
+  // We check wheter we have an 8bit screen or not because
+  // the uttsc client seems not to be able to open an 16bit
+  // RDP session even if '-C' for a private colourmap is used
+  if(pixmap.depth() >= colorDepth)
   {
-    // it seems we are running on a sunray. However, we do
-    // have to check wheter we have an 8bit screen or not because
-    // the uttsc client seems not to be able to open an 16bit
-    // RDP session even if '-C' for a private colourmap is used
-    if(pixmap.depth() >= colorDepth)
-      rdpType = UTTSC;
+    // we also have to check that we ONLY use uttsc within
+    // a -dtlogin session because otherwise a user can't
+    // switch between fullscreen/window mode like in rdesktop
+    if(m_bNoUserPosition)
+    {
+      // last, but not least we have to check wheter this is
+      // a SUNRAY session at all and if we can find the 'uttsc'
+      // terminal server client in the right place
+      if(QFileInfo("/opt/SUNWuttsc/bin/uttsc").exists() &&
+         getenv("SUN_SUNRAY_TOKEN"))
+      {
+        rdpType = UTTSC;
+      }
+    }
   }
-
+  
   // now compose the command and execute the correct TSC
 	switch(rdpType)
 	{

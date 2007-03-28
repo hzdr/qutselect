@@ -5,6 +5,13 @@ qRDesktop - A Qt4 graphical frontend for rdesktop
 
 $Id$
 
+2007-03-28  Jens Langner <Jens.Langner@light-speed.de>
+
+  * CRDesktopWindow.cpp: we only use "uttsc" in case a -dtlogin session is
+    running. Somehow that damn 'uttsc' client doesn't allow to switch
+    from/to fullscreen mode dynamically like rdesktop does. However, our
+    users are used to that.
+
 2007-03-21  Jens Langner <Jens.Langner@light-speed.de>
 
   * CRDesktopWindow.cpp: removed the uttsc/rdesktop information from the
