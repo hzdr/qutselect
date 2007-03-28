@@ -315,9 +315,9 @@ void CRDesktopWindow::startButtonPressed(void)
   if(pixmap.depth() >= colorDepth)
   {
     // we also have to check that we ONLY use uttsc within
-    // a -dtlogin session because otherwise a user can't
-    // switch between fullscreen/window mode like in rdesktop
-    if(m_bNoUserPosition)
+    // a -dtlogin session in fullscreen because otherwise a user
+    // can't switch between fullscreen/window mode like in rdesktop
+    if(m_bNoUserPosition == true || resolution != "fullscreen")
     {
       // last, but not least we have to check wheter this is
       // a SUNRAY session at all and if we can find the 'uttsc'
