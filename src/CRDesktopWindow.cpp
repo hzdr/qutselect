@@ -44,6 +44,7 @@
 #include <QStringList>
 #include <QTextStream>
 #include <QPushButton>
+#include <QHostInfo>
 
 #include <iostream>
 
@@ -329,6 +330,10 @@ void CRDesktopWindow::startButtonPressed(void)
       }
     }
   }
+
+  //////////////////////////////////////////////////////////////
+	// find out the hostname (client name) on which we are running
+	QString clientname = QHostInfo::localHostName();
   
   // now compose the command and execute the correct TSC
 	switch(rdpType)
@@ -368,6 +373,9 @@ void CRDesktopWindow::startButtonPressed(void)
 			// use persistent bitmap chaching
 			cmd << "-P";
 
+			// set client name
+			cmd << "-n" << clientname;
+
 			// set the FZR domain as default
 			cmd << "-d" << "FZR";			
 		}
@@ -403,6 +411,9 @@ void CRDesktopWindow::startButtonPressed(void)
 			char* userName = getenv("USER");
 			if(userName != NULL && *userName != '\0')
 				cmd << "-u" << QString(userName);
+
+			// set client name
+			cmd << "-n" << clientname;			
 
       // disable certain things in window per default
       cmd << "-D" << "wallpaper";

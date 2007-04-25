@@ -24,7 +24,7 @@
 # main variables
 TEMPLATE		= app
 CONFIG		 *= qt thread no_mocdepend warn_on @ANSI_COLOR@ @QTLINK_LEVEL@
-QT					= gui core
+QT					= gui core network
 QMAKE_QMAKE = @QMAKE_PATH@
 TARGET			= qrdesktop
 VERSION			= @PACKAGE_VERSION@

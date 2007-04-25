@@ -5,6 +5,11 @@ qRDesktop - A Qt4 graphical frontend for rdesktop
 
 $Id$
 
+2007-04-25  Jens Langner <Jens.Langner@light-speed.de>
+
+  * CRDesktopWindow.cpp: the client name will now be passed to the remote
+    desktop client's with the "-n" option.
+
 2007-03-28  Jens Langner <Jens.Langner@light-speed.de>
 
   * CRDesktopWindow.cpp: we only use "uttsc" in case a -dtlogin session is
