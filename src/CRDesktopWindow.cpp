@@ -52,9 +52,9 @@
 
 #include "config.h"
 
-CRDesktopWindow::CRDesktopWindow(bool noUserPosition)
+CRDesktopWindow::CRDesktopWindow(bool dtLoginMode)
 	: m_bKeepAlive(false),
-		m_bNoUserPosition(noUserPosition)
+		m_bDtLoginMode(dtLoginMode)
 {
 	ENTER();
 
@@ -229,8 +229,16 @@ CRDesktopWindow::CRDesktopWindow(bool noUserPosition)
 	centralWidget->setLayout(layout);
 
 	// check if the QSettings contains any info about the last position
-	if(noUserPosition)
+	if(dtLoginMode)
+	{
 		move(QPoint(10, 10));
+
+		// make sure to also change some settings according to
+		// the dtlogin mode
+		setKeepAlive(true);
+		setFullScreenOnly(true);
+		setQuitText(QObject::tr("Logout"));		
+	}
 	else
 		move(m_pSettings->value("position", QPoint(10, 10)).toPoint());
 
@@ -318,7 +326,7 @@ void CRDesktopWindow::startButtonPressed(void)
     // we also have to check that we ONLY use uttsc within
     // a -dtlogin session in fullscreen because otherwise a user
     // can't switch between fullscreen/window mode like in rdesktop
-    if(m_bNoUserPosition == true || resolution != "fullscreen")
+    if(m_bDtLoginMode == true) // || resolution != "fullscreen")
     {
       // last, but not least we have to check wheter this is
       // a SUNRAY session at all and if we can find the 'uttsc'
@@ -352,7 +360,7 @@ void CRDesktopWindow::startButtonPressed(void)
       if(keyLayout == "de-DE")
 			  cmd << "-k" << "de";
       else
-        cmd << "-k" << keyLayout;
+        cmd << "-k" << keyLayout.toLower();
 
 			// color depth setup
 			cmd << "-a" << QString::number(colorDepth);

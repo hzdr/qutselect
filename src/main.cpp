@@ -97,12 +97,6 @@ int main(int argc, char* argv[])
 
 	// now we instanciate our main CRDesktopWindow class
 	CRDesktopWindow* mainWin = new CRDesktopWindow(dtLoginCall);
-	if(dtLoginCall)
-	{
-		mainWin->setKeepAlive(true);
-		mainWin->setFullScreenOnly(true);
-		mainWin->setQuitText(QObject::tr("Logout"));
-	}
 
 	// show the mainwindow now
 	mainWin->show();

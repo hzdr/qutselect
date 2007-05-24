@@ -44,7 +44,7 @@ class CRDesktopWindow : public QMainWindow
   public:
 		enum RDPType { RDESKTOP=0, UTTSC };
 
-    CRDesktopWindow(bool noUserPosition = false);
+    CRDesktopWindow(bool dtLoginMode = false);
 		~CRDesktopWindow();
 
 		// set methods
@@ -79,7 +79,7 @@ class CRDesktopWindow : public QMainWindow
 		QSettings*		m_pSettings;
 
 		bool					m_bKeepAlive;
-		bool					m_bNoUserPosition;
+		bool					m_bDtLoginMode;
 };
 
 #endif /* CRDESKTOPWINDOW_H */
