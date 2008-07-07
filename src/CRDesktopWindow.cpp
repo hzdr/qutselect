@@ -103,6 +103,7 @@ CRDesktopWindow::CRDesktopWindow(bool dtLoginMode)
 	m_pScreenResolutionBox->addItem("1024x768");
 	m_pScreenResolutionBox->addItem("1152x900");
 	m_pScreenResolutionBox->addItem("1280x1024");
+	m_pScreenResolutionBox->addItem("1600x1200");
 	m_pScreenResolutionBox->addItem("Fullscreen");
 
 	// we check the QSettings for "resolution" and see if we
@@ -112,12 +113,14 @@ CRDesktopWindow::CRDesktopWindow(bool dtLoginMode)
 		QString resolution = m_pSettings->value("resolution").toString();
 
 		if(resolution.toLower() == "fullscreen")
-			m_pScreenResolutionBox->setCurrentIndex(4);
+			m_pScreenResolutionBox->setCurrentIndex(5);
 		else
 		{
 			int width = resolution.section("x", 0, 0).toInt();
 
-			if(width >= 1280)
+			if(width >= 1600)
+				m_pScreenResolutionBox->setCurrentIndex(4);
+			else if(width >= 1280)
 				m_pScreenResolutionBox->setCurrentIndex(3);
 			else if(width >= 1152)
 				m_pScreenResolutionBox->setCurrentIndex(2);
@@ -130,7 +133,9 @@ CRDesktopWindow::CRDesktopWindow(bool dtLoginMode)
 	else
 	{
 		QDesktopWidget* desktopWidget = QApplication::desktop();
-		if(desktopWidget->width() > 1280)
+		if(desktopWidget->width() > 1600)
+      m_pScreenResolutionBox->setCurrentIndex(4);
+		else if(desktopWidget->width() > 1280)
 			m_pScreenResolutionBox->setCurrentIndex(3);
 		else if(desktopWidget->width() > 1152)
 			m_pScreenResolutionBox->setCurrentIndex(2);
@@ -242,7 +247,7 @@ CRDesktopWindow::CRDesktopWindow(bool dtLoginMode)
 	else
 		move(m_pSettings->value("position", QPoint(10, 10)).toPoint());
 
-	setWindowTitle("qRDesktop v" PACKAGE_VERSION " - (c) 2005-2007 fzd.de");
+	setWindowTitle("qRDesktop v" PACKAGE_VERSION " - (c) 2005-2008 fzd.de");
 
 	LEAVE();
 }
