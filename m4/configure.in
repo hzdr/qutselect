@@ -22,7 +22,7 @@
 #**************************************************************************/
 
 AC_PREREQ(2.57)
-AC_INIT(qrdesktop, 1.13, Jens.Langner@light-speed.de)
+AC_INIT(qrdesktop, 1.14, Jens.Langner@light-speed.de)
 AC_COPYRIGHT(Copyright (c) 2005-2008 by Jens Langner <Jens.Langner@light-speed.de>)
 AC_REVISION($Revision$)
 AC_CONFIG_SRCDIR([src/main.cpp])

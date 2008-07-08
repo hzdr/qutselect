@@ -267,7 +267,7 @@ void CRDesktopWindow::setFullScreenOnly(const bool on)
 
 	if(on)
 	{
-		m_pScreenResolutionBox->setCurrentIndex(4); // full screen
+		m_pScreenResolutionBox->setCurrentIndex(5); // full screen
 		m_pScreenResolutionBox->setEnabled(false);
 	}
 	else
