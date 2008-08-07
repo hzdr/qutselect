@@ -3,10 +3,9 @@
 # HOSTNAME		DESCRIPTION
 fwbts01.ad		Allgemein 1
 fwbts02.ad		Allgemein 2
-fwbts03.ad		(Admin only)
+fwbts03.ad		Medizin (UKD VPN)
 fwbts04.ad		Spezialsoftware
-fwbts05.ad		Medizin (UKD VPN)
-fwbts06.ad     Micropet
-fwbts07.ad     Micropet
+fwbts05.ad		(Admin only)
+fwbts06.ad     microPET
+fwbts07.ad     microPET
 fwbps01.ad		(Admin only)
-fwbfs01.ad		(Admin only)

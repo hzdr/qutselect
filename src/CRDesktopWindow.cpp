@@ -96,7 +96,7 @@ CRDesktopWindow::CRDesktopWindow(bool dtLoginMode)
 		}
 	}
 
-	// selection of the screen depth
+  // selection of the screen depth
 	m_pScreenResolutionLabel = new QLabel(tr("Resolution:"));
 	m_pScreenResolutionBox = new QComboBox();
 	m_pScreenResolutionBox->addItem("800x600");
@@ -132,6 +132,8 @@ CRDesktopWindow::CRDesktopWindow(bool dtLoginMode)
 	}
 	else
 	{
+    // find out which resolutions the current displaying desktop
+    // allows
 		QDesktopWidget* desktopWidget = QApplication::desktop();
 		if(desktopWidget->width() > 1600)
       m_pScreenResolutionBox->setCurrentIndex(4);
@@ -147,9 +149,9 @@ CRDesktopWindow::CRDesktopWindow(bool dtLoginMode)
 
 	// color depth selection
 	m_pColorsLabel = new QLabel(tr("Colors:"));
-	m_p8bitColorsButton = new QRadioButton(tr("256"));
-	m_p16bitColorsButton = new QRadioButton(tr("65535"));
-	m_p24bitColorsButton = new QRadioButton(tr("Millions"));
+	m_p8bitColorsButton = new QRadioButton(tr("8bit (256)"));
+	m_p16bitColorsButton = new QRadioButton(tr("16bit (65535)"));
+	m_p24bitColorsButton = new QRadioButton(tr("24bit (Millions)"));
 	QButtonGroup* colorsGroup = new QButtonGroup();
 	colorsGroup->addButton(m_p8bitColorsButton);
 	colorsGroup->addButton(m_p16bitColorsButton);
