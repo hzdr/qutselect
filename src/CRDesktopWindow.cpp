@@ -431,10 +431,10 @@ void CRDesktopWindow::startButtonPressed(void)
 			cmd << "-n" << clientname;			
 
       // disable certain things in window per default
-      cmd << "-D" << "wallpaper";
-      cmd << "-D" << "menuanimations";
-      cmd << "-D" << "theming";
-      cmd << "-D" << "cursorshadow";
+      //cmd << "-D" << "wallpaper";
+      //cmd << "-D" << "menuanimations";
+      //cmd << "-D" << "theming";
+      //cmd << "-D" << "cursorshadow";
 
 			// set the FZR domain as default
 			cmd << "-d" << "FZR";			      
