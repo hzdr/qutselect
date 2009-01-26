@@ -386,7 +386,7 @@ void CRDesktopWindow::startButtonPressed(void)
 			cmd << "-x" << "lan";
 
 			// use persistent bitmap chaching
-			cmd << "-P";
+			//cmd << "-P";
 
 			// set client name
 			cmd << "-n" << clientname;
