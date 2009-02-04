@@ -1,7 +1,7 @@
 #/* vim:set ts=2 nowrap: ****************************************************
 #
-# qRDesktop - A simple Qt4 based GUI frontend for rdesktop
-# Copyright (C) 2005 by Jens Langner <Jens.Langner@light-speed.de>
+# qutselect - A simple Qt4 based GUI frontend for SRSS (utselect)
+# Copyright (C) 2009 by Jens Langner <Jens.Langner@light-speed.de>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,19 +55,19 @@ RECURSIVE_TARGETS = all-recursive dist-recursive clean-recursive distclean-recur
 DIST_COMMON = AUTHORS COPYING ChangeLog README TODO \
 							Makefile.in configure \
 							m4/Makefile.in m4/aclocal.m4 m4/acinclude.m4 m4/configure.in \
-							src/includes/config.h.in src/qrdesktop.pro.in
+							src/includes/config.h.in src/qutselect.pro.in
 
 DIST_DOC = doc/user doc/developer
 
 # Which extra files are to clean
 CONFIG_DISTCLEAN_FILES = config.status config.cache config.log configure.lineno \
-												 Makefile src/qrdesktop.pro src/includes/config.h src/Makefile
+												 Makefile src/qutselect.pro src/includes/config.h src/Makefile
 
 all: qmakefiles all-recursive
 
 qmakefiles: src/Makefile
 
-src/Makefile: src/qrdesktop.pro
+src/Makefile: src/qutselect.pro
 	@echo "generating '$@' by executing qmake... "
 	@(cd src; $(QMAKE))
 
@@ -113,7 +113,7 @@ src/config.h: $(srcdir)/src/includes/config.h.in $(top_builddir)/config.status
 	cd $(top_builddir) && ./config.status
 
 # Check on lmmc.pro.in in src dir
-src/qrdesktop.pro: $(srcdir)/src/qrdesktop.pro.in src/includes/config.h.in $(top_builddir)/config.status 
+src/qutselect.pro: $(srcdir)/src/qutselect.pro.in src/includes/config.h.in $(top_builddir)/config.status 
 	cd $(top_builddir) && ./config.status
 
 # Developer documentation
@@ -130,7 +130,7 @@ devdoc:
 # (1) if the variable is set in `config.status', edit `config.status'
 #     (which will cause the Makefiles to be regenerated when you run `make');
 # (2) otherwise, pass the desired values on the `make' command line.
-$(RECURSIVE_TARGETS): src/qrdesktop.pro  
+$(RECURSIVE_TARGETS): src/qutselect.pro  
 	@set fnord $$MAKEFLAGS; amf=$$2; \
 	dot_seen=no; \
 	target=`echo $@ | sed s/-recursive//`; \

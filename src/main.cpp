@@ -1,7 +1,7 @@
 /* vim:set ts=2 nowrap: ****************************************************
 
- qRDesktop - A simple Qt4 based GUI frontend for rdesktop
- Copyright (C) 2005 by Jens Langner <Jens.Langner@light-speed.de>
+ qutselect - A simple Qt4 based GUI frontend for SRSS (utselect)
+ Copyright (C) 2008 by Jens Langner <Jens.Langner@light-speed.de>
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #include <QTranslator>
 #include <QLocale>
 
-#include "CRDesktopWindow.h"
+#include "CMainWindow.h"
 
 #include "config.h"
 
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 	ENTER();
 
 	// lets init the resource (images and so on)
-	Q_INIT_RESOURCE(qrdesktop);
+	Q_INIT_RESOURCE(qutselect);
 
 	// let us generate the console application object now.
   QApplication app(argc, argv);
@@ -76,12 +76,12 @@ int main(int argc, char* argv[])
 	app.installTranslator(&qtTranslator);
 
 	QTranslator myTranslator;
-	if(myTranslator.load(":/lang/qrdesktop_de"))
-		D("successfully loaded 'qrdesktop_de' translation file.");
-	else if(myTranslator.load(":/lang/qrdesktop_"+QLocale::system().name()))
-		D("successfully loaded 'qrdesktop_%s' translation file.", QLocale::system().name().toAscii().constData());
+	if(myTranslator.load(":/lang/qutselect_de"))
+		D("successfully loaded 'qutselect_de' translation file.");
+	else if(myTranslator.load(":/lang/qutselect_"+QLocale::system().name()))
+		D("successfully loaded 'qutselect_%s' translation file.", QLocale::system().name().toAscii().constData());
 	else
-		E("couldn't load any qrdesktop translation file.");
+		E("couldn't load any qutselect translation file.");
 
 	// install the translator
 	app.installTranslator(&myTranslator);	
@@ -95,11 +95,13 @@ int main(int argc, char* argv[])
 			dtLoginCall = true;
 	}
 
-	// now we instanciate our main CRDesktopWindow class
-	CRDesktopWindow* mainWin = new CRDesktopWindow(dtLoginCall);
+	// now we instanciate our main CMainWindow class
+	CMainWindow* mainWin = new CMainWindow(dtLoginCall);
 
 	// show the mainwindow now
 	mainWin->show();
+
+	D("app size: %d x %d", mainWin->width(), mainWin->height());
 
 	// now we do execute our application
 	returnCode = app.exec();

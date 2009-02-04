@@ -1,7 +1,7 @@
 /* vim:set ts=2 nowrap: ****************************************************
 
- qRDesktop - A simple Qt4 based GUI frontend for rdesktop
- Copyright (C) 2005 by Jens Langner <Jens.Langner@light-speed.de>
+ qutselect - A simple Qt4 based GUI frontend for SRSS (utselect)
+ Copyright (C) 2009 by Jens Langner <Jens.Langner@light-speed.de>
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
 
 **************************************************************************/
 
-#ifndef CRDESKTOPWINDOW_H
-#define CRDESKTOPWINDOW_H
+#ifndef CMAINWINDOW_H
+#define CMAINWINDOW_H
 
 #include <QMainWindow>
 #include <QPushButton>
@@ -31,21 +31,24 @@
 // forward declarations
 class QCloseEvent;
 class QLabel;
+class QLineEdit;
 class QComboBox;
 class QKeyEvent;
 class QRadioButton;
 class QSettings;
 class QPushButton;
+class QTreeWidget;
+class QTreeWidgetItem;
 
-class CRDesktopWindow : public QMainWindow
+class CMainWindow : public QMainWindow
 {
   Q_OBJECT
 
   public:
-		enum RDPType { RDESKTOP=0, UTTSC };
+    enum ServerType { SRSS=0, RDP, VNC };
 
-    CRDesktopWindow(bool dtLoginMode = false);
-		~CRDesktopWindow();
+    CMainWindow(bool dtLoginMode = false);
+		~CMainWindow();
 
 		// set methods
 		void setKeepAlive(const bool on)			{ m_bKeepAlive = on; }
@@ -57,29 +60,36 @@ class CRDesktopWindow : public QMainWindow
 
 	private:
 		void loadServerList();
+		enum ServerType matchServerType(const QString& string);
 
 	private slots:
 		void startButtonPressed(void);
+		void currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous);
+		void itemDoubleClicked(QTreeWidgetItem* item, int column);
+		void serverTypeChanged(int index);
 
 	private:
-		QLabel*				m_pLogoLabel;
-		QLabel*				m_pServerListLabel;
-		QComboBox*		m_pServerListBox;
-		QLabel*				m_pScreenResolutionLabel;
-		QComboBox*		m_pScreenResolutionBox;
-		QLabel*				m_pColorsLabel;
-		QRadioButton*	m_p8bitColorsButton;
-		QRadioButton* m_p16bitColorsButton;
-		QRadioButton* m_p24bitColorsButton;
-		QLabel*				m_pKeyboardLabel;
-		QRadioButton* m_pGermanKeyboardButton;
-		QRadioButton* m_pEnglishKeyboardButton;
-		QPushButton*	m_pQuitButton;
-		QPushButton*	m_pStartButton;
-		QSettings*		m_pSettings;
+		QLabel*				      m_pLogoLabel;
+		QLabel*				      m_pServerListLabel;
+		QComboBox*		      m_pServerListBox;
+		QLabel*				      m_pScreenResolutionLabel;
+		QComboBox*		      m_pScreenResolutionBox;
+		QLabel*				      m_pColorsLabel;
+		QRadioButton*	      m_p8bitColorsButton;
+		QRadioButton*       m_p16bitColorsButton;
+		QRadioButton*       m_p24bitColorsButton;
+		QLabel*				      m_pKeyboardLabel;
+		QRadioButton*       m_pGermanKeyboardButton;
+		QRadioButton*       m_pEnglishKeyboardButton;
+		QPushButton*	      m_pQuitButton;
+		QPushButton*	      m_pStartButton;
+		QSettings*		      m_pSettings;
+    QTreeWidget*        m_pServerTreeWidget;
+    QLineEdit*          m_pServerLineEdit;
+		QComboBox*					m_pServerTypeComboBox;
 
-		bool					m_bKeepAlive;
-		bool					m_bDtLoginMode;
+		bool m_bKeepAlive;
+		bool m_bDtLoginMode;
 };
 
-#endif /* CRDESKTOPWINDOW_H */
+#endif /* CMAINWINDOW_H */

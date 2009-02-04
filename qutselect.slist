@@ -1,11 +1,18 @@
 # Serverlist for qrdesktop
 # 
-# HOSTNAME		DESCRIPTION
-fwbts01.ad		Allgemein 1
-fwbts02.ad		Allgemein 2
-fwbts03.ad		Medizin (UKD VPN)
-fwbts04.ad		Spezialsoftware
-fwbts05.ad		(Admin only)
-fwbts06.ad     microPET
-fwbts07.ad     microPET
-fwbps01.ad		(Admin only)
+# HOSTNAME		TYPE    OS               DESCRIPTION              SCRIPT
+# ----------------------------------------------------------------------------------------------------------
+saturn      ;  SRSS  ; Linux 2.6      ; Arbeitsstation (UNIX)  ; scripts/qutselect_connect_srss.sh
+titan       ;  SRSS  ; Linux 2.6      ; Arbeitsstation (UNIX)  ; scripts/qutselect_connect_srss.sh
+kati        ;  SRSS  ; Solaris 10     ; CAPP Server (UNIX)     ; scripts/qutselect_connect_srss.sh
+betty       ;  SRSS  ; Solaris 10     ; CAPP Server (UNIX)     ; scripts/qutselect_connect_srss.sh
+fwbts01.ad	;	RDP   ; Windows 2003   ; Allgemein 1            ; scripts/qutselect_connect_rdp.sh
+fwbts02.ad	;	RDP   ; Windows 2003   ; Allgemein 2            ; scripts/qutselect_connect_rdp.sh
+fwbts03.ad	;	RDP   ; Windows 2003   ; (Admin only)           ; scripts/qutselect_connect_rdp.sh
+fwbts04.ad	;	RDP   ; Windows 2003   ; Spezialsoftware        ; scripts/qutselect_connect_rdp.sh
+fwbts05.ad	;	RDP   ; Windows 2003   ; Medizin (UKD VPN)      ; scripts/qutselect_connect_rdp.sh
+fwbts06.ad  ;  RDP   ; Windows 2003   ; Micropet               ; scripts/qutselect_connect_rdp.sh
+fwbts07.ad  ;  RDP   ; Windows 2003   ; Micropet               ; scripts/qutselect_connect_rdp.sh
+fwbps01.ad	;	RDP   ; Windows 2003   ; (Admin only)           ; scripts/qutselect_connect_rdp.sh
+fwbfs01.ad	;	RDP   ; Windows 2003   ; (Admin only)           ; scripts/qutselect_connect_rdp.sh
+fwbm17.ad	;	VNC   ; Windows XP     ; (Admin only)           ; scripts/qutselect_connect_vnc.sh
