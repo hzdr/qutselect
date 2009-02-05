@@ -39,6 +39,7 @@ class QSettings;
 class QPushButton;
 class QTreeWidget;
 class QTreeWidgetItem;
+class QFileSystemWatcher;
 
 class CMainWindow : public QMainWindow
 {
@@ -67,6 +68,7 @@ class CMainWindow : public QMainWindow
 		void currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous);
 		void itemDoubleClicked(QTreeWidgetItem* item, int column);
 		void serverTypeChanged(int index);
+		void serverListChanged(const QString& path);
 
 	private:
 		QLabel*				      m_pLogoLabel;
@@ -87,6 +89,7 @@ class CMainWindow : public QMainWindow
     QTreeWidget*        m_pServerTreeWidget;
     QLineEdit*          m_pServerLineEdit;
 		QComboBox*					m_pServerTypeComboBox;
+		QFileSystemWatcher* m_pServerListWatcher;
 
 		bool m_bKeepAlive;
 		bool m_bDtLoginMode;

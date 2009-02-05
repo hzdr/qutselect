@@ -47,6 +47,7 @@
 #include <QHostInfo>
 #include <QTreeWidget>
 #include <QLineEdit>
+#include <QFileSystemWatcher>
 
 #include <iostream>
 
@@ -58,6 +59,9 @@
 
 // the default startup script pattern
 #define DEFAULT_SCRIPT_PATTERN "scripts/qutselect_connect_%1.sh"
+
+// the serverlist file name
+#define SERVERLIST_FILE "qutselect.slist"
 
 // the column numbers
 enum ColumnNumbers { CN_SERVERNAME=0,
@@ -301,15 +305,19 @@ CMainWindow::CMainWindow(bool dtLoginMode)
 	layout->addLayout(buttonLayout,								6, 0, 1, 2);
 	centralWidget->setLayout(layout);
 
+	// create a FileSystemWatcher to monitor the serverlist file and report 
+	// any changes to it
+	m_pServerListWatcher = new QFileSystemWatcher();
+	m_pServerListWatcher->addPath(QDir(QApplication::applicationDirPath()).absoluteFilePath(SERVERLIST_FILE));
+	connect(m_pServerListWatcher, SIGNAL(fileChanged(const QString&)),
+					this,									SLOT(serverListChanged(const QString&)));
+
 	// now we try to open the serverlist file and add the items to our comobox
 	loadServerList();
 
 	// check if the QSettings contains any info about the last position
 	if(m_bDtLoginMode)
 	{
-		// set the current item in the ServerTreeWidget
-		m_pServerTreeWidget->setCurrentItem(m_pServerTreeWidget->topLevelItem(0));
-
 		// make sure to also change some settings according to
 		// the dtlogin mode
 		setKeepAlive(true);
@@ -327,23 +335,6 @@ CMainWindow::CMainWindow(bool dtLoginMode)
 	}
 	else
 	{
-		// now we check the QSettings of the user and which server he last used
-		if(m_pSettings->value("serverused").isValid())
-		{
-			QString lastServerUsed = m_pSettings->value("serverused").toString().toLower();
-
-			// now we iterate through our combobox items and check if there is 
-			// one with the last server used hostname
-			for(int i=0; i < m_pServerListBox->count(); i++)
-			{
-				if(m_pServerListBox->itemText(i).section(" ", 0, 0).toLower() == lastServerUsed)
-				{
-					m_pServerListBox->setCurrentIndex(i);
-					break;
-				}
-			}
-		}
-
 		move(m_pSettings->value("position", QPoint(10, 10)).toPoint());
 	}
 	
@@ -356,8 +347,25 @@ CMainWindow::~CMainWindow()
 {
 	ENTER();
 
+	delete m_pServerListWatcher;
 	delete m_pSettings;
 	
+	LEAVE();
+}
+
+void CMainWindow::serverListChanged(const QString& path)
+{
+	ENTER();
+
+	D("FileSystemWatcher triggered: '%s'", path.toAscii().constData());
+	
+	if(path.endsWith("/"SERVERLIST_FILE))
+	{
+		// found server list file changed, so go and reload it
+		D("server list file '%s' changed. reloading...", SERVERLIST_FILE);
+		loadServerList();
+	}
+
 	LEAVE();
 }
 
@@ -412,20 +420,28 @@ void CMainWindow::currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem*)
 {
 	ENTER();
 
-	D("currentItemChanged to '%s'", current->text(CN_SERVERNAME).toAscii().constData());
+	if(current != NULL)
+	{
+		D("currentItemChanged to '%s'", current->text(CN_SERVERNAME).toAscii().constData());
 
-	// update the lineedit with the text of the first column
-	m_pServerLineEdit->setText(current->text(CN_SERVERNAME));
+		// update the lineedit with the text of the first column
+		m_pServerLineEdit->setText(current->text(CN_SERVERNAME));
 
-	// make sure the combobox is in sync with the lineedit
-	m_pServerListBox->setCurrentIndex(m_pServerListBox->findText(current->text(CN_SERVERNAME), Qt::MatchStartsWith));
+		// make sure the combobox is in sync with the lineedit
+		m_pServerListBox->setCurrentIndex(m_pServerListBox->findText(current->text(CN_SERVERNAME), Qt::MatchStartsWith));
 
-	// now we have to check which server type the currently selected server
-	// is and then disable some GUI components of qutselect
-	QString serverType = current->text(1);
+		// now we have to check which server type the currently selected server
+		// is and then disable some GUI components of qutselect
+		QString serverType = current->text(1);
 
-	// sync the ServerType combobox as well
-	m_pServerTypeComboBox->setCurrentIndex(m_pServerTypeComboBox->findText(serverType, Qt::MatchContains));
+		// sync the ServerType combobox as well
+		m_pServerTypeComboBox->setCurrentIndex(m_pServerTypeComboBox->findText(serverType, Qt::MatchContains));
+	}
+	else
+	{
+		// clear everything
+		m_pServerLineEdit->clear();
+	}
 
 	LEAVE();
 }
@@ -575,7 +591,10 @@ void CMainWindow::startButtonPressed(void)
 			close();
 	}
 	else
+	{
 		std::cout << "ERROR: Failed to execute startup script " << startupScript.toAscii().constData() << std::endl;
+		QApplication::beep();
+	}
 
 	LEAVE();
 }
@@ -625,6 +644,10 @@ void CMainWindow::keyPressEvent(QKeyEvent* e)
 void CMainWindow::loadServerList()
 {
 	ENTER();
+
+	// we have to clear all things we are going to populate here
+	m_pServerTreeWidget->clear();
+	m_pServerListBox->clear();
 
 	QFile serverListFile(QDir(QApplication::applicationDirPath()).absoluteFilePath("qutselect.slist"));
 	if(serverListFile.open(QFile::ReadOnly))
@@ -679,6 +702,31 @@ void CMainWindow::loadServerList()
 		}
 		
 		serverListFile.close();
+
+		if(m_bDtLoginMode)
+		{
+			// set the current item in the ServerTreeWidget to the first item
+			m_pServerTreeWidget->setCurrentItem(m_pServerTreeWidget->topLevelItem(0));
+		}
+		else
+		{
+			// now we check the QSettings of the user and which server he last used
+			if(m_pSettings->value("serverused").isValid())
+			{
+				QString lastServerUsed = m_pSettings->value("serverused").toString().toLower();
+
+				// now we iterate through our combobox items and check if there is 
+				// one with the last server used hostname
+				for(int i=0; i < m_pServerListBox->count(); i++)
+				{
+					if(m_pServerListBox->itemText(i).section(" ", 0, 0).toLower() == lastServerUsed)
+					{
+						m_pServerListBox->setCurrentIndex(i);
+						break;
+					}
+				}
+			}
+		}			
 	}
 	else
 		m_pServerListBox->setEditable(true);
