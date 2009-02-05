@@ -7,13 +7,13 @@ titan       ;  SRSS  ; Linux 2.6      ; Computing-Server (UNIX); scripts/qutsele
 kati        ;  SRSS  ; Solaris 10     ; CAPP Server (UNIX)     ; scripts/qutselect_connect_srss.sh
 betty       ;  SRSS  ; Solaris 10     ; CAPP Server (UNIX)     ; scripts/qutselect_connect_srss.sh
 fwbts01	   ;	RDP   ; Windows 2003   ; Allgemein              ; scripts/qutselect_connect_rdp.sh
+fwbts02	   ;	RDP   ; Windows 2003   ; Allgemein              ; scripts/qutselect_connect_rdp.sh
 fwbts05	   ;	RDP   ; Windows 2008   ; Allgemein              ; scripts/qutselect_connect_rdp.sh
-#fwbts02	   ;	RDP   ; Windows 2003   ; Allgemein 2            ; scripts/qutselect_connect_rdp.sh
 fwbts03	   ;	RDP   ; Windows 2003   ; Medizin (UKD VPN)      ; scripts/qutselect_connect_rdp.sh
 fwbts04	   ;	RDP   ; Windows 2003   ; Spezialsoftware        ; scripts/qutselect_connect_rdp.sh
 fwbts06     ;  RDP   ; Windows 2003   ; Micropet               ; scripts/qutselect_connect_rdp.sh
 fwbts07     ;  RDP   ; Windows 2003   ; Micropet               ; scripts/qutselect_connect_rdp.sh
-#fwbts08     ;  RDP   ; Windows 2008   ; Micropet               ; scripts/qutselect_connect_rdp.sh
+fwbts08     ;  RDP   ; Windows 2008   ; Micropet               ; scripts/qutselect_connect_rdp.sh
 #fwbps01	   ;	RDP   ; Windows 2003   ; (Admin only)           ; scripts/qutselect_connect_rdp.sh
 #fwbfs01	   ;	RDP   ; Windows 2003   ; (Admin only)           ; scripts/qutselect_connect_rdp.sh
 #monsun	   ;	VNC   ; MacOS 10.6     ; (Admin only)           ; scripts/qutselect_connect_vnc.sh
