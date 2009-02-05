@@ -564,8 +564,9 @@ void CMainWindow::startButtonPressed(void)
 	// startup script
 	D("executing: %s %s", startupScript.toAscii().constData(), cmdArgs.join(" ").toAscii().constData());
 
-	// start it now
-	bool started = QProcess::startDetached(startupScript, cmdArgs);
+	// start it now with the working directory pointing at the
+  // directory where the app resists
+	bool started = QProcess::startDetached(startupScript, cmdArgs, QApplication::applicationDirPath());
 
 	// depending on the keepalive state we either close the GUI immediately or keep it open
 	if(started == true)
@@ -625,7 +626,7 @@ void CMainWindow::loadServerList()
 {
 	ENTER();
 
-	QFile serverListFile(QDir(QApplication::instance()->applicationDirPath()).absoluteFilePath("qutselect.slist"));
+	QFile serverListFile(QDir(QApplication::applicationDirPath()).absoluteFilePath("qutselect.slist"));
 	if(serverListFile.open(QFile::ReadOnly))
 	{
 		QTextStream in(&serverListFile);
