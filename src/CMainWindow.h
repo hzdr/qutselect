@@ -90,6 +90,7 @@ class CMainWindow : public QMainWindow
 
 		bool m_bKeepAlive;
 		bool m_bDtLoginMode;
+		bool m_bKioskMode;
 };
 
 #endif /* CMAINWINDOW_H */

@@ -1,6 +1,9 @@
 <!DOCTYPE RCC><RCC version="1.0">
   <qresource prefix="">
     <file>images/banner-en.png</file>
+    <file>images/linux-logo.png</file>
+    <file>images/solaris-logo.png</file>
+    <file>images/windows-logo.png</file>
     <file>lang/qutselect_de.qm</file>
     <file>lang/qt_de.qm</file>		
   </qresource>

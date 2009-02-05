@@ -57,7 +57,7 @@
 #define WINDOW_HEIGHT 600
 
 // the default startup script pattern
-#define DEFAULT_SCRIPT_PATTERN "/usr/local/petlib/qutselect_connect_%1.sh"
+#define DEFAULT_SCRIPT_PATTERN "scripts/qutselect_connect_%1.sh"
 
 // the column numbers
 enum ColumnNumbers { CN_SERVERNAME=0,
@@ -71,9 +71,24 @@ enum ColumnNumbers { CN_SERVERNAME=0,
 
 CMainWindow::CMainWindow(bool dtLoginMode)
 	: m_bKeepAlive(false),
-		m_bDtLoginMode(dtLoginMode)
+		m_bDtLoginMode(dtLoginMode),
+		m_bKioskMode(false)
 {
 	ENTER();
+
+	// we find out if this is a kioskmode session by simply querying for
+	// the username and comparing it to utk* as in SRSS all kiosk users
+	// start with that name
+	if(m_bDtLoginMode)
+	{
+		char* userName = getenv("USER");
+		if(userName != NULL && *userName != '\0')
+		{
+			m_bKioskMode = QString(userName).startsWith("utku");
+
+			D("kioskmode: %d", m_bKioskMode);
+		}
+	}
 
   // create the central widget to which we are going to add everything
   QWidget* centralWidget = new QWidget;
@@ -113,6 +128,7 @@ CMainWindow::CMainWindow(bool dtLoginMode)
 	m_pServerTypeComboBox->addItem("Unix (SRSS)");
 	m_pServerTypeComboBox->addItem("Windows (RDP)");
 	m_pServerTypeComboBox->addItem("VNC");
+	m_pServerTypeComboBox->setCurrentIndex(-1);
 	connect(m_pServerTypeComboBox, SIGNAL(currentIndexChanged(int)),
 					this,									 SLOT(serverTypeChanged(int)));
 
@@ -349,6 +365,8 @@ void CMainWindow::serverTypeChanged(int index)
 {
 	ENTER();
 
+	D("serverTypeChanged to '%d'", index);
+
 	// we disable everything if this is a SRSS
 	switch(index)
 	{
@@ -393,6 +411,8 @@ void CMainWindow::serverTypeChanged(int index)
 void CMainWindow::currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous)
 {
 	ENTER();
+
+	D("currentItemChanged to '%s'", current->text(CN_SERVERNAME).toAscii().constData());
 
 	// update the lineedit with the text of the first column
 	m_pServerLineEdit->setText(current->text(CN_SERVERNAME));
@@ -629,7 +649,6 @@ void CMainWindow::loadServerList()
 
         // add the server to our listview
 				QStringList columnList;
-
 				columnList << hostname;
 				columnList << serverType;
 				columnList << osType;
@@ -643,6 +662,14 @@ void CMainWindow::loadServerList()
         serverNameFont.setPointSize(12);
         //serverNameFont.setCapitalization(QFont::SmallCaps);
 				item->setFont(CN_SERVERNAME, serverNameFont);
+
+        // add an icon depending on the OS type
+				if(osType.contains("linux", Qt::CaseInsensitive))
+					item->setIcon(0, QIcon(":/images/linux-logo.png"));
+				else if(osType.contains("solaris", Qt::CaseInsensitive))
+					item->setIcon(0, QIcon(":/images/solaris-logo.png"));
+				else if(osType.contains("windows", Qt::CaseInsensitive))
+					item->setIcon(0, QIcon(":/images/windows-logo.png"));
 
 				m_pServerTreeWidget->addTopLevelItem(item);
 			}
