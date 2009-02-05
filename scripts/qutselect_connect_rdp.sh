@@ -15,8 +15,10 @@
 # $8 = the servername (hostname) to connect to
 #
 
-RDESKTOP=/usr/bin/rdesktop
+RDESKTOP=/opt/csw/bin/rdesktop
 UTTSC=/opt/SUNWuttsc/bin/uttsc
+UTACTION=/opt/SUNWut/bin/utaction
+XVKBD=/usr/openwin/bin/xvkbd
 
 #####################################################
 # check that we have 8 command-line options at hand
@@ -34,6 +36,11 @@ colorDepth=$5
 curDepth=$6
 keyLayout=$7
 serverName=$8
+
+# before we go and connect to the windows (rdp) server we
+# go and add an utaction call so that on a smartcard removal
+# the windows desktop will be locked.
+${UTACTION} -d "$XVKBD -text '\Ml'" &
 
 # variable to prepare the command arguments
 cmdArgs=""
@@ -71,10 +78,12 @@ if [ "x${SUN_SUNRAY_TOKEN}" != "x" ] && [ -x ${UTTSC} ]; then
    fi
 
    # add domain
-   cmdArgs="$cmdArgs -d FZR"
+   cmdArgs="$cmdArgs -d FZR -u FZR\\"
+
+   # add the usb path as a local path
+   cmdArgs="$cmdArgs -r disk:USB=/tmp/SUNWut/mnt/${USER}/"
 
    ${UTTSC} ${cmdArgs} ${serverName}
-
    if [ $? != 0 ]; then
       printf "ERROR: uttsc returned invalid return code"
       exit 2
@@ -114,8 +123,10 @@ else
    # add domain
    cmdArgs="$cmdArgs -d FZR"
 
-   ${RDESKTOP} ${cmdArgs} ${serverName}
+   # add the usb path as a local path
+   cmdArgs="$cmdArgs -r disk:USB=/tmp/SUNWut/mnt/${USER}/"
 
+   ${RDESKTOP} ${cmdArgs} ${serverName}
    if [ $? != 0 ]; then
       printf "ERROR: rdesktop returned invalid return code"
       exit 2

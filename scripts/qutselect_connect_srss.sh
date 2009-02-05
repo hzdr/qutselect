@@ -16,6 +16,7 @@
 #
 
 UTSWITCH=/opt/SUNWut/bin/utswitch
+KILL=/opt/csw/bin/kill
 
 #####################################################
 # check that we have 8 command-line options at hand
@@ -34,11 +35,14 @@ curDepth=$6
 keyLayout=$7
 serverName=$8
 
+# execute utswitch
 ${UTSWITCH} -h ${serverName}
-
 if [ $? != 0 ]; then
-  printf "ERROR: ${UTSWITCH} returned invalid return code"
-  exit 2
+   printf "ERROR: ${UTSWITCH} returned invalid return code"
+   exit 2
 fi
+
+# now we kill the qutselect gui to free the session for someone else
+${KILL} $parentPID
 
 return 0

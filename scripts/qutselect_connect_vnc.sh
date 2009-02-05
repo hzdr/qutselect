@@ -15,7 +15,7 @@
 # $8 = the servername (hostname) to connect to
 #
 
-VNCVIEWER=/usr/bin/vncviewer
+VNCVIEWER=/opt/csw/bin/vncviewer
 
 #####################################################
 # check that we have 8 command-line options at hand
@@ -52,7 +52,6 @@ cmdArgs="$cmdArgs -compresslevel 0"
 cmdArgs="$cmdArgs -xrm vncviewer*passwordDialog:true"
 
 ${VNCVIEWER} ${cmdArgs} ${serverName}
-
 if [ $? != 0 ]; then
    printf "ERROR: ${VNCVIEWER} returned invalid return code"
    exit 2
