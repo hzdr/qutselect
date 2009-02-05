@@ -541,7 +541,7 @@ void CMainWindow::startButtonPressed(void)
 	// startup script name
 	QString startupScript;
 	QList<QTreeWidgetItem*> items = m_pServerTreeWidget->findItems(serverName, Qt::MatchStartsWith);
-	if(items.isEmpty() == false)
+	if(items.isEmpty() == false && items.first()->text(CN_SERVERTYPE) == serverType)
 		startupScript = items.first()->text(CN_STARTUPSCRIPT);
 	else
 	{
