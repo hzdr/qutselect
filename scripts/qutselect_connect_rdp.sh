@@ -54,6 +54,11 @@ if [ "x${SUN_SUNRAY_TOKEN}" != "x" ] && [ -x ${UTTSC} ]; then
    # resolution
    if [ "x${resolution}" = "xfullscreen" ]; then
       cmdArgs="$cmdArgs -m"
+
+      # if we are in dtlogin mode we go and disable the pulldown header
+      if [ "x${dtlogin}" = "xtrue" ]; then
+         cmdArgs="$cmdArgs -b"
+      fi
    else
       cmdArgs="$cmdArgs -g ${resolution}"
    fi
