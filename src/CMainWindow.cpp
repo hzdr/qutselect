@@ -54,7 +54,7 @@
 
 // standard width/height
 #define WINDOW_WIDTH	450
-#define WINDOW_HEIGHT 550
+#define WINDOW_HEIGHT 600
 
 // the default startup script pattern
 #define DEFAULT_SCRIPT_PATTERN "/usr/local/petlib/qutselect_connect_%1.sh"
@@ -298,7 +298,7 @@ CMainWindow::CMainWindow(bool dtLoginMode)
 		// the dtlogin mode
 		setKeepAlive(true);
 		setFullScreenOnly(true);
-		setQuitText(QObject::tr("Logout"));		
+		setQuitText(tr("Logout"));		
 
 		// now we make sure we centre the new window on the current
 		// primary screen
@@ -562,7 +562,9 @@ void CMainWindow::startButtonPressed(void)
 void CMainWindow::keyPressEvent(QKeyEvent* e)
 {
 	ENTER();
-	
+
+  D("key %d pressed", e->key());
+
 	// we check wheter the user has pressed ESC or RETURN
 	switch(e->key())
 	{
@@ -587,6 +589,11 @@ void CMainWindow::keyPressEvent(QKeyEvent* e)
 		}
 		break;
 	}
+
+  // activate the window which otherwise causes problems
+  // if no window manager is running while qutselect is executed.
+  if(m_bDtLoginMode)
+    activateWindow();
 
 	// unknown key pressed
 	e->ignore();
@@ -631,9 +638,11 @@ void CMainWindow::loadServerList()
 
 				// create a new QTreeWidget and set the font for the first column (servername) to Bold
 				QTreeWidgetItem* item = new QTreeWidgetItem(columnList);
-				QFont itemFont = item->font(CN_SERVERNAME);
-				itemFont.setBold(true);
-				item->setFont(CN_SERVERNAME, itemFont);
+				QFont serverNameFont = item->font(CN_SERVERNAME);
+				serverNameFont.setBold(true);
+        serverNameFont.setPointSize(12);
+        //serverNameFont.setCapitalization(QFont::SmallCaps);
+				item->setFont(CN_SERVERNAME, serverNameFont);
 
 				m_pServerTreeWidget->addTopLevelItem(item);
 			}

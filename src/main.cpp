@@ -57,6 +57,9 @@ int main(int argc, char* argv[])
 	// lets init the resource (images and so on)
 	Q_INIT_RESOURCE(qutselect);
 
+  QApplication::setDesktopSettingsAware(false);
+  QApplication::setStyle("windows");
+
 	// let us generate the console application object now.
   QApplication app(argc, argv);
 
@@ -100,6 +103,11 @@ int main(int argc, char* argv[])
 
 	// show the mainwindow now
 	mainWin->show();
+
+  // activate the window which otherwise causes problems
+  // if no window manager is running while qutselect is executed.
+  if(dtLoginCall == true)
+    mainWin->activateWindow();
 
 	D("app size: %d x %d", mainWin->width(), mainWin->height());
 
