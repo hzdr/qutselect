@@ -16,3 +16,4 @@ fwbts07     ;  RDP   ; Windows 2003   ; Micropet               ; scripts/qutsele
 fwbts08     ;  RDP   ; Windows 2003   ; Micropet               ; scripts/qutselect_connect_rdp.sh
 fwbps01	   ;	RDP   ; Windows 2003   ; (Admin only)           ; scripts/qutselect_connect_rdp.sh
 fwbfs01	   ;	RDP   ; Windows 2003   ; (Admin only)           ; scripts/qutselect_connect_rdp.sh
+monsun	   ;	VNC   ; MacOS 10.6     ; (Admin only)           ; scripts/qutselect_connect_vnc.sh

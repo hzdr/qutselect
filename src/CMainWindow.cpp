@@ -408,7 +408,7 @@ void CMainWindow::serverTypeChanged(int index)
 	LEAVE();
 }
 
-void CMainWindow::currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous)
+void CMainWindow::currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem*)
 {
 	ENTER();
 
@@ -430,7 +430,7 @@ void CMainWindow::currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* 
 	LEAVE();
 }
 
-void CMainWindow::itemDoubleClicked(QTreeWidgetItem* item, int column)
+void CMainWindow::itemDoubleClicked(QTreeWidgetItem* item, int)
 {
 	ENTER();
 
@@ -670,6 +670,8 @@ void CMainWindow::loadServerList()
 					item->setIcon(0, QIcon(":/images/solaris-logo.png"));
 				else if(osType.contains("windows", Qt::CaseInsensitive))
 					item->setIcon(0, QIcon(":/images/windows-logo.png"));
+				else if(osType.contains("macos", Qt::CaseInsensitive))
+					item->setIcon(0, QIcon(":/images/macos-logo.png"));
 
 				m_pServerTreeWidget->addTopLevelItem(item);
 			}
