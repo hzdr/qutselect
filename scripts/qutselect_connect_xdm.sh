@@ -16,7 +16,7 @@
 #
 
 if [ `uname -s` = "SunOS" ]; then
-   XEPHYR=/opt/csw/bin/Xephyr
+   XEPHYR=/usr/X11/bin/Xephyr
 else
    XEPHYR=/usr/bin/Xephyr
 fi
