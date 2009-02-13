@@ -154,7 +154,7 @@ CMainWindow::CMainWindow(CApplication* app)
 	m_pServerTypeComboBox->addItem("X11 (XDM)");
 	m_pServerTypeComboBox->addItem("VNC");
 	m_pServerTypeComboBox->setCurrentIndex(-1);
-	m_pServerTypeComboBox->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
+	m_pServerTypeComboBox->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
 	connect(m_pServerTypeComboBox, SIGNAL(currentIndexChanged(int)),
 					this,									 SLOT(serverTypeChanged(int)));
 
@@ -359,7 +359,7 @@ CMainWindow::CMainWindow(CApplication* app)
 	loadServerList();
 
 	// check if the QSettings contains any info about the last position
-	if(m_bDtLoginMode)
+	if(m_bDtLoginMode == true)
 	{
 		// make sure to also change some settings according to
 		// the dtlogin mode
@@ -379,6 +379,7 @@ CMainWindow::CMainWindow(CApplication* app)
 	else
 	{
 		move(m_pSettings->value("position", QPoint(10, 10)).toPoint());
+		resize(m_pSettings->value("size", QSize(10, 10)).toSize());
 	}
 	
 	setWindowTitle("qutselect v" PACKAGE_VERSION " - (c) 2005-2009 fzd.de");
@@ -552,19 +553,22 @@ void CMainWindow::startButtonPressed(void)
 {
 	ENTER();
 
-	// save the current position of the GUI
+	// save the current position and size of the GUI
 	if(m_bDtLoginMode == false)
+	{
 		m_pSettings->setValue("position", pos());
+		m_pSettings->setValue("size", size());
+	}
 
 	// get the currently selected server name
 	QString serverName;
-	if(m_bDtLoginMode == false)
-	{
+	if(m_bNoList == true)
 		serverName = m_pServerListBox->currentText().section(" ", 0, 0).toLower();
-		m_pSettings->setValue("serverused", serverName);
-	}
 	else
-		m_pServerLineEdit->text().section(" ", 0, 0).toLower();
+		serverName = m_pServerLineEdit->text().section(" ", 0, 0).toLower();
+
+	if(m_bDtLoginMode == false)
+		m_pSettings->setValue("serverused", serverName);
 
 	// get the currently selected resolution
 	QString resolution = m_pScreenResolutionBox->currentText().section(" ", 0, 0).toLower();
