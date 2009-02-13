@@ -92,7 +92,14 @@ if [ "x${SUN_SUNRAY_TOKEN}" != "x" ] && [ -x ${UTTSC} ]; then
    fi
 
    # add domain
-   cmdArgs="$cmdArgs -d FZR -u FZR\\"
+   cmdArgs="$cmdArgs -d FZR"
+   
+   # add username (only if not dtlogin)
+   if [ "x${dtlogin}" != "xtrue" ]; then
+      cmdArgs="$cmdArgs -u ${USER}"
+   else
+      cmdArgs="$cmdArgs -u FZR\\"
+   fi
 
    # add the usb path as a local path
    cmdArgs="$cmdArgs -r disk:USB=/tmp/SUNWut/mnt/${USER}/"
@@ -140,6 +147,13 @@ else
 
    # add domain
    cmdArgs="$cmdArgs -d FZR"
+
+   # add username (only if not dtlogin)
+   if [ "x${dtlogin}" != "xtrue" ]; then
+      cmdArgs="$cmdArgs -u ${USER}"
+   else
+      cmdArgs="$cmdArgs -u FZR\\"
+   fi
 
    if [ "x${SUN_SUNRAY_TOKEN}" != "x" ]; then
       # add the usb path as a local path

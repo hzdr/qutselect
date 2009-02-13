@@ -47,21 +47,24 @@ else
    cmdArgs="$cmdArgs -screen ${resolution}x${colorDepth}"
 fi
 
-# add the server query
-cmdArgs="$cmdArgs -query ${serverName}"
-
 # add the once option to terminate after one session
 cmdArgs="$cmdArgs -once"
 
 # enable xinerama extension
 cmdArgs="$cmdArgs +xinerama"
+
+# enable xkb extension
+cmdArgs="$cmdArgs +kb"
    
+# add the server query
+cmdArgs="$cmdArgs -query ${serverName}"
+
 if [ "x${dtlogin}" != "xtrue" ]; then
-   echo ${XEPHYR} ${cmdArgs}
+   echo ${XEPHYR} :1 ${cmdArgs}
 fi
 
 # run the command
-${XEPHYR} ${cmdArgs}
+${XEPHYR} :1 ${cmdArgs}
 if [ $? != 0 ]; then
    printf "ERROR: ${XEPHYR} returned invalid return code"
    exit 2

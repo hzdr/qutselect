@@ -55,6 +55,10 @@ cmdArgs="$cmdArgs -compresslevel 0"
 # make sure a password dialog pops up
 cmdArgs="$cmdArgs -xrm vncviewer*passwordDialog:true"
 
+if [ "x${dtlogin}" != "xtrue" ]; then
+   echo ${VNCVIEWER} ${cmdArgs} ${serverName}
+fi
+
 ${VNCVIEWER} ${cmdArgs} ${serverName}
 if [ $? != 0 ]; then
    printf "ERROR: ${VNCVIEWER} returned invalid return code"
