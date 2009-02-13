@@ -42,6 +42,7 @@ class CApplication : public QApplication
 		bool dtLoginMode() const { return m_bDtLoginMode; }
 		bool noSunrayServers() const { return m_bNoSRSS; }
 		bool noListDisplay() const { return m_bNoList; }
+		bool keepAlive() const { return m_bKeepAlive; }
 		QString customServerListFile() const { return m_sServerListFile; }
 
 	private:
@@ -57,6 +58,7 @@ class CApplication : public QApplication
 		bool		m_bDtLoginMode;
 		bool		m_bNoSRSS;
 		bool		m_bNoList;
+		bool		m_bKeepAlive;
 		QString m_sServerListFile;
 };
 

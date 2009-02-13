@@ -85,7 +85,7 @@ enum Resolutions { RS_800x600=0,
 #include "config.h"
 
 CMainWindow::CMainWindow(CApplication* app)
-	: m_bKeepAlive(false),
+	: m_bKeepAlive(app->keepAlive()),
 		m_bDtLoginMode(app->dtLoginMode()),
 		m_bKioskMode(false),
 		m_bNoSRSS(app->noSunrayServers()),
@@ -416,9 +416,22 @@ void CMainWindow::serverListChanged(const QString& path)
 	
 	if(path == m_sServerListFile)
 	{
-		// found server list file changed, so go and reload it
-		D("server list file '%s' changed. reloading...", m_sServerListFile.toAscii().constData());
-		loadServerList();
+		// make sure to wait some seconds before continuing
+		if(QFileInfo(m_sServerListFile).exists() == false)
+			sleep(2);
+
+		if(QFileInfo(m_sServerListFile).exists())
+		{
+			// found server list file changed, so go and reload it
+			D("server list file '%s' changed. reloading...", m_sServerListFile.toAscii().constData());
+			loadServerList();
+
+			// refresh the FileSystemWatcher
+			m_pServerListWatcher->removePath(m_sServerListFile);
+			m_pServerListWatcher->addPath(m_sServerListFile);
+		}
+		else
+			W("server list file '%s' does not exist anymore...", m_sServerListFile.toAscii().constData());
 	}
 
 	LEAVE();

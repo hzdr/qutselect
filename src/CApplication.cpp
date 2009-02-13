@@ -46,7 +46,8 @@ CApplication::CApplication(int& argc, char** argv)
 		m_bQuietFlag(false),
 		m_bDtLoginMode(false),
 		m_bNoSRSS(false),
-		m_bNoList(false)
+		m_bNoList(false),
+		m_bKeepAlive(false)
 {
 	ENTER();
 
@@ -134,6 +135,9 @@ bool CApplication::parseCommandLine(int& argc, char** argv)
 		if(args.contains("-nolist"))
 			m_bNoList = true;
 
+		if(args.contains("-keep"))
+			m_bKeepAlive = true;
+
 		if(inputFileNames.isEmpty() == false)
 			m_sServerListFile = inputFileNames[0];
 	}
@@ -189,6 +193,7 @@ bool CApplication::parseCommandLine(int& argc, char** argv)
 				 << "  -dtlogin   : start qutselect in dtlogin mode (e.g. kiosk, etc)" << endl
 				 << "  -nolist    : display no list of servers but only a combobox" << endl
 				 << "  -nosrss    : do not display SRSS servers in the server list" << endl
+				 << "  -keep      : do not quit after establishing the connection" << endl
 				 << "  -q         : keep quiet as much as possible." << endl
 				 << "  -v         : drop some more detailed version information." << endl
 				 << "  -h         : this help page." << endl
