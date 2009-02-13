@@ -15,8 +15,13 @@
 # $8 = the servername (hostname) to connect to
 #
 
-UTSWITCH=/opt/SUNWut/bin/utswitch
-KILL=/opt/csw/bin/kill
+if [ `uname -s` = "SunOS" ]; then
+   UTSWITCH=/opt/SUNWut/bin/utswitch
+   KILL=/opt/csw/bin/kill
+else
+   UTSWITCH=/opt/SUNWut/bin/utswitch
+   KILL=/bin/kill
+fi
 
 #####################################################
 # check that we have 8 command-line options at hand
@@ -35,11 +40,15 @@ curDepth=$6
 keyLayout=$7
 serverName=$8
 
-# execute utswitch
-${UTSWITCH} -h ${serverName}
-if [ $? != 0 ]; then
-   printf "ERROR: ${UTSWITCH} returned invalid return code"
-   exit 2
+# check if the hostname is the same like the 
+# server we should connect to and if yes we go and exit immediately
+if [ `hostname` != "${serverName}" ]; then
+   # execute utswitch
+   ${UTSWITCH} -h ${serverName}
+   if [ $? != 0 ]; then
+      printf "ERROR: ${UTSWITCH} returned invalid return code"
+      exit 2
+   fi
 fi
 
 # now we kill the qutselect gui to free the session for someone else
