@@ -43,6 +43,8 @@ if [ $? != 0 ]; then
 fi
 
 # now we kill the qutselect gui to free the session for someone else
-${KILL} $parentPID
+if [ "x${dtlogin}" = "xtrue" ]; then
+   ${KILL} $parentPID
+fi
 
 return 0

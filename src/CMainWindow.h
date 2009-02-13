@@ -29,6 +29,7 @@
 #include <QMap>
 
 // forward declarations
+class CApplication;
 class QCloseEvent;
 class QLabel;
 class QLineEdit;
@@ -46,9 +47,9 @@ class CMainWindow : public QMainWindow
   Q_OBJECT
 
   public:
-    enum ServerType { SRSS=0, RDP, VNC };
+    enum ServerType { SRSS=0, RDP, XDM, VNC };
 
-    CMainWindow(bool dtLoginMode = false);
+    CMainWindow(CApplication* app);
 		~CMainWindow();
 
 		// set methods
@@ -69,6 +70,7 @@ class CMainWindow : public QMainWindow
 		void itemDoubleClicked(QTreeWidgetItem* item, int column);
 		void serverTypeChanged(int index);
 		void serverListChanged(const QString& path);
+		void serverComboBoxChanged(int index);
 
 	private:
 		QLabel*				      m_pLogoLabel;
@@ -94,6 +96,9 @@ class CMainWindow : public QMainWindow
 		bool m_bKeepAlive;
 		bool m_bDtLoginMode;
 		bool m_bKioskMode;
+		bool m_bNoSRSS;
+		bool m_bNoList;
+		QString m_sServerListFile;
 };
 
 #endif /* CMAINWINDOW_H */

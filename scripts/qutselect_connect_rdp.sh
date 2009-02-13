@@ -15,10 +15,17 @@
 # $8 = the servername (hostname) to connect to
 #
 
-RDESKTOP=/opt/csw/bin/rdesktop
-UTTSC=/opt/SUNWuttsc/bin/uttsc
-UTACTION=/opt/SUNWut/bin/utaction
-XVKBD=/usr/openwin/bin/xvkbd
+if [ `uname -s` = "SunOS" ]; then
+   RDESKTOP=/opt/csw/bin/rdesktop
+   UTTSC=/opt/SUNWuttsc/bin/uttsc
+   UTACTION=/opt/SUNWut/bin/utaction
+   XVKBD=/usr/openwin/bin/xvkbd
+else
+   RDESKTOP=/usr/bin/rdesktop
+   UTTSC=/opt/SUNWuttsc/bin/uttsc
+   UTACTION=/opt/SUNWut/bin/utaction
+   XVKBD=/usr/openwin/bin/xvkbd
+fi
 
 #####################################################
 # check that we have 8 command-line options at hand
@@ -40,7 +47,9 @@ serverName=$8
 # before we go and connect to the windows (rdp) server we
 # go and add an utaction call so that on a smartcard removal
 # the windows desktop will be locked.
-${UTACTION} -d "$XVKBD -text '\Ml'" &
+if [ "x${dtlogin}" = "xtrue" ]; then
+   ${UTACTION} -d "$XVKBD -text '\Ml'" &
+fi
 
 # variable to prepare the command arguments
 cmdArgs=""
@@ -88,6 +97,10 @@ if [ "x${SUN_SUNRAY_TOKEN}" != "x" ] && [ -x ${UTTSC} ]; then
    # add the usb path as a local path
    cmdArgs="$cmdArgs -r disk:USB=/tmp/SUNWut/mnt/${USER}/"
 
+   if [ "x${dtlogin}" != "xtrue" ]; then
+      echo ${UTTSC} ${cmdArgs} ${serverName}
+   fi
+
    ${UTTSC} ${cmdArgs} ${serverName}
    if [ $? != 0 ]; then
       printf "ERROR: uttsc returned invalid return code"
@@ -128,8 +141,16 @@ else
    # add domain
    cmdArgs="$cmdArgs -d FZR"
 
-   # add the usb path as a local path
-   cmdArgs="$cmdArgs -r disk:USB=/tmp/SUNWut/mnt/${USER}/"
+   if [ "x${SUN_SUNRAY_TOKEN}" != "x" ]; then
+      # add the usb path as a local path
+      cmdArgs="$cmdArgs -r disk:USB=/tmp/SUNWut/mnt/${USER}/"
+   fi
+
+   # if we are not in dtlogin mode we go and
+   # output the rdesktop line that is to be executed
+   if [ "x${dtlogin}" != "xtrue" ]; then
+      echo ${RDESKTOP} ${cmdArgs} ${serverName}
+   fi
 
    ${RDESKTOP} ${cmdArgs} ${serverName}
    if [ $? != 0 ]; then

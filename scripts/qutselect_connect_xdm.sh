@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # This is a startup script for qutselect which initates a
-# VNC session to a windows server via 'vncviewer'
+# RDP session to a windows server either via rdesktop or uttsc
 #
 # It receives the following inputs:
 #
@@ -16,9 +16,9 @@
 #
 
 if [ `uname -s` = "SunOS" ]; then
-   VNCVIEWER=/opt/csw/bin/vncviewer
+   XEPHYR=/opt/csw/bin/Xephyr
 else
-   VNCVIEWER=/usr/bin/vncviewer
+   XEPHYR=/usr/bin/Xephyr
 fi
 
 #####################################################
@@ -38,26 +38,32 @@ curDepth=$6
 keyLayout=$7
 serverName=$8
 
-# variable to prepare the command arguments
 cmdArgs=""
 
-# resolution
-if [ "x${resolution}" = "xfullscreen" ]; then
-  cmdArgs="$cmdArgs -fullscreen"
+# add -fullscreen if this is a dtlogin or fullscreen session
+if [ "x${resolution}" = "xfullscreen" ] || [ "x${dtlogin}" = "xtrue" ]; then
+   cmdArgs="$cmdArgs -fullscreen -screen 1024x768x${colorDepth}"
+else
+   cmdArgs="$cmdArgs -screen ${resolution}x${colorDepth}"
 fi
 
-# color depth
-cmdArgs="$cmdArgs -depth ${colorDepth}"
+# add the server query
+cmdArgs="$cmdArgs -query ${serverName}"
 
-# disable compression (save CPU time)
-cmdArgs="$cmdArgs -compresslevel 0"
+# add the once option to terminate after one session
+cmdArgs="$cmdArgs -once"
 
-# make sure a password dialog pops up
-cmdArgs="$cmdArgs -xrm vncviewer*passwordDialog:true"
+# enable xinerama extension
+cmdArgs="$cmdArgs +xinerama"
+   
+if [ "x${dtlogin}" != "xtrue" ]; then
+   echo ${XEPHYR} ${cmdArgs}
+fi
 
-${VNCVIEWER} ${cmdArgs} ${serverName}
+# run the command
+${XEPHYR} ${cmdArgs}
 if [ $? != 0 ]; then
-   printf "ERROR: ${VNCVIEWER} returned invalid return code"
+   printf "ERROR: ${XEPHYR} returned invalid return code"
    exit 2
 fi
 

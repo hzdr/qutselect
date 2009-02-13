@@ -25,6 +25,7 @@
 #include <QTranslator>
 #include <QLocale>
 
+#include "CApplication.h"
 #include "CMainWindow.h"
 
 #include "config.h"
@@ -57,62 +58,58 @@ int main(int argc, char* argv[])
 	// lets init the resource (images and so on)
 	Q_INIT_RESOURCE(qutselect);
 
+	// force some style settings
   QApplication::setDesktopSettingsAware(false);
   QApplication::setStyle("windows");
 
 	// let us generate the console application object now.
-  QApplication app(argc, argv);
+  CApplication app(argc, argv);
 
-	W("active language: %d (%s)", QLocale::system().language(), QLocale::system().name().toAscii().constData());
-
-	// we now load & initialize eventually existing
-	// translation files for the system's default
-	QTranslator qtTranslator;
-	if(qtTranslator.load(":/lang/qt_de"))
-		D("successfully loaded 'qt_de' translation file.");
-	else if(qtTranslator.load(":/lang/qt_"+QLocale::system().name()))
-		D("successfully loaded 'qt_%s' translation file.", QLocale::system().name().toAscii().constData());
-	else
-		E("couldn't load any Qt translation file.");
-
-	// install the translator
-	app.installTranslator(&qtTranslator);
-
-	QTranslator myTranslator;
-	if(myTranslator.load(":/lang/qutselect_de"))
-		D("successfully loaded 'qutselect_de' translation file.");
-	else if(myTranslator.load(":/lang/qutselect_"+QLocale::system().name()))
-		D("successfully loaded 'qutselect_%s' translation file.", QLocale::system().name().toAscii().constData());
-	else
-		E("couldn't load any qutselect translation file.");
-
-	// install the translator
-	app.installTranslator(&myTranslator);	
-
-	// now we check wheter the user requests some options
-	// to be enabled
-	bool dtLoginCall = false;
-	if(argc > 1)
+	if(app.isInitialized())
 	{
-		if(QString(argv[1]).toLower() == "-dtlogin")
-			dtLoginCall = true;
+		W("active language: %d (%s)", QLocale::system().language(), QLocale::system().name().toAscii().constData());
+
+		// we now load & initialize eventually existing
+		// translation files for the system's default
+		QTranslator qtTranslator;
+		if(qtTranslator.load(":/lang/qt_de"))
+			D("successfully loaded 'qt_de' translation file.");
+		else if(qtTranslator.load(":/lang/qt_"+QLocale::system().name()))
+			D("successfully loaded 'qt_%s' translation file.", QLocale::system().name().toAscii().constData());
+		else
+			E("couldn't load any Qt translation file.");
+
+		// install the translator
+		app.installTranslator(&qtTranslator);
+
+		QTranslator myTranslator;
+		if(myTranslator.load(":/lang/qutselect_de"))
+			D("successfully loaded 'qutselect_de' translation file.");
+		else if(myTranslator.load(":/lang/qutselect_"+QLocale::system().name()))
+			D("successfully loaded 'qutselect_%s' translation file.", QLocale::system().name().toAscii().constData());
+		else
+			E("couldn't load any qutselect translation file.");
+
+		// install the translator
+		app.installTranslator(&myTranslator);	
+
+		// now we check wheter the user requests some options
+		// to be enabled
+		bool dtLoginCall = false;
+		if(argc > 1)
+		{
+			if(QString(argv[1]).toLower() == "-dtlogin")
+				dtLoginCall = true;
+		}
+
+		// now we do execute our application
+		returnCode = app.exec();
+
+		// in case the app was aborted we signal a failure to
+		// our caller
+		if(returnCode == EXIT_SUCCESS && (app.wasAborted() || app.hasFailed()))
+			returnCode = EXIT_FAILURE;		
 	}
-
-	// now we instanciate our main CMainWindow class
-	CMainWindow* mainWin = new CMainWindow(dtLoginCall);
-
-	// show the mainwindow now
-	mainWin->show();
-
-  // activate the window which otherwise causes problems
-  // if no window manager is running while qutselect is executed.
-  if(dtLoginCall == true)
-    mainWin->activateWindow();
-
-	D("app size: %d x %d", mainWin->width(), mainWin->height());
-
-	// now we do execute our application
-	returnCode = app.exec();
 
 	RETURN(returnCode);
 
