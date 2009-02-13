@@ -817,7 +817,13 @@ void CMainWindow::loadServerList()
 			}
 		}
 		
+		// close the file
 		serverListFile.close();
+
+		// resize all columns to its content
+		m_pServerTreeWidget->resizeColumnToContents(CN_SERVERNAME);
+		m_pServerTreeWidget->resizeColumnToContents(CN_SERVEROS);
+		m_pServerTreeWidget->resizeColumnToContents(CN_DESCRIPTION);
 
 		if(m_bDtLoginMode == true)
 		{
