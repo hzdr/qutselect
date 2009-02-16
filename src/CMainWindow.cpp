@@ -379,7 +379,7 @@ CMainWindow::CMainWindow(CApplication* app)
 	else
 	{
 		move(m_pSettings->value("position", QPoint(10, 10)).toPoint());
-		resize(m_pSettings->value("size", QSize(10, 10)).toSize());
+		resize(m_pSettings->value("size", QSize(WINDOW_WIDTH, WINDOW_HEIGHT)).toSize());
 	}
 	
 	setWindowTitle("qutselect v" PACKAGE_VERSION " - (c) 2005-2009 fzd.de");
@@ -598,7 +598,9 @@ void CMainWindow::startButtonPressed(void)
 		QDesktopWidget* desktopWidget = QApplication::desktop();
 		QRect screenSize = desktopWidget->availableGeometry(desktopWidget->primaryScreen());
 
-		resolution = QString().sprintf("%dx%d", screenSize.width(), screenSize.height());
+    // create the resolution string but substract 50 pixel beause the desktop size is always
+    // calculated WITH the windows bar in GNOME :(
+		resolution = QString().sprintf("%dx%d", screenSize.width(), screenSize.height()-30);
 
 		D("Desktop size of '%s' selected", resolution.toAscii().constData());
 	}
