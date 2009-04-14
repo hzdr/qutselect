@@ -48,6 +48,7 @@ serverName=$8
 # go and add an utaction call so that on a smartcard removal
 # the windows desktop will be locked.
 if [ "x${dtlogin}" = "xtrue" ]; then
+   ${PKILL} -u ${USER} -f "utaction.*xvkbd" >/dev/null 2>&1
    ${UTACTION} -d "$XVKBD -text '\Ml'" &
 fi
 
