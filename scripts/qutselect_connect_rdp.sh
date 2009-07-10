@@ -20,11 +20,13 @@ if [ `uname -s` = "SunOS" ]; then
    UTTSC=/opt/SUNWuttsc/bin/uttsc
    UTACTION=/opt/SUNWut/bin/utaction
    XVKBD=/usr/openwin/bin/xvkbd
+   PKILL=/usr/bin/pkill
 else
    RDESKTOP=/usr/bin/rdesktop
    UTTSC=/opt/SUNWuttsc/bin/uttsc
    UTACTION=/opt/SUNWut/bin/utaction
    XVKBD=/usr/openwin/bin/xvkbd
+   PKILL=/usr/bin/pkill
 fi
 
 #####################################################
