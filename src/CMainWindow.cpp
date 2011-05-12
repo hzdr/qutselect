@@ -664,6 +664,32 @@ void CMainWindow::startButtonPressed(void)
 		break;
 	}
 
+  // if we are going to switch to the same SRSS we are already on we go
+  // and close qutselect completely so that the real login of that
+  // server shows up instead
+  if(m_bDtLoginMode == true && m_pServerTypeComboBox->currentIndex() == SRSS)
+  {
+    char hostname[256];
+    QString currentHost;
+
+    if(gethostname(hostname, 256) == 0)
+    {
+	    currentHost = QString(hostname).toLower();
+
+	    D("got hostname: '%s'", selectServerName.toAscii().constData());
+
+      if(serverName == currentHost)
+      {
+        close();
+
+        LEAVE();
+        return;
+      }
+    }
+  }
+
+
+
 	// find the selected server in the tree widget to retrieve the
 	// startup script name
 	QString startupScript;
