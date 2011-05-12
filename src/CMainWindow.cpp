@@ -34,6 +34,7 @@
 #include <QKeyEvent>
 #include <QGridLayout>
 #include <QMessageBox>
+#include <QPainter>
 #include <QPoint>
 #include <QPushButton>
 #include <QRadioButton>
@@ -78,6 +79,7 @@ enum Resolutions { RS_800x600=0,
 									 RS_1152x900,
 									 RS_1280x1024,
 									 RS_1600x1200,
+                   RS_1920x1200,
 									 RS_Desktop,
 									 RS_Fullscreen
 								 };
@@ -107,6 +109,8 @@ CMainWindow::CMainWindow(CApplication* app)
 		}
 	}
 
+  // now
+
 	// get/identify the default serverlist file
 	if(app->customServerListFile().isEmpty() == false)
 		m_sServerListFile = app->customServerListFile();
@@ -124,7 +128,19 @@ CMainWindow::CMainWindow(CApplication* app)
 
 	// we put a logo at the top
 	m_pLogoLabel = new QLabel();
-	m_pLogoLabel->setPixmap(QPixmap(":/images/banner-en.png"));
+  QPixmap logo(":/images/banner-en.png");
+  QPainter paint;
+  paint.begin(&logo);
+  paint.setPen(Qt::black);
+	char hostName[256];
+  gethostname(hostName, 256);
+	QFont serverNameFont = paint.font();
+	serverNameFont.setBold(true);
+  serverNameFont.setPointSize(12);
+  paint.setFont(serverNameFont);
+  paint.drawText(195,40,150,100, Qt::AlignLeft|Qt::AlignTop, QString("@ ")+hostName);
+  paint.end(); 
+	m_pLogoLabel->setPixmap(logo);
 	m_pLogoLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	m_pLogoLabel->setAlignment(Qt::AlignCenter);
 	
@@ -190,6 +206,7 @@ CMainWindow::CMainWindow(CApplication* app)
 	m_pScreenResolutionBox->addItem("1152x900");
 	m_pScreenResolutionBox->addItem("1280x1024");
 	m_pScreenResolutionBox->addItem("1600x1200");
+	m_pScreenResolutionBox->addItem("1920x1200");
 	m_pScreenResolutionBox->addItem("Desktop");
 	m_pScreenResolutionBox->addItem("Fullscreen");
 
@@ -207,7 +224,9 @@ CMainWindow::CMainWindow(CApplication* app)
 		{
 			int width = resolution.section("x", 0, 0).toInt();
 
-			if(width >= 1600)
+      if(width >= 1920)
+        m_pScreenResolutionBox->setCurrentIndex(RS_1920x1200);
+			else if(width >= 1600)
 				m_pScreenResolutionBox->setCurrentIndex(RS_1600x1200);
 			else if(width >= 1280)
 				m_pScreenResolutionBox->setCurrentIndex(RS_1280x1024);
@@ -224,7 +243,9 @@ CMainWindow::CMainWindow(CApplication* app)
 		QDesktopWidget* desktopWidget = QApplication::desktop();
 		QRect screenSize = desktopWidget->screenGeometry(desktopWidget->primaryScreen());
 		
-		if(screenSize.width() > 1600)
+		if(screenSize.width() > 1920)
+			m_pScreenResolutionBox->setCurrentIndex(RS_1920x1200);
+		else if(screenSize.width() > 1600)
 			m_pScreenResolutionBox->setCurrentIndex(RS_1600x1200);
 		else if(screenSize.width() > 1280)
 			m_pScreenResolutionBox->setCurrentIndex(RS_1280x1024);
@@ -365,7 +386,7 @@ CMainWindow::CMainWindow(CApplication* app)
 		// the dtlogin mode
 		setKeepAlive(true);
 		setFullScreenOnly(true);
-		setQuitText(tr("Logout"));		
+		setQuitText(tr("Close"));		
 
 		// now we make sure we centre the new window on the current
 		// primary screen
@@ -382,7 +403,7 @@ CMainWindow::CMainWindow(CApplication* app)
 		resize(m_pSettings->value("size", QSize(WINDOW_WIDTH, WINDOW_HEIGHT)).toSize());
 	}
 	
-	setWindowTitle("qutselect v" PACKAGE_VERSION " - (c) 2005-2009 fzd.de");
+	setWindowTitle("qutselect v" PACKAGE_VERSION " - (c) 2005-2011 hzdr.de");
 
 	LEAVE();
 }
@@ -795,8 +816,10 @@ void CMainWindow::loadServerList()
 					QTreeWidgetItem* item = new QTreeWidgetItem(columnList);
 					QFont serverNameFont = item->font(CN_SERVERNAME);
 					serverNameFont.setBold(true);
-					serverNameFont.setPointSize(12);
-					//serverNameFont.setCapitalization(QFont::SmallCaps);
+	        if(m_bDtLoginMode == true)
+					  serverNameFont.setPointSize(18);
+          else
+					  serverNameFont.setPointSize(12);
 					item->setFont(CN_SERVERNAME, serverNameFont);
 
 					// add an icon depending on the OS type
@@ -827,41 +850,49 @@ void CMainWindow::loadServerList()
 		m_pServerTreeWidget->resizeColumnToContents(CN_SERVEROS);
 		m_pServerTreeWidget->resizeColumnToContents(CN_DESCRIPTION);
 
+    QString selectServerName;
+		bool serverFound = false;
 		if(m_bDtLoginMode == true)
 		{
-			// set the current item in the ServerTreeWidget to the first item
-			m_pServerTreeWidget->setCurrentItem(m_pServerTreeWidget->topLevelItem(0));
+			// set the current item in the ServerTreeWidget to the hostname of the server
+      // this qutselect runs on
+		  char hostName[256];
+      if(gethostname(hostName, 256) == 0)
+			  selectServerName = QString(hostName).toLower();
+
+			D("got hostname: '%s'", selectServerName.toAscii().constData());
 		}
 		else
 		{
-			bool serverFound = false;
-
 			// now we check the QSettings of the user and which server he last used
 			if(m_pSettings->value("serverused").isValid())
 			{
-				QString lastServerUsed = m_pSettings->value("serverused").toString().toLower();
+				selectServerName = m_pSettings->value("serverused").toString().toLower();
 
-				D("read serverused from QSettings: '%s'", lastServerUsed.toAscii().constData());
+				D("read serverused from QSettings: '%s'", selectServerName.toAscii().constData());
+      }
+    }
 
-				// now we iterate through our combobox items and check if there is 
-				// one with the last server used hostname
-				for(int i=0; i < m_pServerListBox->count(); i++)
-				{
-					if(m_pServerListBox->itemText(i).section(" ", 0, 0).toLower() == lastServerUsed)
-					{
-						D("setting ServerListComboBox to %d item", i);
+		// now we iterate through our combobox items and check if there is 
+		// one with the last server used hostname
+		for(int i=0; i < m_pServerListBox->count(); i++)
+		{
+			if(m_pServerListBox->itemText(i).section(" ", 0, 0).toLower() == selectServerName)
+			{
+				D("setting ServerListComboBox to %d item", i);
 
-						m_pServerListBox->setCurrentIndex(-1);
-						m_pServerListBox->setCurrentIndex(i);
-						serverFound = true;
-						break;
-					}
-				}
+        m_pServerTreeWidget->setCurrentItem(m_pServerTreeWidget->topLevelItem(i));
+
+				m_pServerListBox->setCurrentIndex(-1);
+				m_pServerListBox->setCurrentIndex(i);
+				serverFound = true;
+				break;
 			}
+		}
+		
 
-			if(serverFound == false)
-				m_pServerListBox->setCurrentIndex(0);
-		}			
+		if(serverFound == false)
+      m_pServerTreeWidget->setCurrentItem(m_pServerTreeWidget->topLevelItem(0));
 	}
 	else
 	{
