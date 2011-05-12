@@ -52,8 +52,12 @@ if [ `hostname` != "${serverName}" ]; then
 fi
 
 # now we kill the qutselect gui to free the session for someone else
+# but we only do that on SunOS as our Linux machines can keep these
+# sessions as they are not in kiosk mode
 if [ "x${dtlogin}" = "xtrue" ]; then
-   ${KILL} $parentPID
+   if [ `uname -s` = "SunOS" ]; then
+     ${KILL} $parentPID
+   fi
 fi
 
 return 0
