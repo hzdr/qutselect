@@ -78,12 +78,6 @@ if [ "x${SUN_SUNRAY_TOKEN}" != "x" ] && [ -x ${UTTSC} ]; then
    # color depth
    cmdArgs="$cmdArgs -A ${colorDepth}"
 
-   # sound 
-   cmdArgs="$cmdArgs -r sound:low"
-
-   # disable compression (save CPU time)
-   cmdArgs="$cmdArgs -z"
-
    # add client name
    cmdArgs="$cmdArgs -n `hostname`"
 
