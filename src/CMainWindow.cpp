@@ -73,17 +73,6 @@ enum ColumnNumbers { CN_SERVERNAME=0,
 										 CN_STARTUPSCRIPT
 									 };
 
-// the possible resolutions
-enum Resolutions { RS_800x600=0,
-									 RS_1024x768,
-									 RS_1152x900,
-									 RS_1280x1024,
-									 RS_1600x1200,
-                   RS_1920x1200,
-									 RS_Desktop,
-									 RS_Fullscreen
-								 };
-
 #include "config.h"
 
 CMainWindow::CMainWindow(CApplication* app)
@@ -200,62 +189,94 @@ CMainWindow::CMainWindow(CApplication* app)
 	
 	// selection of the screen depth
 	m_pScreenResolutionLabel = new QLabel(tr("Resolution:"));
+
+  // lets find out the aspect ratio and min/max size for width/height of
+  // the screen
+	QDesktopWidget* desktopWidget = QApplication::desktop();
+	QRect screenSize = desktopWidget->screenGeometry(desktopWidget->primaryScreen());
+
+  // get aspectRatio
+  float aspectRatio = static_cast<float>(screenSize.width())/static_cast<float>(screenSize.height());
+  D("aspectRatio: %g", aspectRatio);
+
+  QHBoxLayout* screenResolutionLayout = new QHBoxLayout();
 	m_pScreenResolutionBox = new QComboBox();
-	m_pScreenResolutionBox->addItem("800x600");
-	m_pScreenResolutionBox->addItem("1024x768");
-	m_pScreenResolutionBox->addItem("1152x900");
-	m_pScreenResolutionBox->addItem("1280x1024");
-	m_pScreenResolutionBox->addItem("1600x1200");
-	m_pScreenResolutionBox->addItem("1920x1200");
+  m_pScreenResolutionBox->setEditable(true);
+  screenResolutionLayout->addWidget(m_pScreenResolutionBox, 0, Qt::AlignLeft);
+  screenResolutionLayout->addWidget(new QLabel("max: " + QString::number(screenSize.width()) + "x" + QString::number(screenSize.height())));
+  screenResolutionLayout->addStretch(100);
+
+  // now fill the screen resolutionbox with resolutions this screen can handle
+  if(screenSize.width() >= 800 && screenSize.height() >= 600)
+    m_pScreenResolutionBox->addItem("800x600");
+
+  if(screenSize.width() >= 1024 && screenSize.height() >= 768)
+    m_pScreenResolutionBox->addItem("1024x768");
+
+  if(screenSize.width() >= 1152 && screenSize.height() >= 900)
+    m_pScreenResolutionBox->addItem("1152x900");
+
+  if(screenSize.width() >= 1280 && screenSize.height() >= 1024)
+    m_pScreenResolutionBox->addItem("1280x1024");
+
+  if(screenSize.width() >= 1600 && screenSize.height() >= 900)
+    m_pScreenResolutionBox->addItem("1600x900");
+
+  if(screenSize.width() >= 1600 && screenSize.height() >= 1200)
+    m_pScreenResolutionBox->addItem("1600x1200");
+
+  if(screenSize.width() >= 1920 && screenSize.height() >= 1080)
+    m_pScreenResolutionBox->addItem("1920x1080");
+
+  if(screenSize.width() >= 1920 && screenSize.height() >= 1200)
+    m_pScreenResolutionBox->addItem("1920x1200");
+
+  // add 'Desktop' and 'Fullscreen' to the end
 	m_pScreenResolutionBox->addItem("Desktop");
 	m_pScreenResolutionBox->addItem("Fullscreen");
 
 	// we check the QSettings for "resolution" and see if we
 	// can use it or not
+  int item = -1;
 	if(m_bDtLoginMode == false && m_pSettings->value("resolution").isValid())
 	{
 		QString resolution = m_pSettings->value("resolution").toString();
 
-		if(resolution.toLower() == "fullscreen")
-			m_pScreenResolutionBox->setCurrentIndex(RS_Fullscreen);
-		else if(resolution.toLower() == "desktop")
-			m_pScreenResolutionBox->setCurrentIndex(RS_Desktop);
-		else
-		{
-			int width = resolution.section("x", 0, 0).toInt();
-
-      if(width >= 1920)
-        m_pScreenResolutionBox->setCurrentIndex(RS_1920x1200);
-			else if(width >= 1600)
-				m_pScreenResolutionBox->setCurrentIndex(RS_1600x1200);
-			else if(width >= 1280)
-				m_pScreenResolutionBox->setCurrentIndex(RS_1280x1024);
-			else if(width >= 1152)
-				m_pScreenResolutionBox->setCurrentIndex(RS_1152x900);
-			else if(width >= 1024)
-				m_pScreenResolutionBox->setCurrentIndex(RS_1024x768);
-			else
-				m_pScreenResolutionBox->setCurrentIndex(RS_800x600);
-		}
+    item = m_pScreenResolutionBox->findText(resolution);
+    if(item < 0)
+      item = m_pScreenResolutionBox->findText("Desktop");
 	}
 	else
 	{
-		QDesktopWidget* desktopWidget = QApplication::desktop();
-		QRect screenSize = desktopWidget->screenGeometry(desktopWidget->primaryScreen());
-		
-		if(screenSize.width() > 1920)
-			m_pScreenResolutionBox->setCurrentIndex(RS_1920x1200);
-		else if(screenSize.width() > 1600)
-			m_pScreenResolutionBox->setCurrentIndex(RS_1600x1200);
-		else if(screenSize.width() > 1280)
-			m_pScreenResolutionBox->setCurrentIndex(RS_1280x1024);
-		else if(screenSize.width() > 1152)
-			m_pScreenResolutionBox->setCurrentIndex(RS_1152x900);
+		if(screenSize.width() >= 1920)
+    {
+      if(screenSize.height() >= 1200)
+			  item = m_pScreenResolutionBox->findText("1920x1200");
+      else
+        item = m_pScreenResolutionBox->findText("1920x1080");
+    }
+		else if(screenSize.width() >= 1600)
+    {
+      if(screenSize.height() >= 1200)
+        item = m_pScreenResolutionBox->findText("1600x1200");
+      else
+        item = m_pScreenResolutionBox->findText("1600x1080");
+    }
+		else if(screenSize.width() >= 1280)
+      item = m_pScreenResolutionBox->findText("1280x1024");
+    else if(screenSize.width() >= 1152)
+      item = m_pScreenResolutionBox->findText("1152x900");
 		else if(screenSize.width() > 1024)
-			m_pScreenResolutionBox->setCurrentIndex(RS_1024x768);
+      item = m_pScreenResolutionBox->findText("1024x768");
 		else
-			m_pScreenResolutionBox->setCurrentIndex(RS_800x600);
+      item = m_pScreenResolutionBox->findText("800x600");
+
+    if(item < 0)
+      item =  m_pScreenResolutionBox->findText("Fullscreen");
 	}
+
+  // set item as current index
+  m_pScreenResolutionBox->setCurrentIndex(item);
 
 	// color depth selection
 	m_pColorsLabel = new QLabel(tr("Colors:"));
@@ -357,7 +378,7 @@ CMainWindow::CMainWindow(CApplication* app)
 		layout->addLayout(serverLineLayout,					1, 1);
 
 	layout->addWidget(m_pScreenResolutionLabel,		2, 0);
-	layout->addWidget(m_pScreenResolutionBox,			2, 1);
+	layout->addLayout(screenResolutionLayout,			2, 1);
 	layout->addWidget(m_pColorsLabel,							3, 0);
 	layout->addLayout(colorsButtonLayout,					3, 1);
 	layout->addWidget(m_pKeyboardLabel,						4, 0);
@@ -564,7 +585,7 @@ void CMainWindow::setFullScreenOnly(const bool on)
 
 	if(on)
 	{
-		m_pScreenResolutionBox->setCurrentIndex(RS_Fullscreen); // full screen
+		m_pScreenResolutionBox->setCurrentIndex(m_pScreenResolutionBox->findText("Fullscreen"));
 		m_pScreenResolutionBox->setEnabled(false);
 
 		// hide some components competely
@@ -676,7 +697,7 @@ void CMainWindow::startButtonPressed(void)
     {
 	    currentHost = QString(hostname).toLower();
 
-	    D("got hostname: '%s'", selectServerName.toAscii().constData());
+	    D("got hostname: '%s'", currentHost.toAscii().constData());
 
       if(serverName == currentHost)
       {
