@@ -642,7 +642,7 @@ void CMainWindow::startButtonPressed(void)
 
     // create the resolution string but substract 50 pixel beause the desktop size is always
     // calculated WITH the windows bar in GNOME :(
-		resolution = QString().sprintf("%dx%d", screenSize.width(), screenSize.height()-30);
+		resolution = QString().sprintf("%dx%d", screenSize.width()-8, screenSize.height()-28);
 
 		D("Desktop size of '%s' selected", resolution.toAscii().constData());
 	}
