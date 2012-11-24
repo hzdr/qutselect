@@ -106,12 +106,19 @@ if [ "x${SUN_SUNRAY_TOKEN}" != "x" ] && [ -x ${UTTSC} ]; then
    fi
 
    ${UTTSC} ${cmdArgs} ${serverName}
-   if [ $? != 0 ]; then
-      printf "ERROR: uttsc returned invalid return code"
-      exit 2
+   ret=$?
+   if [ $ret != 0 ]; then
+      if [ $ret -eq 211 ]; then
+        cmdArgs=""
+        echo "WARNING: couldn't start uttsc, retrying with rdesktop"
+      else
+        echo "ERROR: uttsc returned invalid return code"
+        exit 2
+     fi
    fi
+fi
 
-else
+if [ -z "${cmdArgs}" ]; then
 
    # resolution
    if [ "x${resolution}" = "xfullscreen" ]; then
@@ -165,7 +172,7 @@ else
 
    ${RDESKTOP} ${cmdArgs} ${serverName}
    if [ $? != 0 ]; then
-      printf "ERROR: rdesktop returned invalid return code"
+      echo "ERROR: rdesktop returned invalid return code"
       exit 2
    fi
 
