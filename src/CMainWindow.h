@@ -47,7 +47,7 @@ class CMainWindow : public QMainWindow
   Q_OBJECT
 
   public:
-    enum ServerType { SRSS=0, RDP, XDM, VNC };
+    enum ServerType { SRSS=0, TLINC, RDP, XDM, VNC };
 
     CMainWindow(CApplication* app);
 		~CMainWindow();
@@ -68,7 +68,7 @@ class CMainWindow : public QMainWindow
 		void startButtonPressed(void);
 		void currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous);
 		void itemDoubleClicked(QTreeWidgetItem* item, int column);
-		void serverTypeChanged(int index);
+		void serverTypeChanged(enum ServerType index);
 		void serverListChanged(const QString& path);
 		void serverComboBoxChanged(int index);
 

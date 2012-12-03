@@ -113,7 +113,7 @@ CMainWindow::CMainWindow(CApplication* app)
 	// create a QSettings object to receive the users specific settings
 	// written the last time the user used that application
 	if(m_bDtLoginMode == false)
-		m_pSettings = new QSettings("fzd.de", "qutselect");
+		m_pSettings = new QSettings("hzdr.de", "qutselect");
 
 	// we put a logo at the top
 	m_pLogoLabel = new QLabel();
@@ -155,6 +155,7 @@ CMainWindow::CMainWindow(CApplication* app)
 	// create a combobox for the different ServerTypes we have
 	m_pServerTypeComboBox = new QComboBox();
 	m_pServerTypeComboBox->addItem("Unix (SRSS)");
+	m_pServerTypeComboBox->addItem("Unix (TLINC)");
 	m_pServerTypeComboBox->addItem("Windows (RDP)");
 	m_pServerTypeComboBox->addItem("X11 (XDM)");
 	m_pServerTypeComboBox->addItem("VNC");
@@ -479,7 +480,7 @@ void CMainWindow::serverListChanged(const QString& path)
 	LEAVE();
 }
 
-void CMainWindow::serverTypeChanged(int index)
+void CMainWindow::serverTypeChanged(enum CMainWindow::ServerType index)
 {
 	ENTER();
 
@@ -498,6 +499,17 @@ void CMainWindow::serverTypeChanged(int index)
 			m_pEnglishKeyboardButton->setEnabled(false);
 		}
 		break;
+
+    case TLINC:
+    {
+  	  m_pScreenResolutionBox->setEnabled(true);
+			m_p8bitColorsButton->setEnabled(false);
+			m_p16bitColorsButton->setEnabled(false);
+			m_p24bitColorsButton->setEnabled(false);
+			m_pGermanKeyboardButton->setEnabled(false);
+			m_pEnglishKeyboardButton->setEnabled(false);
+    }
+    break;
 
 		case RDP:
 		{
@@ -670,6 +682,10 @@ void CMainWindow::startButtonPressed(void)
 	{
 		case SRSS:
 			serverType = "SRSS";
+		break;
+
+		case TLINC:
+			serverType = "TLINC";
 		break;
 
 		case RDP:

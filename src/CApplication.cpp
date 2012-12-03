@@ -54,8 +54,8 @@ CApplication::CApplication(int& argc, char** argv)
 	// set same general information about our organizational structure and
 	// the name of the application
 	setApplicationName("qutselect");
-	setOrganizationName("Forschungszentrum Dresden-Rossendorf");
-	setOrganizationDomain("fzd.de");
+	setOrganizationName("Helmholtz-Zentrum Dresden-Rossendorf");
+	setOrganizationDomain("hzdr.de");
 		
 	// we parse the CommandLine for specified options for the
 	// daemon process.
@@ -145,8 +145,8 @@ bool CApplication::parseCommandLine(int& argc, char** argv)
 	// output some general program information
 	if(result == false)
 	{
-		cout << "qutselect " << PACKAGE_VERSION << " - a simple Qt4 based GUI frontend for SRSS" << endl
-				 << "(" __DATE__ ")  Copyright (c) 2008-2009 by Jens Langner / www.fzd.de" << endl << endl;
+		cout << "qutselect " << PACKAGE_VERSION << " - a simple Qt4 based GUI frontend for terminal clients" << endl
+				 << "(" __DATE__ ")  Copyright (c) 2008-2012 by Jens Langner / www.hzdr.de" << endl << endl;
 	}
 
 	// in case "-v" is specified we output some version

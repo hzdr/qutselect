@@ -3,7 +3,7 @@
 # HOSTNAME		TYPE    OS               DESCRIPTION              SCRIPT
 # ----------------------------------------------------------------------------------------------------------
 saturn      ;  SRSS  ; UNIX - Linux 2.6      ; Arbeitsstation  ; scripts/qutselect_connect_srss.sh
-titan       ;  SRSS  ; UNIX - Linux 2.6      ; Computing-Server; scripts/qutselect_connect_srss.sh
+titan       ;  TLINC ; UNIX - Linux 2.6      ; Computing-Server; scripts/qutselect_connect_tlinc.sh
 kati        ;  SRSS  ; UNIX - Solaris 10     ; Server Medizin  ; scripts/qutselect_connect_srss.sh
 #betty       ;  SRSS  ; UNIX - Solaris 10     ; Server Medizin (UNIX)  ; scripts/qutselect_connect_srss.sh
 fwbts01	   ;	RDP   ; Windows 2003   ; Allgemein              ; scripts/qutselect_connect_rdp.sh
