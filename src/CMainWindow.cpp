@@ -1,7 +1,7 @@
 /* vim:set ts=2 nowrap: ****************************************************
 
  qutselect - A simple Qt4 based GUI frontend for SRSS (utselect)
- Copyright (C) 2009 by Jens Langner <Jens.Langner@light-speed.de>
+ Copyright (C) 2009-2013 by Jens Langner <Jens.Langner@light-speed.de>
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -23,12 +23,14 @@
 
 #include "CMainWindow.h"
 #include "CApplication.h"
+#include "CLoginDialog.h"
 
 #include <QApplication>
 #include <QLabel>
 #include <QButtonGroup>
 #include <QComboBox>
 #include <QDesktopWidget>
+#include <QDialogButtonBox>
 #include <QDir>
 #include <QFile>
 #include <QKeyEvent>
@@ -47,6 +49,7 @@
 #include <QTextStream>
 #include <QPushButton>
 #include <QHostInfo>
+#include <QStackedLayout>
 #include <QTreeWidget>
 #include <QLineEdit>
 #include <QFileSystemWatcher>
@@ -66,10 +69,13 @@
 #define DEFAULT_SERVERFILE "qutselect.slist"
 
 // the column numbers
-enum ColumnNumbers { CN_SERVERNAME=0,
+enum ColumnNumbers { CN_DISPLAYNAME=0,
+                     CN_HOSTNAME,
+                     CN_DOMAIN,
 										 CN_SERVERTYPE,
 										 CN_SERVEROS,
 										 CN_DESCRIPTION,
+                     CN_PWPROMPT,
 										 CN_STARTUPSCRIPT
 									 };
 
@@ -87,10 +93,10 @@ CMainWindow::CMainWindow(CApplication* app)
 	// we find out if this is a kioskmode session by simply querying for
 	// the username and comparing it to utk* as in SRSS all kiosk users
 	// start with that name
+	QString userName = QString(getenv("USER"));
 	if(m_bDtLoginMode)
 	{
-		char* userName = getenv("USER");
-		if(userName != NULL && *userName != '\0')
+		if(userName.isEmpty() == false)
 		{
 			m_bKioskMode = QString(userName).startsWith("utku");
 
@@ -98,7 +104,9 @@ CMainWindow::CMainWindow(CApplication* app)
 		}
 	}
 
-  // now
+  // skip automated names
+  if(userName.startsWith("utku") == false)
+    m_sUsername = userName;
 
 	// get/identify the default serverlist file
 	if(app->customServerListFile().isEmpty() == false)
@@ -144,9 +152,18 @@ CMainWindow::CMainWindow(CApplication* app)
 	
 	// add the columns with the labels
 	QStringList columnNames;
-	columnNames << tr("Server") << tr("Server") << tr("System") << tr("Description") << tr("Script");
+	columnNames << tr("Name");
+  columnNames << tr("Servername");
+  columnNames << tr("Domain");
+  columnNames << tr("Type");
+  columnNames << tr("System");
+  columnNames << tr("Description");
+  columnNames << tr("PW-Prompt");
+  columnNames << tr("Script");
 	m_pServerTreeWidget->setHeaderLabels(columnNames);
+  m_pServerTreeWidget->setColumnHidden(CN_DOMAIN, true);
   m_pServerTreeWidget->setColumnHidden(CN_SERVERTYPE, true);
+  m_pServerTreeWidget->setColumnHidden(CN_PWPROMPT, true);
   m_pServerTreeWidget->setColumnHidden(CN_STARTUPSCRIPT, true);
 
   // create the ServerLineEdit
@@ -367,26 +384,79 @@ CMainWindow::CMainWindow(CApplication* app)
 	connect(m_pQuitButton, SIGNAL(clicked()),
 					this,					 SLOT(close()));
 	connect(m_pStartButton,SIGNAL(clicked()),
-					this,					 SLOT(startButtonPressed()));
+					this,					 SLOT(connectButtonPressed()));
 	
+  QWidget* defaultWidget = new QWidget;
 	QGridLayout* layout = new QGridLayout;
-	layout->addWidget(m_pLogoLabel,								0, 0, 1, 2);
-	layout->addWidget(m_pServerListLabel,					1, 0);
 
 	if(m_bNoList == false)
-		layout->addLayout(serverListLayout, 			  1, 1);
+		layout->addLayout(serverListLayout, 			  0, 0, 1, 2);
 	else
-		layout->addLayout(serverLineLayout,					1, 1);
+  {
+    layout->addWidget(m_pServerListLabel,       0, 0);
+		layout->addLayout(serverLineLayout,					0, 1);
+  }
 
-	layout->addWidget(m_pScreenResolutionLabel,		2, 0);
-	layout->addLayout(screenResolutionLayout,			2, 1);
-	layout->addWidget(m_pColorsLabel,							3, 0);
-	layout->addLayout(colorsButtonLayout,					3, 1);
-	layout->addWidget(m_pKeyboardLabel,						4, 0);
-	layout->addLayout(keyboardButtonLayout,				4, 1);
-	layout->addWidget(buttonFrame,								5, 0, 1, 2);
-	layout->addLayout(buttonLayout,								6, 0, 1, 2);
-	centralWidget->setLayout(layout);
+	layout->addWidget(m_pScreenResolutionLabel,		1, 0);
+	layout->addLayout(screenResolutionLayout,			1, 1);
+	layout->addWidget(m_pColorsLabel,							2, 0);
+	layout->addLayout(colorsButtonLayout,					2, 1);
+	layout->addWidget(m_pKeyboardLabel,						3, 0);
+	layout->addLayout(keyboardButtonLayout,				3, 1);
+	layout->addWidget(buttonFrame,								4, 0, 1, 2);
+	layout->addLayout(buttonLayout,								5, 0, 1, 2);
+  defaultWidget->setLayout(layout);
+
+  QWidget* passwordWidget = new QWidget;
+  QGridLayout* pwLayout = new QGridLayout;
+
+  m_pPasswordLayoutLabel = new QLabel;
+	QFont pwlabelFont = m_pPasswordLayoutLabel->font();
+	pwlabelFont.setPointSize(14);
+  m_pPasswordLayoutLabel->setFont(pwlabelFont);
+  m_pPasswordLayoutLabel->setAlignment(Qt::AlignBottom | Qt::AlignHCenter);
+
+  pwLayout->addWidget(m_pPasswordLayoutLabel, 0, 0, 1, 2);
+  pwLayout->addWidget(new QLabel(tr("Username:")), 1, 0);
+  m_pUsernameLineEdit = new QLineEdit;
+  pwLayout->addWidget(m_pUsernameLineEdit, 1, 1);
+  pwLayout->addWidget(new QLabel(tr("Password:")), 2, 0);
+  m_pPasswordLineEdit = new QLineEdit;
+  m_pPasswordLineEdit->setEchoMode(QLineEdit::Password);
+  pwLayout->addWidget(m_pPasswordLineEdit, 2, 1);
+  pwLayout->addWidget(new QLabel(), 3, 1);
+  QFrame* pwButtonFrame = new QFrame();
+  pwButtonFrame->setFrameStyle(QFrame::HLine | QFrame::Raised);
+  pwLayout->addWidget(pwButtonFrame, 4, 0, 1, 2);
+  m_pPasswordButtonBox = new QDialogButtonBox;
+  m_pPasswordButtonBox->addButton(QDialogButtonBox::Ok);
+  m_pPasswordButtonBox->addButton(QDialogButtonBox::Cancel);
+  m_pPasswordButtonBox->button(QDialogButtonBox::Ok)->setText(tr("Login"));
+  m_pPasswordButtonBox->button(QDialogButtonBox::Cancel)->setText(tr("Abort"));
+
+  // connects slots
+  connect(m_pPasswordButtonBox->button(QDialogButtonBox::Cancel),
+          SIGNAL(clicked()),
+          this,
+          SLOT(pwButtonCancelClicked()));
+ 
+  connect(m_pPasswordButtonBox->button(QDialogButtonBox::Ok),
+          SIGNAL(clicked()),
+          this,
+          SLOT(pwButtonLoginClicked()));
+
+  pwLayout->addWidget(m_pPasswordButtonBox, 5, 0, 1, 2);
+  passwordWidget->setLayout(pwLayout);
+
+  m_pStackedLayout = new QStackedLayout;
+  m_pStackedLayout->addWidget(defaultWidget);
+  m_pStackedLayout->addWidget(passwordWidget);
+
+  QVBoxLayout* centralLayout = new QVBoxLayout;
+  centralLayout->addWidget(m_pLogoLabel);
+  centralLayout->addLayout(m_pStackedLayout);
+
+	centralWidget->setLayout(centralLayout);
 
 	// create a FileSystemWatcher to monitor the serverlist file and report 
 	// any changes to it
@@ -421,11 +491,19 @@ CMainWindow::CMainWindow(CApplication* app)
 	}
 	else
 	{
-		move(m_pSettings->value("position", QPoint(10, 10)).toPoint());
+    QPoint position = m_pSettings->value("position", QPoint(10, 10)).toPoint();
+
+    if(position.x() < 0)
+      position.setX(10);
+
+    if(position.y() < 0)
+      position.setY(10);
+
+		move(position);
 		resize(m_pSettings->value("size", QSize(WINDOW_WIDTH, WINDOW_HEIGHT)).toSize());
 	}
 	
-	setWindowTitle("qutselect v" PACKAGE_VERSION " - (c) 2005-2011 hzdr.de");
+	setWindowTitle("qutselect v" PACKAGE_VERSION " - (c) 2005-2013 hzdr.de");
 
 	LEAVE();
 }
@@ -480,9 +558,10 @@ void CMainWindow::serverListChanged(const QString& path)
 	LEAVE();
 }
 
-void CMainWindow::serverTypeChanged(enum CMainWindow::ServerType index)
+void CMainWindow::serverTypeChanged(int id)
 {
 	ENTER();
+  enum CMainWindow::ServerType index = static_cast<CMainWindow::ServerType>(id);
 
 	D("serverTypeChanged to '%d'", index);
 
@@ -555,20 +634,23 @@ void CMainWindow::currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem*)
 
 	if(current != NULL)
 	{
-		D("currentItemChanged to '%s'", current->text(CN_SERVERNAME).toAscii().constData());
+		D("currentItemChanged to '%s'", current->text(CN_HOSTNAME).toAscii().constData());
 
-		// update the lineedit with the text of the first column
-		m_pServerLineEdit->setText(current->text(CN_SERVERNAME));
+    if(current->text(0).isEmpty() == false && current->text(0).startsWith("===") == false)
+    {
+		  // update the lineedit with the text of the first column
+		  m_pServerLineEdit->setText(current->text(CN_HOSTNAME));
 
-		// make sure the combobox is in sync with the lineedit
-		m_pServerListBox->setCurrentIndex(m_pServerListBox->findText(current->text(CN_SERVERNAME), Qt::MatchStartsWith));
+		  // make sure the combobox is in sync with the lineedit
+		  m_pServerListBox->setCurrentIndex(m_pServerListBox->findText(current->text(CN_HOSTNAME), Qt::MatchStartsWith));
 
-		// now we have to check which server type the currently selected server
-		// is and then disable some GUI components of qutselect
-		QString serverType = current->text(1);
+		  // now we have to check which server type the currently selected server
+		  // is and then disable some GUI components of qutselect
+		  QString serverType = current->text(CN_SERVERTYPE);
 
-		// sync the ServerType combobox as well
-		m_pServerTypeComboBox->setCurrentIndex(m_pServerTypeComboBox->findText(serverType, Qt::MatchContains));
+		  // sync the ServerType combobox as well
+		  m_pServerTypeComboBox->setCurrentIndex(m_pServerTypeComboBox->findText(serverType, Qt::MatchContains));
+    }
 	}
 	else
 	{
@@ -583,10 +665,10 @@ void CMainWindow::itemDoubleClicked(QTreeWidgetItem* item, int)
 {
 	ENTER();
 
-	D("Server '%s' doubleclicked", item->text(CN_SERVERNAME).toAscii().constData());
+	D("Server '%s' doubleclicked", item->text(CN_HOSTNAME).toAscii().constData());
 
 	// a doubleclick is like pressing the "connect" button
-	startButtonPressed();
+	connectButtonPressed();
 
 	LEAVE();
 }
@@ -616,7 +698,7 @@ void CMainWindow::setFullScreenOnly(const bool on)
 	LEAVE();
 }
 
-void CMainWindow::startButtonPressed(void)
+void CMainWindow::connectButtonPressed(void)
 {
 	ENTER();
 
@@ -725,21 +807,65 @@ void CMainWindow::startButtonPressed(void)
     }
   }
 
-
-
-	// find the selected server in the tree widget to retrieve the
+	// find the selected server in the tree widget to retrieve some more
+  // information (pw prompt, domain, script, etc.)
 	// startup script name
 	QString startupScript;
-	QList<QTreeWidgetItem*> items = m_pServerTreeWidget->findItems(serverName, Qt::MatchStartsWith);
+  QString domain;
+  bool pwprompt = false;
+	QList<QTreeWidgetItem*> items = m_pServerTreeWidget->findItems(serverName, Qt::MatchStartsWith, CN_HOSTNAME);
 	if(items.isEmpty() == false && items.first()->text(CN_SERVERTYPE) == serverType)
 	{
 		startupScript = items.first()->text(CN_STARTUPSCRIPT);
+    domain = items.first()->text(CN_DOMAIN);
+    pwprompt = items.first()->text(CN_PWPROMPT) == "TRUE" ? true : false;
 	}
 	else
 	{
 		// if this didn't work out we use the pattern to create a generic script
 		startupScript = QString(DEFAULT_SCRIPT_PATTERN).arg(serverType.toLower());
+
+    // now we find out if we will show a password prompt or not by using the default values
+    // for certain protocols
+    if(serverType == "RDP" || serverType == "VNC" || serverType == "TLINC")
+      pwprompt = true;
 	}
+
+  // set most of the connection relevant parameters now
+  m_sServerType = serverType;
+  m_sResolution = resolution;
+  m_iColorDepth = colorDepth;
+  m_sKeyLayout = keyLayout;
+  m_sDomain = domain;
+  m_sStartupScript = startupScript;
+  m_sServerName = serverName;
+
+  // if we should ask for a password we go and present a password prompt
+  QString password;
+  if(pwprompt == true)
+  {
+    // if a password prompt is required we don't start
+    // the connection right away but wait until the user
+    // entered username/password
+    changeLayout(PasswordLayout);
+
+    LEAVE();
+    return;
+  }
+
+  // set the password and start the connection
+  m_sPassword = password;
+
+  // start the connection NOW
+  startConnection();
+
+  LEAVE();
+  return;
+}
+
+void CMainWindow::startConnection(void)
+{
+  ENTER();
 
 	// now we construct the commandline arguments
 	QStringList cmdArgs;
@@ -748,33 +874,42 @@ void CMainWindow::startButtonPressed(void)
 	cmdArgs << QString::number(QApplication::applicationPid());
 
 	// 2.Option: supply the servertype (SRSS, RDP, etc)
-	cmdArgs << serverType;
+	cmdArgs << m_sServerType;
 
 	// 3.Option: say "true" if dtLoginMode is enabled
 	cmdArgs << QString(m_bDtLoginMode == true ? "true" : "false");
 
 	// 4.Option: the resolution (either "fullscreen" or "WxH"
-	cmdArgs << resolution.toLower();
+	cmdArgs << m_sResolution.toLower();
 
 	// 5.Option: the selected color depth
-	cmdArgs << QString::number(colorDepth);
+	cmdArgs << QString::number(m_iColorDepth);
 
 	// 6.Option: the current color depth of the screen
 	cmdArgs << QString::number(QPixmap().depth());
 
 	// 7.Option: the selected keyboard (e.g. 'de' or 'en')
-	cmdArgs << keyLayout.toLower();
+	cmdArgs << m_sKeyLayout.toLower();
 
-	// 8.Option: the servername we connect to
-	cmdArgs << serverName;
+  // 8.Option: the domain (e.g. FZR, UKD88)
+  cmdArgs << (m_sDomain.isEmpty() ? "NULL" : m_sDomain);
+
+  // 9.Option: the username
+  cmdArgs << (m_sUsername.isEmpty() ? "NULL" : m_sUsername);
+
+  // 10.Option: the password
+  cmdArgs << (m_sPassword.isEmpty() ? "NULL" : m_sPassword);
+
+	// 11.Option: the servername we connect to
+	cmdArgs << m_sServerName;
 	
 	// now we can create a QProcess object and execute the
 	// startup script
-	D("executing: %s %s", startupScript.toAscii().constData(), cmdArgs.join(" ").toAscii().constData());
+	D("executing: %s %s", m_sStartupScript.toAscii().constData(), cmdArgs.join(" ").toAscii().constData());
 
 	// start it now with the working directory pointing at the
   // directory where the app resists
-	bool started = QProcess::startDetached(startupScript, cmdArgs, QApplication::applicationDirPath());
+	bool started = QProcess::startDetached(m_sStartupScript, cmdArgs, QApplication::applicationDirPath());
 
 	// depending on the keepalive state we either close the GUI immediately or keep it open
 	if(started == true)
@@ -788,9 +923,17 @@ void CMainWindow::startButtonPressed(void)
 	}
 	else
 	{
-		std::cout << "ERROR: Failed to execute startup script " << startupScript.toAscii().constData() << std::endl;
+		std::cout << "ERROR: Failed to execute startup script " << m_sStartupScript.toAscii().constData() << std::endl;
 		QApplication::beep();
 	}
+
+  // lets clear the password right away!
+  m_sPassword.clear();
+  m_pPasswordLineEdit->clear();
+
+  // and make sure we are showing the right
+  // default layout
+  changeLayout(CMainWindow::DefaultLayout);
 
 	LEAVE();
 }
@@ -806,7 +949,12 @@ void CMainWindow::keyPressEvent(QKeyEvent* e)
 	{
 		case Qt::Key_Escape:
 		{
-			close();
+      // depending on the layout we perform differently
+      if(m_pStackedLayout->currentIndex() == CMainWindow::PasswordLayout)
+        changeLayout(CMainWindow::DefaultLayout);
+      else
+			  close();
+
 			e->accept();
 
 			LEAVE();
@@ -817,7 +965,19 @@ void CMainWindow::keyPressEvent(QKeyEvent* e)
 		case Qt::Key_Return:
 		case Qt::Key_Enter:
 		{
-			startButtonPressed();
+      // depending on the layout we perform differently
+      if(m_pStackedLayout->currentIndex() == CMainWindow::PasswordLayout)
+      {
+        // if the username line edit is focused we move
+        // on to the password line edit instead of starting the connection
+        if(m_pUsernameLineEdit->hasFocus())
+          m_pPasswordLineEdit->setFocus(Qt::OtherFocusReason);
+        else
+          pwButtonLoginClicked();
+      }
+      else
+			  connectButtonPressed();
+
 			e->accept();
 
 			LEAVE();
@@ -849,19 +1009,22 @@ void CMainWindow::loadServerList()
 	if(serverListFile.open(QFile::ReadOnly))
 	{
 		QTextStream in(&serverListFile);
-		QRegExp regexp("^(.*);(.*);(.*);(.*);(.*)");
+		QRegExp regexp("^(.*);(.*);(.*);(.*);(.*);(.*);(.*);(.*)");
 		QString curLine;
 
     // parse through the file now and add things to the ServerList and ComboBox
 		while((curLine = in.readLine()).isNull() == false)
 		{
 			// skip any comment line starting with '#'
-			if(curLine.at(0) != '#' && curLine.at(0) != '-' && regexp.indexIn(curLine) > -1)
+			if(curLine.at(0) != '#' && curLine.at(0) != '=' && regexp.indexIn(curLine) > -1)
 			{
-				QString hostname = regexp.cap(CN_SERVERNAME+1).simplified().toLower();
+        QString displayname = regexp.cap(CN_DISPLAYNAME+1).simplified();
+				QString hostname = regexp.cap(CN_HOSTNAME+1).simplified().toLower();
+        QString domain = regexp.cap(CN_DOMAIN+1).simplified();
         QString serverType = regexp.cap(CN_SERVERTYPE+1).simplified();
         QString osType = regexp.cap(CN_SERVEROS+1).simplified();
 				QString description = regexp.cap(CN_DESCRIPTION+1).simplified();
+        QString pwprompt = regexp.cap(CN_PWPROMPT+1).simplified();
 				QString script = regexp.cap(CN_STARTUPSCRIPT+1).simplified();
 
 				// if m_bNoSRSS we filter out any SRSS in our list
@@ -869,21 +1032,24 @@ void CMainWindow::loadServerList()
 				{
 					// add the server to our listview
 					QStringList columnList;
+          columnList << displayname;
 					columnList << hostname;
+          columnList << domain;
 					columnList << serverType;
 					columnList << osType;
 					columnList << description;
+          columnList << pwprompt;
 					columnList << script;
 
-					// create a new QTreeWidget and set the font for the first column (servername) to Bold
+					// create a new QTreeWidget and set the font for the first column to bold
 					QTreeWidgetItem* item = new QTreeWidgetItem(columnList);
-					QFont serverNameFont = item->font(CN_SERVERNAME);
-					serverNameFont.setBold(true);
+					QFont displayNameFont = item->font(CN_DISPLAYNAME);
+					displayNameFont.setBold(true);
 	        if(m_bDtLoginMode == true)
-					  serverNameFont.setPointSize(18);
+					  displayNameFont.setPointSize(18);
           else
-					  serverNameFont.setPointSize(12);
-					item->setFont(CN_SERVERNAME, serverNameFont);
+					  displayNameFont.setPointSize(12);
+					item->setFont(CN_DISPLAYNAME, displayNameFont);
 
 					// add an icon depending on the OS type
 					QIcon serverIcon;
@@ -903,13 +1069,29 @@ void CMainWindow::loadServerList()
 					m_pServerTreeWidget->addTopLevelItem(item);
 				}
 			}
+      else if(curLine.startsWith("==="))
+      {
+        QTreeWidgetItem* item = new QTreeWidgetItem();
+        item->setFirstColumnSpanned(true);
+        item->setText(0, "==========");
+        m_pServerTreeWidget->addTopLevelItem(item);
+
+        for(int i=0; i < m_pServerTreeWidget->columnCount(); i++)
+        {
+          QFrame* hbarFrame = new QFrame;
+	        hbarFrame->setFrameStyle(QFrame::HLine | QFrame::Raised);
+          hbarFrame->setAutoFillBackground(true);
+          m_pServerTreeWidget->setItemWidget(item, i, hbarFrame);
+        }
+      }
 		}
 		
 		// close the file
 		serverListFile.close();
 
 		// resize all columns to its content
-		m_pServerTreeWidget->resizeColumnToContents(CN_SERVERNAME);
+		m_pServerTreeWidget->resizeColumnToContents(CN_DISPLAYNAME);
+		m_pServerTreeWidget->resizeColumnToContents(CN_HOSTNAME);
 		m_pServerTreeWidget->resizeColumnToContents(CN_SERVEROS);
 		m_pServerTreeWidget->resizeColumnToContents(CN_DESCRIPTION);
 
@@ -966,3 +1148,89 @@ void CMainWindow::loadServerList()
 
 	LEAVE();
 }
+
+void CMainWindow::changeLayout(enum LayoutType type)
+{
+  ENTER();
+
+  // now we change the GUI layout accordingt to the supplied type
+  switch(type)
+  {
+    case CMainWindow::DefaultLayout:
+    {
+      m_pStackedLayout->setCurrentIndex(CMainWindow::DefaultLayout);     
+      m_pStartButton->setFocus(Qt::OtherFocusReason);
+    }
+    break;
+
+    case CMainWindow::PasswordLayout:
+    {
+      m_pPasswordLayoutLabel->setText(tr("Please enter login data for server <b>%1</b>:").arg(m_sServerName));
+      m_pPasswordButtonBox->button(QDialogButtonBox::Ok)->setText(tr("Login"));
+      m_pPasswordButtonBox->button(QDialogButtonBox::Cancel)->setText(tr("Abort"));
+      m_pStackedLayout->setCurrentIndex(CMainWindow::PasswordLayout);
+
+      if(m_sUsername.isEmpty() == false)
+      {
+        m_pUsernameLineEdit->setText(m_sUsername);
+        m_pPasswordLineEdit->setFocus(Qt::OtherFocusReason);
+      }
+      else
+        m_pUsernameLineEdit->setFocus(Qt::OtherFocusReason);
+    }
+    break;
+  }
+
+  LEAVE();
+}
+
+bool CMainWindow::passwordDialog(const QString& serverName, QString& username, QString& password)
+{
+  bool result = false;
+  ENTER();
+
+  // open a login dialog
+  CLoginDialog* loginDialog = new CLoginDialog(this, username, serverName);
+  if(loginDialog->exec() == QDialog::Accepted)
+  {
+    username = loginDialog->username();
+    password = loginDialog->password();
+
+    result = true;
+  }
+
+  delete loginDialog;
+
+  RETURN(result);
+  return result;
+}
+
+void CMainWindow::pwButtonLoginClicked(void)
+{
+  ENTER();
+
+  // set username/password and assume all
+  // other things have been set correctly
+  // already.
+  m_sUsername = m_pUsernameLineEdit->text();
+  m_sPassword = m_pPasswordLineEdit->text();
+
+  // start the connection NOW
+  startConnection();
+
+  LEAVE();
+}
+
+void CMainWindow::pwButtonCancelClicked(void)
+{
+  ENTER();
+
+  m_pPasswordLineEdit->clear();
+
+  // make sure to return to the default layout
+  changeLayout(CMainWindow::DefaultLayout);
+
+  LEAVE();
+}
+
+

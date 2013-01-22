@@ -124,8 +124,10 @@ RESOURCES = qutselect.qrc
 TRANSLATIONS = lang/qutselect_de.ts
 
 HEADERS = CApplication.h \
-					CMainWindow.h
+					CMainWindow.h \
+          CLoginDialog.h
            
 SOURCES = main.cpp \
 					CApplication.cpp \
-					CMainWindow.cpp
+					CMainWindow.cpp \
+          CLoginDialog.cpp

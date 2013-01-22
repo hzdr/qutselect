@@ -12,7 +12,10 @@
 # $5 = the selected color depth (8, 16, 24)
 # $6 = the current max. color depth (8, 16, 24)
 # $7 = the selected keylayout (e.g. 'de' or 'en')
-# $8 = the servername (hostname) to connect to
+# $8 = the domain (e.g. 'FZR', used for RDP)
+# $9 = the username
+# $10 = the password if requested from the user
+# $11 = the servername (hostname) to connect to
 #
 
 if [ `uname -s` = "SunOS" ]; then
@@ -22,7 +25,7 @@ if [ `uname -s` = "SunOS" ]; then
    XVKBD=/usr/openwin/bin/xvkbd
    PKILL=/usr/bin/pkill
 else
-   RDESKTOP=/usr/bin/rdesktop
+   RDESKTOP=/usr/local/bin/rdesktop
    UTTSC=/opt/SUNWuttsc/bin/uttsc
    UTACTION=/opt/SUNWut/bin/utaction
    XVKBD=/usr/openwin/bin/xvkbd
@@ -31,20 +34,23 @@ fi
 
 #####################################################
 # check that we have 8 command-line options at hand
-if [ $# -lt 8 ]; then
+if [ $# -lt 11 ]; then
    printf "ERROR: missing arguments!"
    exit 2
 fi
 
 # catch all arguments is some local variables
-parentPID=$1
-serverType=$2
-dtlogin=$3
-resolution=$4
-colorDepth=$5
-curDepth=$6
-keyLayout=$7
-serverName=$8
+parentPID="${1}"
+serverType="${2}"
+dtlogin="${3}"
+resolution="${4}"
+colorDepth="${5}"
+curDepth="${6}"
+keyLayout="${7}"
+domain="${8}"
+username="${9}"
+password="${10}"
+serverName="${11}"
 
 # before we go and connect to the windows (rdp) server we
 # go and add an utaction call so that on a smartcard removal
@@ -89,23 +95,38 @@ if [ "x${SUN_SUNRAY_TOKEN}" != "x" ] && [ -x ${UTTSC} ]; then
    fi
 
    # add domain
-   cmdArgs="$cmdArgs -d FZR"
-   
-   # add username (only if not dtlogin)
-   if [ "x${dtlogin}" != "xtrue" ]; then
-      cmdArgs="$cmdArgs -u ${USER}"
-   else
-      cmdArgs="$cmdArgs -u FZR\\"
+   if [ "x${domain}" != "xNULL" ]; then
+     cmdArgs="$cmdArgs -d ${domain}"
    fi
+   
+   # add username
+   if [ "x${username}" != "xNULL" ]; then
+     cmdArgs="$cmdArgs -u ${USER}"
+   else
+     if [ "x${domain}" != "xNULL" ]; then
+       cmdArgs="$cmdArgs -u ${domain}\\"
+     fi
+   fi
+
+   # enbaled enhanced network security
+   cmdArgs="$cmdArgs -N on"
 
    # add the usb path as a local path
    cmdArgs="$cmdArgs -r disk:USB=/tmp/SUNWut/mnt/${USER}/"
 
+   # output the cmdline so that users can replicate it
    if [ "x${dtlogin}" != "xtrue" ]; then
       echo ${UTTSC} ${cmdArgs} ${serverName}
    fi
 
-   ${UTTSC} ${cmdArgs} ${serverName}
+   # run uttsc finally
+   if [ "x${password}" != "xNULL" ]; then
+     cmdArgs="$cmdArgs -i"
+     echo ${password} | ${UTTSC} ${cmdArgs} ${serverName}
+   else
+     ${UTTSC} ${cmdArgs} ${serverName}
+   fi
+
    ret=$?
    if [ $ret != 0 ]; then
       if [ $ret -eq 211 ]; then
@@ -150,13 +171,17 @@ if [ -z "${cmdArgs}" ]; then
    fi
 
    # add domain
-   cmdArgs="$cmdArgs -d FZR"
+   if [ "x${domain}" != "xNULL" ]; then
+     cmdArgs="$cmdArgs -d ${domain}"
+   fi
 
-   # add username (only if not dtlogin)
-   if [ "x${dtlogin}" != "xtrue" ]; then
-      cmdArgs="$cmdArgs -u ${USER}"
+   # add username
+   if [ "x${username}" != "xNULL" ]; then
+     cmdArgs="$cmdArgs -u ${USER}"
    else
-      cmdArgs="$cmdArgs -u FZR\\"
+     if [ "x${domain}" != "xNULL" ]; then
+       cmdArgs="$cmdArgs -u ${domain}\\"
+     fi
    fi
 
    if [ "x${SUN_SUNRAY_TOKEN}" != "x" ]; then
@@ -170,7 +195,14 @@ if [ -z "${cmdArgs}" ]; then
       echo ${RDESKTOP} ${cmdArgs} ${serverName}
    fi
 
-   ${RDESKTOP} ${cmdArgs} ${serverName}
+   # run rdesktop finally
+   if [ "x${password}" != "xNULL" ]; then
+     cmdArgs="$cmdArgs -p -"
+     echo ${password} | ${RDESKTOP} ${cmdArgs} ${serverName}
+   else
+     ${RDESKTOP} ${cmdArgs} ${serverName}
+   fi
+
    if [ $? != 0 ]; then
       echo "ERROR: rdesktop returned invalid return code"
       exit 2

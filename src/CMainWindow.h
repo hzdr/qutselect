@@ -31,6 +31,7 @@
 // forward declarations
 class CApplication;
 class QCloseEvent;
+class QDialogButtonBox;
 class QLabel;
 class QLineEdit;
 class QComboBox;
@@ -41,6 +42,7 @@ class QPushButton;
 class QTreeWidget;
 class QTreeWidgetItem;
 class QFileSystemWatcher;
+class QStackedLayout;
 
 class CMainWindow : public QMainWindow
 {
@@ -48,6 +50,7 @@ class CMainWindow : public QMainWindow
 
   public:
     enum ServerType { SRSS=0, TLINC, RDP, XDM, VNC };
+    enum LayoutType { DefaultLayout=0, PasswordLayout };
 
     CMainWindow(CApplication* app);
 		~CMainWindow();
@@ -63,14 +66,19 @@ class CMainWindow : public QMainWindow
 	private:
 		void loadServerList();
 		enum ServerType matchServerType(const QString& string);
+    void changeLayout(enum LayoutType type);
+    bool passwordDialog(const QString& serverName, QString& username, QString& password);
 
 	private slots:
-		void startButtonPressed(void);
+		void connectButtonPressed(void);
 		void currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous);
 		void itemDoubleClicked(QTreeWidgetItem* item, int column);
-		void serverTypeChanged(enum ServerType index);
+		void serverTypeChanged(int index);
 		void serverListChanged(const QString& path);
 		void serverComboBoxChanged(int index);
+    void startConnection(void);
+    void pwButtonCancelClicked(void);
+    void pwButtonLoginClicked(void);
 
 	private:
 		QLabel*				      m_pLogoLabel;
@@ -92,6 +100,11 @@ class CMainWindow : public QMainWindow
     QLineEdit*          m_pServerLineEdit;
 		QComboBox*					m_pServerTypeComboBox;
 		QFileSystemWatcher* m_pServerListWatcher;
+    QStackedLayout*     m_pStackedLayout;
+    QLabel*             m_pPasswordLayoutLabel;
+    QLineEdit*          m_pUsernameLineEdit;
+    QLineEdit*          m_pPasswordLineEdit;
+    QDialogButtonBox*   m_pPasswordButtonBox;
 
 		bool m_bKeepAlive;
 		bool m_bDtLoginMode;
@@ -99,6 +112,17 @@ class CMainWindow : public QMainWindow
 		bool m_bNoSRSS;
 		bool m_bNoList;
 		QString m_sServerListFile;
+
+    // stored result before starting a connection
+    QString m_sServerType;
+    QString m_sResolution;
+    int m_iColorDepth;
+    QString m_sKeyLayout;
+    QString m_sDomain;
+    QString m_sUsername;
+    QString m_sPassword;
+    QString m_sStartupScript;
+    QString m_sServerName;
 };
 
 #endif /* CMAINWINDOW_H */
