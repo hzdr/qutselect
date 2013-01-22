@@ -53,6 +53,7 @@
 #include <QTreeWidget>
 #include <QLineEdit>
 #include <QFileSystemWatcher>
+#include <QTimer>
 
 #include <iostream>
 
@@ -927,10 +928,6 @@ void CMainWindow::startConnection(void)
 		QApplication::beep();
 	}
 
-  // lets clear the password right away!
-  m_sPassword.clear();
-  m_pPasswordLineEdit->clear();
-
   // and make sure we are showing the right
   // default layout
   changeLayout(CMainWindow::DefaultLayout);
@@ -1158,6 +1155,10 @@ void CMainWindow::changeLayout(enum LayoutType type)
   {
     case CMainWindow::DefaultLayout:
     {
+      // lets clear the password right away!
+      m_sPassword.clear();
+      m_pPasswordLineEdit->clear();
+
       m_pStackedLayout->setCurrentIndex(CMainWindow::DefaultLayout);     
       m_pStartButton->setFocus(Qt::OtherFocusReason);
     }
@@ -1177,6 +1178,10 @@ void CMainWindow::changeLayout(enum LayoutType type)
       }
       else
         m_pUsernameLineEdit->setFocus(Qt::OtherFocusReason);
+
+      // now we start a QTimer() which resets the layout to the default one and removes
+      // the password stuff after 30 seconds for security reasons.
+      QTimer::singleShot(30000, this, SLOT(passwordTimedOut()));
     }
     break;
   }
@@ -1233,4 +1238,13 @@ void CMainWindow::pwButtonCancelClicked(void)
   LEAVE();
 }
 
+void CMainWindow::passwordTimedOut(void)
+{
+  ENTER();
+
+  // reset the layout to the default one and clear the password stuff
+  changeLayout(CMainWindow::DefaultLayout);
+
+  LEAVE();
+}
 

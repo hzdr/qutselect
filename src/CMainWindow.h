@@ -79,6 +79,7 @@ class CMainWindow : public QMainWindow
     void startConnection(void);
     void pwButtonCancelClicked(void);
     void pwButtonLoginClicked(void);
+    void passwordTimedOut(void);
 
 	private:
 		QLabel*				      m_pLogoLabel;
