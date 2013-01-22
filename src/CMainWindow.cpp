@@ -446,6 +446,11 @@ CMainWindow::CMainWindow(CApplication* app)
           this,
           SLOT(pwButtonLoginClicked()));
 
+  m_pPasswordEnterTimer = new QTimer(this);
+  m_pPasswordEnterTimer->setSingleShot(true);
+  connect(m_pPasswordEnterTimer, SIGNAL(timeout()),
+          this,                  SLOT(passwordTimedOut()));
+          
   pwLayout->addWidget(m_pPasswordButtonBox, 5, 0, 1, 2);
   passwordWidget->setLayout(pwLayout);
 
@@ -898,10 +903,7 @@ void CMainWindow::startConnection(void)
   // 9.Option: the username
   cmdArgs << (m_sUsername.isEmpty() ? "NULL" : m_sUsername);
 
-  // 10.Option: the password
-  cmdArgs << (m_sPassword.isEmpty() ? "NULL" : m_sPassword);
-
-	// 11.Option: the servername we connect to
+	// 10.Option: the servername we connect to
 	cmdArgs << m_sServerName;
 	
 	// now we can create a QProcess object and execute the
@@ -910,23 +912,44 @@ void CMainWindow::startConnection(void)
 
 	// start it now with the working directory pointing at the
   // directory where the app resists
-	bool started = QProcess::startDetached(m_sStartupScript, cmdArgs, QApplication::applicationDirPath());
+  QProcess script;
+  script.setWorkingDirectory(QApplication::applicationDirPath());
+  script.start(m_sStartupScript, cmdArgs);
+  if(script.waitForStarted() == true)
+  {
+    // now send the password via stdin
+    if(m_sPassword.isEmpty() == false)
+      script.write(m_sPassword.toAscii().constData());
+    else
+      script.write("NULL");
 
-	// depending on the keepalive state we either close the GUI immediately or keep it open
-	if(started == true)
-	{
+    script.closeWriteChannel();
+  
 		// sync the QSettings only in non dtlogin mode
 		if(m_bDtLoginMode == false)
 			m_pSettings->sync();
-		
+
+    // wait until the script finished
+    if(script.waitForFinished() == false)
+      std::cout << "ERROR: Failed to wait for script being finished" << std::endl;
+
+    // output the standard output to cout
+    QString standardOut = QString(script.readAllStandardOutput());
+    if(standardOut.isEmpty() == false)
+      std::cout << standardOut.toAscii().constData() << std::endl;
+
+    QString standardErr = QString(script.readAllStandardError());
+    if(standardErr.isEmpty() == false)
+      std::cerr << standardErr.toAscii().constData() << std::endl;
+
 		if(m_bKeepAlive == false)
 			close();
-	}
-	else
-	{
-		std::cout << "ERROR: Failed to execute startup script " << m_sStartupScript.toAscii().constData() << std::endl;
-		QApplication::beep();
-	}
+  }
+  else
+  {
+    std::cout << "ERROR: Failed to execute startup script " << m_sStartupScript.toAscii().constData() << std::endl;
+    QApplication::beep();
+  }
 
   // and make sure we are showing the right
   // default layout
@@ -1161,6 +1184,8 @@ void CMainWindow::changeLayout(enum LayoutType type)
 
       m_pStackedLayout->setCurrentIndex(CMainWindow::DefaultLayout);     
       m_pStartButton->setFocus(Qt::OtherFocusReason);
+
+      m_pPasswordEnterTimer->stop();
     }
     break;
 
@@ -1181,7 +1206,7 @@ void CMainWindow::changeLayout(enum LayoutType type)
 
       // now we start a QTimer() which resets the layout to the default one and removes
       // the password stuff after 30 seconds for security reasons.
-      QTimer::singleShot(30000, this, SLOT(passwordTimedOut()));
+      m_pPasswordEnterTimer->start(30000);
     }
     break;
   }

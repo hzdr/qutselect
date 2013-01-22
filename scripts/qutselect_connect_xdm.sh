@@ -14,8 +14,7 @@
 # $7 = the selected keylayout (e.g. 'de' or 'en')
 # $8 = the domain (e.g. 'FZR', used for RDP)
 # $9 = the username
-# $10 = the password if requested from the user
-# $11 = the servername (hostname) to connect to
+# $10 = the servername (hostname) to connect to
 
 if [ `uname -s` = "SunOS" ]; then
    XEPHYR=/usr/X11/bin/Xephyr
@@ -25,7 +24,7 @@ fi
 
 #####################################################
 # check that we have 8 command-line options at hand
-if [ $# -lt 11 ]; then
+if [ $# -lt 10 ]; then
    printf "ERROR: missing arguments!"
    exit 2
 fi
@@ -40,8 +39,10 @@ curDepth="${6}"
 keyLayout="${7}"
 domain="${8}"
 username="${9}"
-password="${10}"
-serverName="${11}"
+serverName="${10}"
+
+# read the password from stdin
+read password
 
 cmdArgs=""
 
@@ -69,7 +70,7 @@ if [ "x${dtlogin}" != "xtrue" ]; then
 fi
 
 # run the command
-${XEPHYR} :1 ${cmdArgs}
+${XEPHYR} :1 ${cmdArgs} &
 if [ $? != 0 ]; then
    printf "ERROR: ${XEPHYR} returned invalid return code"
    exit 2

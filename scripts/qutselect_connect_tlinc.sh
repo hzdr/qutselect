@@ -14,14 +14,13 @@
 # $7 = the selected keylayout (e.g. 'de' or 'en')
 # $8 = the domain (e.g. 'FZR', used for RDP)
 # $9 = the username
-# $10 = the password if requested from the user
-# $11 = the servername (hostname) to connect to
+# $10 = the servername (hostname) to connect to
 
 TLCLIENT=/opt/thinlinc/bin/tlclient
 
 #####################################################
-# check that we have 8 command-line options at hand
-if [ $# -lt 11 ]; then
+# check that we have 10 command-line options at hand
+if [ $# -lt 10 ]; then
    printf "ERROR: missing arguments!"
    exit 2
 fi
@@ -36,8 +35,10 @@ curDepth="${6}"
 keyLayout="${7}"
 domain="${8}"
 username="${9}"
-password="${10}"
-serverName="${11}"
+serverName="${10}"
+
+# read the password from stdin
+read password
 
 # check if the hostname is the same like the 
 # server we should connect to and if yes we go and exit immediately
@@ -56,7 +57,7 @@ if [ `hostname` != "${serverName}" ]; then
   cmdArgs="$cmdArgs -p $password"
 
   # execute tlclient
-  ${TLCLIENT} ${cmdArgs} ${serverName}
+  ${TLCLIENT} ${cmdArgs} ${serverName} &
   if [ $? != 0 ]; then
     printf "ERROR: ${TLCLIENT} returned invalid return code"
     exit 2

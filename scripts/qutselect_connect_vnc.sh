@@ -14,8 +14,7 @@
 # $7 = the selected keylayout (e.g. 'de' or 'en')
 # $8 = the domain (e.g. 'FZR', used for RDP)
 # $9 = the username
-# $10 = the password if requested from the user
-# $11 = the servername (hostname) to connect to
+# $10 = the servername (hostname) to connect to
 
 if [ `uname -s` = "SunOS" ]; then
    VNCVIEWER=/opt/csw/bin/vncviewer
@@ -24,8 +23,8 @@ else
 fi
 
 #####################################################
-# check that we have 8 command-line options at hand
-if [ $# -lt 11 ]; then
+# check that we have 10 command-line options at hand
+if [ $# -lt 10 ]; then
    printf "ERROR: missing arguments!"
    exit 2
 fi
@@ -40,8 +39,10 @@ curDepth="${6}"
 keyLayout="${7}"
 domain="${8}"
 username="${9}"
-password="${10}"
-serverName="${11}"
+serverName="${10}"
+
+# read the password from stdin
+read password
 
 # variable to prepare the command arguments
 cmdArgs=""
@@ -64,17 +65,14 @@ if [ "x${dtlogin}" != "xtrue" ]; then
    echo ${VNCVIEWER} ${cmdArgs} ${serverName}
 fi
 
-# run rdesktop finally
+# run vncviewer finally
 if [ "x${password}" != "xNULL" ]; then
   cmdArgs="$cmdArgs -autopass"
-  echo ${password} | ${VNCVIEWER} ${cmdArgs} ${serverName}
+  echo ${password} | ${VNCVIEWER} ${cmdArgs} ${serverName} &
 else
-  ${VNCVIEWER} ${cmdArgs} ${serverName}
+  ${VNCVIEWER} ${cmdArgs} ${serverName} &
 fi
 
-
-
-${VNCVIEWER} ${cmdArgs} ${serverName}
 if [ $? != 0 ]; then
    printf "ERROR: ${VNCVIEWER} returned invalid return code"
    exit 2

@@ -14,8 +14,7 @@
 # $7 = the selected keylayout (e.g. 'de' or 'en')
 # $8 = the domain (e.g. 'FZR', used for RDP)
 # $9 = the username
-# $10 = the password if requested from the user
-# $11 = the servername (hostname) to connect to
+# $10 = the servername (hostname) to connect to
 #
 
 if [ `uname -s` = "SunOS" ]; then
@@ -33,8 +32,8 @@ else
 fi
 
 #####################################################
-# check that we have 8 command-line options at hand
-if [ $# -lt 11 ]; then
+# check that we have 10 command-line options at hand
+if [ $# -lt 10 ]; then
    printf "ERROR: missing arguments!"
    exit 2
 fi
@@ -49,8 +48,10 @@ curDepth="${6}"
 keyLayout="${7}"
 domain="${8}"
 username="${9}"
-password="${10}"
-serverName="${11}"
+serverName="${10}"
+
+# read the password from stdin
+read password
 
 # before we go and connect to the windows (rdp) server we
 # go and add an utaction call so that on a smartcard removal
@@ -97,11 +98,13 @@ if [ "x${SUN_SUNRAY_TOKEN}" != "x" ] && [ -x ${UTTSC} ]; then
    # add domain
    if [ "x${domain}" != "xNULL" ]; then
      cmdArgs="$cmdArgs -d ${domain}"
+   else
+     cmdArgs="$cmdArgs -d FZR"
    fi
    
    # add username
    if [ "x${username}" != "xNULL" ]; then
-     cmdArgs="$cmdArgs -u ${USER}"
+     cmdArgs="$cmdArgs -u ${username}"
    else
      if [ "x${domain}" != "xNULL" ]; then
        cmdArgs="$cmdArgs -u ${domain}\\"
@@ -122,9 +125,9 @@ if [ "x${SUN_SUNRAY_TOKEN}" != "x" ] && [ -x ${UTTSC} ]; then
    # run uttsc finally
    if [ "x${password}" != "xNULL" ]; then
      cmdArgs="$cmdArgs -i"
-     echo ${password} | ${UTTSC} ${cmdArgs} ${serverName}
+     echo ${password} | ${UTTSC} ${cmdArgs} ${serverName} &
    else
-     ${UTTSC} ${cmdArgs} ${serverName}
+     ${UTTSC} ${cmdArgs} ${serverName} &
    fi
 
    ret=$?
@@ -173,11 +176,13 @@ if [ -z "${cmdArgs}" ]; then
    # add domain
    if [ "x${domain}" != "xNULL" ]; then
      cmdArgs="$cmdArgs -d ${domain}"
+   else
+     cmdArgs="$cmdArgs -d FZR"
    fi
 
    # add username
    if [ "x${username}" != "xNULL" ]; then
-     cmdArgs="$cmdArgs -u ${USER}"
+     cmdArgs="$cmdArgs -u ${username}"
    else
      if [ "x${domain}" != "xNULL" ]; then
        cmdArgs="$cmdArgs -u ${domain}\\"
@@ -198,9 +203,9 @@ if [ -z "${cmdArgs}" ]; then
    # run rdesktop finally
    if [ "x${password}" != "xNULL" ]; then
      cmdArgs="$cmdArgs -p -"
-     echo ${password} | ${RDESKTOP} ${cmdArgs} ${serverName}
+     echo ${password} | ${RDESKTOP} ${cmdArgs} ${serverName} &
    else
-     ${RDESKTOP} ${cmdArgs} ${serverName}
+     ${RDESKTOP} ${cmdArgs} ${serverName} &
    fi
 
    if [ $? != 0 ]; then

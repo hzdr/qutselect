@@ -43,6 +43,7 @@ class QTreeWidget;
 class QTreeWidgetItem;
 class QFileSystemWatcher;
 class QStackedLayout;
+class QTimer;
 
 class CMainWindow : public QMainWindow
 {
@@ -106,6 +107,7 @@ class CMainWindow : public QMainWindow
     QLineEdit*          m_pUsernameLineEdit;
     QLineEdit*          m_pPasswordLineEdit;
     QDialogButtonBox*   m_pPasswordButtonBox;
+    QTimer*             m_pPasswordEnterTimer;
 
 		bool m_bKeepAlive;
 		bool m_bDtLoginMode;
