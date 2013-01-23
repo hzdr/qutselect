@@ -215,4 +215,4 @@ if [ -z "${cmdArgs}" ]; then
 
 fi
 
-return 0
+exit 0

@@ -76,4 +76,4 @@ if [ $? != 0 ]; then
    exit 2
 fi
 
-return 0
+exit 0

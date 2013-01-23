@@ -64,4 +64,4 @@ if [ `hostname` != "${serverName}" ]; then
   fi
 fi
 
-return 0
+exit 0

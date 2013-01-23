@@ -66,4 +66,4 @@ if [ "x${dtlogin}" = "xtrue" ]; then
    fi
 fi
 
-return 0
+exit 0
