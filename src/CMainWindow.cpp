@@ -528,9 +528,14 @@ void CMainWindow::serverComboBoxChanged(int index)
 {
 	ENTER();
 
-	QTreeWidgetItem* item = m_pServerTreeWidget->topLevelItem(index);
-	if(item != NULL)
-		m_pServerTreeWidget->setCurrentItem(item);
+	QString serverName = m_pServerListBox->itemText(index);
+  if(serverName.isEmpty() == false)
+  {
+    serverName = serverName.split("\\s+", QString::SkipEmptyParts).at(0);
+	  QList<QTreeWidgetItem*> items = m_pServerTreeWidget->findItems(serverName, Qt::MatchStartsWith, CN_HOSTNAME);
+    if(items.isEmpty() == false)
+		  m_pServerTreeWidget->setCurrentItem(items.first());
+  }
 
 	LEAVE();
 }
@@ -1092,8 +1097,8 @@ void CMainWindow::loadServerList()
       else if(curLine.startsWith("==="))
       {
         QTreeWidgetItem* item = new QTreeWidgetItem();
-        item->setFirstColumnSpanned(true);
         item->setText(0, "==========");
+        item->setFlags(Qt::NoItemFlags);
         m_pServerTreeWidget->addTopLevelItem(item);
 
         for(int i=0; i < m_pServerTreeWidget->columnCount(); i++)
