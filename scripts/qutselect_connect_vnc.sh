@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This is a startup script for qutselect which initates a
 # VNC session to a windows server via 'vncviewer'
