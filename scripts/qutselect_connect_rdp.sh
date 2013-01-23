@@ -34,7 +34,7 @@ fi
 #####################################################
 # check that we have 10 command-line options at hand
 if [ $# -lt 10 ]; then
-   printf "ERROR: missing arguments!"
+   echo "ERROR: missing arguments!"
    exit 2
 fi
 
