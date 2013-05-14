@@ -43,6 +43,7 @@ class CApplication : public QApplication
 		bool noSunrayServers() const { return m_bNoSRSS; }
 		bool noListDisplay() const { return m_bNoList; }
 		bool keepAlive() const { return m_bKeepAlive; }
+		bool useUserName() const {return m_bUseUserName;}
 		QString customServerListFile() const { return m_sServerListFile; }
 
 	private:
@@ -59,6 +60,7 @@ class CApplication : public QApplication
 		bool		m_bNoSRSS;
 		bool		m_bNoList;
 		bool		m_bKeepAlive;
+		bool 		m_bUseUserName;
 		QString m_sServerListFile;
 };
 

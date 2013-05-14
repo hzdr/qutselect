@@ -56,6 +56,7 @@
 #include <QTimer>
 
 #include <iostream>
+#include <unistd.h>
 
 #include <rtdebug.h>
 
@@ -85,6 +86,7 @@ enum ColumnNumbers { CN_DISPLAYNAME=0,
 CMainWindow::CMainWindow(CApplication* app)
 	: m_bKeepAlive(app->keepAlive()),
 		m_bDtLoginMode(app->dtLoginMode()),
+		m_bUseUserName(app->useUserName()),
 		m_bKioskMode(false),
 		m_bNoSRSS(app->noSunrayServers()),
 		m_bNoList(app->noListDisplay())
@@ -99,14 +101,15 @@ CMainWindow::CMainWindow(CApplication* app)
 	{
 		if(userName.isEmpty() == false)
 		{
-			m_bKioskMode = QString(userName).startsWith("utku");
+			m_bKioskMode = ((QString(userName).startsWith("utku")) || (m_bUseUserName == false));
+std::cout<<m_bUseUserName<<" "<<m_bKioskMode<<std::endl;
 
 			D("kioskmode: %d", m_bKioskMode);
 		}
 	}
 
   // skip automated names
-  if(userName.startsWith("utku") == false)
+  if((userName.startsWith("utku") == false) && (m_bUseUserName == true))
     m_sUsername = userName;
 
 	// get/identify the default serverlist file

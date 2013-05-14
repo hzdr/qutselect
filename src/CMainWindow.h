@@ -114,6 +114,7 @@ class CMainWindow : public QMainWindow
 		bool m_bKioskMode;
 		bool m_bNoSRSS;
 		bool m_bNoList;
+		bool m_bUseUserName;
 		QString m_sServerListFile;
 
     // stored result before starting a connection

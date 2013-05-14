@@ -47,7 +47,8 @@ CApplication::CApplication(int& argc, char** argv)
 		m_bDtLoginMode(false),
 		m_bNoSRSS(false),
 		m_bNoList(false),
-		m_bKeepAlive(false)
+		m_bKeepAlive(false),
+		m_bUseUserName(true)
 {
 	ENTER();
 
@@ -137,6 +138,9 @@ bool CApplication::parseCommandLine(int& argc, char** argv)
 
 		if(args.contains("-keep"))
 			m_bKeepAlive = true;
+
+		if(args.contains("-nouser"))
+			m_bUseUserName = false;
 
 		if(inputFileNames.isEmpty() == false)
 			m_sServerListFile = inputFileNames[0];
