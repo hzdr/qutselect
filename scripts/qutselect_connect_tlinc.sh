@@ -16,7 +16,8 @@
 # $9 = the username
 # $10 = the servername (hostname) to connect to
 
-TLCLIENT=/opt/thinlinc/bin/tlclient
+#TLCLIENT=/opt/thinlinc/bin/tlclient
+TLCLIENT=/usr/bin/thinlinc
 
 #####################################################
 # check that we have 10 command-line options at hand

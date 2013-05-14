@@ -115,7 +115,8 @@ if [ "x${SUN_SUNRAY_TOKEN}" != "x" ] && [ -x ${UTTSC} ]; then
    cmdArgs="$cmdArgs -N on"
 
    # add the usb path as a local path
-   cmdArgs="$cmdArgs -r disk:USB=/tmp/SUNWut/mnt/${USER}/"
+#   cmdArgs="$cmdArgs -r disk:USB=/tmp/SUNWut/mnt/${USER}/"
+   cmdArgs="$cmdArgs -r disk:USB=/media/"
 
    # output the cmdline so that users can replicate it
    if [ "x${dtlogin}" != "xtrue" ]; then
@@ -188,6 +189,9 @@ if [ -z "${cmdArgs}" ]; then
        cmdArgs="$cmdArgs -u ${domain}\\"
      fi
    fi
+
+   # add the usb path as a local path
+   cmdArgs="$cmdArgs -r disk:USB=/media/"
 
    if [ "x${SUN_SUNRAY_TOKEN}" != "x" ]; then
       # add the usb path as a local path
