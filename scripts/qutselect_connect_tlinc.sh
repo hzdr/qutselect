@@ -48,17 +48,23 @@ if [ `hostname` != "${serverName}" ]; then
   # variable to prepare the command arguments
   cmdArgs=""
 
-  # show the options tab when the gui pops up
+  # hide the options tab when the gui pops up
   cmdArgs="$cmdArgs -h options"
 
   # username
   cmdArgs="$cmdArgs -u $username"
 
-  # password
-  cmdArgs="$cmdArgs -p $password"
-
   # execute tlclient
-  ${TLCLIENT} ${cmdArgs} ${serverName} &
+  if [ "x${password}" != "xNULL" ]; then
+    # use '-P cat' to read in the password using stdin rather
+    # than supplying it on command-line
+    cmdArgs="$cmdArgs -P cat"
+    echo ${password} | ${TLCLIENT} ${cmdArgs} ${serverName} &
+  else
+    ${TLCLIENT} ${cmdArgs} ${serverName} &
+  fi
+
+  # check return value of tlclient
   if [ $? != 0 ]; then
     printf "ERROR: ${TLCLIENT} returned invalid return code"
     exit 2
