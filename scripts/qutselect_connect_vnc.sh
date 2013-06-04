@@ -64,18 +64,18 @@ if [ "x${password}" != "xNULL" ]; then
   if [ "x${dtlogin}" != "xtrue" ]; then
     echo ${VNCVIEWER} ${cmdArgs} ${serverName}
   fi
-  echo ${password} | ${VNCVIEWER} ${cmdArgs} ${serverName} &
+  echo ${password} | ${VNCVIEWER} ${cmdArgs} ${serverName}
 else
   # make sure a password dialog pops up
   cmdArgs="$cmdArgs -xrm vncviewer*passwordDialog:true"
   if [ "x${dtlogin}" != "xtrue" ]; then
     echo ${VNCVIEWER} ${cmdArgs} ${serverName}
   fi
-  ${VNCVIEWER} ${cmdArgs} ${serverName} &
+  ${VNCVIEWER} ${cmdArgs} ${serverName}
 fi
 
 if [ $? != 0 ]; then
-   printf "ERROR: ${VNCVIEWER} returned invalid return code"
+   printf "ERROR: ${VNCVIEWER} returned invalid return code ($?)"
    exit 2
 fi
 
