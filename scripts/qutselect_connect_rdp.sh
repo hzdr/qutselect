@@ -19,12 +19,14 @@
 
 if [ `uname -s` = "SunOS" ]; then
    RDESKTOP=/opt/csw/bin/rdesktop
+   XFREERDP=/opt/csw/bin/xfreerdp
    UTTSC=/opt/SUNWuttsc/bin/uttsc
    UTACTION=/opt/SUNWut/bin/utaction
    XVKBD=/usr/openwin/bin/xvkbd
    PKILL=/usr/bin/pkill
 else
    RDESKTOP=/usr/local/bin/rdesktop
+   XFREERDP=/usr/local/bin/xfreerdp
    UTTSC=/opt/SUNWuttsc/bin/uttsc
    UTACTION=/opt/SUNWut/bin/utaction
    XVKBD=/usr/openwin/bin/xvkbd
@@ -53,19 +55,22 @@ serverName="${10}"
 # read the password from stdin
 read password
 
-# before we go and connect to the windows (rdp) server we
-# go and add an utaction call so that on a smartcard removal
-# the windows desktop will be locked.
-if [ "x${dtlogin}" = "xtrue" ]; then
-   ${PKILL} -u ${USER} -f "utaction.*xvkbd" >/dev/null 2>&1
-   ${UTACTION} -d "$XVKBD -text '\Ml'" &
-fi
-
 # variable to prepare the command arguments
 cmdArgs=""
 
-# now we find out which RDP client we use (rdesktop/uttsc)
+# now we find out which RDP client we use (xfreerdp/rdesktop/uttsc)
+
+## UTTSC
+# if $SUN_SUNRAY_TOKEN is set we explicitly use uttsc
 if [ "x${SUN_SUNRAY_TOKEN}" != "x" ] && [ -x ${UTTSC} ]; then
+
+   # before we go and connect to the windows (rdp) server we
+   # go and add an utaction call so that on a smartcard removal
+   # the windows desktop will be locked.
+   if [ "x${dtlogin}" = "xtrue" ]; then
+     ${PKILL} -u ${USER} -f "utaction.*xvkbd" >/dev/null 2>&1
+     ${UTACTION} -d "$XVKBD -text '\Ml'" &
+   fi
 
    # if we end up here we go and prepare all arguments for the
    # uttsc call
@@ -115,8 +120,7 @@ if [ "x${SUN_SUNRAY_TOKEN}" != "x" ] && [ -x ${UTTSC} ]; then
    cmdArgs="$cmdArgs -N on"
 
    # add the usb path as a local path
-#   cmdArgs="$cmdArgs -r disk:USB=/tmp/SUNWut/mnt/${USER}/"
-   cmdArgs="$cmdArgs -r disk:USB=/media/"
+   cmdArgs="$cmdArgs -r disk:USB=/tmp/SUNWut/mnt/${USER}/"
 
    # output the cmdline so that users can replicate it
    if [ "x${dtlogin}" != "xtrue" ]; then
@@ -135,7 +139,7 @@ if [ "x${SUN_SUNRAY_TOKEN}" != "x" ] && [ -x ${UTTSC} ]; then
    if [ $ret != 0 ]; then
       if [ $ret -eq 211 ]; then
         cmdArgs=""
-        echo "WARNING: couldn't start uttsc, retrying with rdesktop"
+        echo "WARNING: couldn't start uttsc, retrying with other remote desktop"
       else
         echo "ERROR: uttsc returned invalid return code"
         exit 2
@@ -143,7 +147,90 @@ if [ "x${SUN_SUNRAY_TOKEN}" != "x" ] && [ -x ${UTTSC} ]; then
    fi
 fi
 
-if [ -z "${cmdArgs}" ]; then
+## XFREERDP
+# if $cmdArgs is empty and xfreerdp exists use that one
+if [ -z "${cmdArgs}" ] && [ -x ${XFREERDP} ]; then
+
+   # resolution
+   if [ "x${resolution}" = "xfullscreen" ]; then
+      cmdArgs="$cmdArgs -f"
+   else
+      cmdArgs="$cmdArgs -g ${resolution}"
+   fi
+
+   # color depth
+   cmdArgs="$cmdArgs -a ${colorDepth}"
+
+   # enable LAN speed features
+   cmdArgs="$cmdArgs -x lan"
+
+   # add client name
+   cmdArgs="$cmdArgs -n `hostname`"
+
+   # keyboard
+   if [ "x${keyLayout}" = "xde" ]; then
+      cmdArgs="$cmdArgs -k 0x00000407"
+   else
+      cmdArgs="$cmdArgs -k 0x00000409"
+   fi
+
+   # add domain
+   if [ "x${domain}" != "xNULL" ]; then
+     cmdArgs="$cmdArgs -d ${domain}"
+   else
+     cmdArgs="$cmdArgs -d FZR"
+   fi
+
+   # add username
+   if [ "x${username}" != "xNULL" ]; then
+     cmdArgs="$cmdArgs -u ${username}"
+   else
+     if [ "x${domain}" != "xNULL" ]; then
+       cmdArgs="$cmdArgs -u ${domain}\\"
+     fi
+   fi
+
+   # ignore the certificate in case of encryption
+   cmdArgs="$cmdArgs --ignore-certificate"
+
+   # add the usb path as a local path
+   cmdArgs="$cmdArgs --plugin rdpdr --data disk:USB:/mnt/media/ --"
+
+   if [ "x${SUN_SUNRAY_TOKEN}" != "x" ]; then
+      # add the usb path as a local path
+      cmdArgs="$cmdArgs --plugin rdpdr --data disk:USB:/tmp/SUNWut/mnt/${USER}/ --"
+   fi
+
+   # enable sound redirection
+   cmdArgs="$cmdArgs --plugin rdpsnd"
+
+   # add clipboard synchronization
+   cmdArgs="$cmdArgs --plugin cliprdr"
+
+   # if we are not in dtlogin mode we go and
+   # output the rdesktop line that is to be executed
+   if [ "x${dtlogin}" != "xtrue" ]; then
+      echo ${XFREERDP} ${cmdArgs} ${serverName}
+   fi
+
+   # run rdesktop finally
+   if [ "x${password}" != "xNULL" ]; then
+     cmdArgs="$cmdArgs --from-stdin"
+     echo ${password} | ${XFREERDP} ${cmdArgs} ${serverName} &
+   else
+     ${XFREERDP} ${cmdArgs} ${serverName} &
+   fi
+
+   if [ $? != 0 ]; then
+      cmdArgs=""
+      echo "WARNING: couldn't start rdesktop, retrying with other remote desktop"
+   fi
+
+fi
+
+## RDESKTOP
+# if $cmdArgs is empty and rdesktop exists use that one
+if [ -z "${cmdArgs}" ] && [ -x ${RDESKTOP} ]; then
 
    # resolution
    if [ "x${resolution}" = "xfullscreen" ]; then
@@ -191,7 +278,7 @@ if [ -z "${cmdArgs}" ]; then
    fi
 
    # add the usb path as a local path
-   cmdArgs="$cmdArgs -r disk:USB=/media/"
+   cmdArgs="$cmdArgs -r disk:USB=/mnt/media/"
 
    if [ "x${SUN_SUNRAY_TOKEN}" != "x" ]; then
       # add the usb path as a local path
