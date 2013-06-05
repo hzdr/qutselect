@@ -1,7 +1,7 @@
 #/* vim:set ts=2 nowrap: ****************************************************
 #
 # qutselect - A simple Qt4 based GUI frontend for SRSS (utselect)
-# Copyright (C) 2009 by Jens Langner <Jens.Langner@light-speed.de>
+# Copyright (C) 2009-2013 by Jens Langner <Jens.Langner@light-speed.de>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,21 +23,33 @@
 
 # main variables
 TEMPLATE		= app
-CONFIG		 *= qt thread no_mocdepend warn_on @ANSI_COLOR@ @QTLINK_LEVEL@
 QT					= gui core network
-QMAKE_QMAKE = @QMAKE_PATH@
+CONFIG		 *= qt thread no_mocdepend warn_on @ANSI_COLOR@ @QTLINK_LEVEL@
 TARGET			= qutselect
+QMAKE_QMAKE = @QMAKE_PATH@
 VERSION			= @PACKAGE_VERSION@
 DESTDIR			= ../
 
 # directory specification
-OBJECTS_DIR = .obj
-MOC_DIR			= .moc
-UI_DIR			= .ui
+unix {
+  OBJECTS_DIR = .obj
+  MOC_DIR     = .moc
+  UI_DIR      = .ui
+}
+win32 {
+  OBJECTS_DIR = _obj
+  MOC_DIR     = _moc
+  UI_DIR      = _ui
+}
 
 # define headers and source files for compilation
 DEPENDPATH  = . includes
 INCLUDEPATH = . includes
+
+# find out the host os/cpu
+HOST_OS=@HOST_OS@
+HOST_CPU=@HOST_CPU@
+HOST_MACHINE=@HOST_MACHINE@
 
 # own QMAKE Flags definitions
 QMAKE_CXXFLAGS_RELEASE = @CXXFLAGS@
@@ -48,62 +60,81 @@ COMPILE_LEVEL = @COMPILE_LEVEL@
 contains(COMPILE_LEVEL, debug) {
 	CONFIG -= release
 	CONFIG *= debug
-	QMAKE_CXXFLAGS_DEBUG *= -ggdb -O0
-	DEFINES *= DEBUG
+	DEBUG = -DDEBUG
 }
 else {
 	CONFIG -= debug
 	CONFIG *= release
-	QMAKE_CXXFLAGS_RELEASE *= -O3 -fomit-frame-pointer -funroll-loops
+  DEBUG =
 	QMAKE_LINK *= -s
-	DEFINES -= DEBUG
 }
+
+QMAKE_EXTRA_VARIABLES = DEBUG
+QMAKE_CXXFLAGS *= $(EXPORT_DEBUG)
+QMAKE_CFLAGS *= $(EXPORT_DEBUG)
 
 ### QT LIB ################################################################
 # if "staticqt" is specificed in the CONFIG variable (by configure)
 # we link with the static QT library instead
 staticqt {
-	QMAKE_LIBS_QT =
-	QMAKE_LIBS_QT_THREAD =
-	!macx:LIBS *= $(QTDIR)/lib/libqt-mt.a
-	macx:LIBS *= $(QTDIR)/lib/libqt-mt.a -lz -framework Carbon
+  QMAKE_LIBS_QT =
+  QMAKE_LIBS_QT_THREAD =
+  !macx:LIBS *= $(QTDIR)/lib/libQtCore.a
+  macx:LIBS *= $(QTDIR)/lib/libQtCore.a -lz -framework Carbon
 }
 
 ### LIBRTDEBUG ############################################################
 # if "staticrtdebug" is specified in the CONFIG variable (by configure)
 # we link wih the static variant of librtdebug instead
 INCLUDEPATH *= @RTDEBUG_INCDIR@
-contains(DEFINES, DEBUG) {
-        staticrtdebug {
-                LIBS *= @RTDEBUG_LIBDIR@/librtdebug.a
-        }
-        else {
-                LIBS *= -L@RTDEBUG_LIBDIR@ @LIB_RTDEBUG@
-        }
-}
-
-# find out the GCC version
-# and define some gcc v3+ options only.
-GCC_VERSION = @GCC_VERSION@
-contains(GCC_VERSION, 3) {
-	QMAKE_CXXFLAGS *= -fmessage-length=0
-}
-
-# find out the system
-HOST_OS=@HOST_OS@
-HOST_CPU=@HOST_CPU@
-contains(HOST_CPU, sparc) {
-	QMAKE_CXXFLAGS *= -mcpu=v9 -mtune=ultrasparc3
-}
-else {
-	contains(HOST_CPU, [pP]ower[pP]c) {
-      QMAKE_CXXFLAGS *= -Acpu=powerpc -mcpu=G4
+contains(COMPILE_LEVEL, debug) {
+  staticrtdebug {
+    LIBS *= @RTDEBUG_LIBDIR@/@LIB_RTDEBUG@
   }
   else {
-		contains(HOST_CPU, [oO]pteron.+) {			
-			QMAKE_CXXFLAGS *= -Acpu=amd64 -march=opteron
-		}
-	}
+    LIBS *= -L@RTDEBUG_LIBDIR@ @LIB_RTDEBUG@
+  }
+
+  message("linking with @LIB_RTDEBUG@")
+}
+
+# set the general compiler optimizations
+QMAKE_CFLAGS_RELEASE = -O3 -fomit-frame-pointer
+QMAKE_CXXFLAGS_RELEASE = -O3 -fomit-frame-pointer
+
+# set defines so that we can identify the processor type later on
+!mac {
+  contains(HOST_MACHINE, x86_64) {
+    DEFINES *= __X86_64__
+  }
+  contains(HOST_MACHINE, i[63]86) {
+    DEFINES *= __i386__
+  }
+  contains(HOST_MACHINE, sun4u) {
+    DEFINES *= __SPARC__
+  }
+  contains(HOST_MACHINE, Power.+) {
+    DEFINES *= __POWERPC__
+  }
+}
+
+!mac {
+  contains(HOST_MACHINE, x86_64) {
+    QMAKE_CFLAGS_RELEASE *= -mtune=native
+    QMAKE_CXXFLAGS_RELEASE *= -mtune=native
+  }
+  contains(HOST_MACHINE, i[63]86) {
+    QMAKE_CFLAGS_RELEASE *= -mtune=native
+    QMAKE_CXXFLAGS_RELEASE *= -mtune=native
+  }
+  contains(HOST_MACHINE, sun4u) {
+    QMAKE_CFLAGS_RELEASE *= -mcpu=ultrasparc3
+    QMAKE_CXXFLAGS_RELEASE *= -mcpu=ultrasparc3
+  }
+  contains(HOST_MACHINE, Power.+) {
+    QMAKE_CFLAGS_RELEASE *= -mcpu=powerpc
+    QMAKE_CXXFLAGS_RELEASE *= -mcpu=powerpc
+  }
 }
 
 # override the compile output

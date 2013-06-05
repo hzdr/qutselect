@@ -51,7 +51,7 @@ class CMainWindow : public QMainWindow
 
   public:
     enum ServerType { SRSS=0, TLINC, RDP, XDM, VNC };
-    enum LayoutType { DefaultLayout=0, PasswordLayout };
+    enum LayoutType { DefaultLayout=0, UserPassLayout, PassLayout };
 
     CMainWindow(CApplication* app);
 		~CMainWindow();
@@ -63,6 +63,7 @@ class CMainWindow : public QMainWindow
 
 		// overloaded methods
 		void keyPressEvent(QKeyEvent* e);
+    void closeEvent(QCloseEvent* e);
 
 	private:
 		void loadServerList();
@@ -104,6 +105,7 @@ class CMainWindow : public QMainWindow
 		QFileSystemWatcher* m_pServerListWatcher;
     QStackedLayout*     m_pStackedLayout;
     QLabel*             m_pPasswordLayoutLabel;
+    QLabel*             m_pUsernameLabel;
     QLineEdit*          m_pUsernameLineEdit;
     QLineEdit*          m_pPasswordLineEdit;
     QDialogButtonBox*   m_pPasswordButtonBox;

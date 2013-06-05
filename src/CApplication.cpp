@@ -150,7 +150,7 @@ bool CApplication::parseCommandLine(int& argc, char** argv)
 	if(result == false)
 	{
 		cout << "qutselect " << PACKAGE_VERSION << " - a simple Qt4 based GUI frontend for terminal clients" << endl
-				 << "(" __DATE__ ")  Copyright (c) 2008-2012 by Jens Langner / www.hzdr.de" << endl << endl;
+				 << "(" __DATE__ ")  Copyright (c) 2008-2013 by Jens Langner, www.hzdr.de" << endl << endl;
 	}
 
 	// in case "-v" is specified we output some version
@@ -167,15 +167,13 @@ bool CApplication::parseCommandLine(int& argc, char** argv)
 				 #warning unknown compiler suite
 				 << "unknown compiler "
 				 #endif
-				 #if #cpu(sparc)
+				 #if defined(__SPARC__)
 				 << "[sparc]"
-				 #elif #cpu(sparc64)
-				 << "[sparc64]"
-				 #elif #cpu(powerpc)
+				 #elif defined(__POWERPC__)
 				 << "[ppc]"
-				 #elif #cpu(i386)
+				 #elif defined(__i386__)
 				 << "[x86]"
-				 #elif #cpu(x86_64)
+				 #elif defined(__X86_64__)
 				 << "[x86_64]"
 				 #else
 				 #warning Unknown CPU model
@@ -188,7 +186,7 @@ bool CApplication::parseCommandLine(int& argc, char** argv)
 										<< QString::number((QT_VERSION & 0x00ff00)>>8).toAscii().constData() << "." 
 										<< QString::number((QT_VERSION & 0x0000ff)).toAscii().constData()
 										<< " (" << qVersion() << ")" << endl
-										<< "  Copyright (C) 2006-2009 Trolltech Inc." << endl;
+										<< "  Copyright (C) 2006-2013 Nokia Corporation" << endl;
 	}
 	else if(result == false) // output usage information on the console.
 	{

@@ -86,10 +86,10 @@ enum ColumnNumbers { CN_DISPLAYNAME=0,
 CMainWindow::CMainWindow(CApplication* app)
 	: m_bKeepAlive(app->keepAlive()),
 		m_bDtLoginMode(app->dtLoginMode()),
-		m_bUseUserName(app->useUserName()),
 		m_bKioskMode(false),
 		m_bNoSRSS(app->noSunrayServers()),
-		m_bNoList(app->noListDisplay())
+		m_bNoList(app->noListDisplay()),
+		m_bUseUserName(app->useUserName())
 {
 	ENTER();
 
@@ -216,10 +216,6 @@ std::cout<<m_bUseUserName<<" "<<m_bKioskMode<<std::endl;
   // the screen
 	QDesktopWidget* desktopWidget = QApplication::desktop();
 	QRect screenSize = desktopWidget->screenGeometry(desktopWidget->primaryScreen());
-
-  // get aspectRatio
-  float aspectRatio = static_cast<float>(screenSize.width())/static_cast<float>(screenSize.height());
-  D("aspectRatio: %g", aspectRatio);
 
   QHBoxLayout* screenResolutionLayout = new QHBoxLayout();
 	m_pScreenResolutionBox = new QComboBox();
@@ -421,7 +417,8 @@ std::cout<<m_bUseUserName<<" "<<m_bKioskMode<<std::endl;
   m_pPasswordLayoutLabel->setAlignment(Qt::AlignBottom | Qt::AlignHCenter);
 
   pwLayout->addWidget(m_pPasswordLayoutLabel, 0, 0, 1, 2);
-  pwLayout->addWidget(new QLabel(tr("Username:")), 1, 0);
+  m_pUsernameLabel = new QLabel(tr("Username:"));
+  pwLayout->addWidget(m_pUsernameLabel, 1, 0);
   m_pUsernameLineEdit = new QLineEdit;
   pwLayout->addWidget(m_pUsernameLineEdit, 1, 1);
   pwLayout->addWidget(new QLabel(tr("Password:")), 2, 0);
@@ -861,7 +858,10 @@ void CMainWindow::connectButtonPressed(void)
     // if a password prompt is required we don't start
     // the connection right away but wait until the user
     // entered username/password
-    changeLayout(PasswordLayout);
+    if(serverType == "VNC")
+      changeLayout(PassLayout);
+    else
+      changeLayout(UserPassLayout);
 
     LEAVE();
     return;
@@ -978,7 +978,7 @@ void CMainWindow::keyPressEvent(QKeyEvent* e)
 		case Qt::Key_Escape:
 		{
       // depending on the layout we perform differently
-      if(m_pStackedLayout->currentIndex() == CMainWindow::PasswordLayout)
+      if(m_pStackedLayout->currentIndex() != CMainWindow::DefaultLayout)
         changeLayout(CMainWindow::DefaultLayout);
       else
 			  close();
@@ -994,7 +994,7 @@ void CMainWindow::keyPressEvent(QKeyEvent* e)
 		case Qt::Key_Enter:
 		{
       // depending on the layout we perform differently
-      if(m_pStackedLayout->currentIndex() == CMainWindow::PasswordLayout)
+      if(m_pStackedLayout->currentIndex() != CMainWindow::DefaultLayout)
       {
         // if the username line edit is focused we move
         // on to the password line edit instead of starting the connection
@@ -1023,6 +1023,24 @@ void CMainWindow::keyPressEvent(QKeyEvent* e)
 	e->ignore();
 
 	LEAVE();
+}
+
+void CMainWindow::closeEvent(QCloseEvent* e)
+{
+  ENTER();
+
+  // save the current position and size of the GUI
+  if(m_bDtLoginMode == false)
+  {
+    m_pSettings->setValue("position", pos());
+    m_pSettings->setValue("size", size());
+    m_pSettings->sync();
+  }
+
+  // call super method
+  QMainWindow::closeEvent(e);
+
+  LEAVE();
 }
 
 void CMainWindow::loadServerList()
@@ -1197,12 +1215,14 @@ void CMainWindow::changeLayout(enum LayoutType type)
     }
     break;
 
-    case CMainWindow::PasswordLayout:
+    case CMainWindow::UserPassLayout:
     {
       m_pPasswordLayoutLabel->setText(tr("Please enter login data for server <b>%1</b>:").arg(m_sServerName));
       m_pPasswordButtonBox->button(QDialogButtonBox::Ok)->setText(tr("Login"));
       m_pPasswordButtonBox->button(QDialogButtonBox::Cancel)->setText(tr("Abort"));
-      m_pStackedLayout->setCurrentIndex(CMainWindow::PasswordLayout);
+      m_pStackedLayout->setCurrentIndex(CMainWindow::UserPassLayout);
+      m_pUsernameLabel->setVisible(true);
+      m_pUsernameLineEdit->setVisible(true);
 
       if(m_sUsername.isEmpty() == false)
       {
@@ -1217,6 +1237,23 @@ void CMainWindow::changeLayout(enum LayoutType type)
       m_pPasswordEnterTimer->start(30000);
     }
     break;
+
+    case CMainWindow::PassLayout:
+    {
+      m_pPasswordLayoutLabel->setText(tr("Please enter password for server <b>%1</b>:").arg(m_sServerName));
+      m_pPasswordButtonBox->button(QDialogButtonBox::Ok)->setText(tr("Login"));
+      m_pPasswordButtonBox->button(QDialogButtonBox::Cancel)->setText(tr("Abort"));
+      m_pStackedLayout->setCurrentIndex(CMainWindow::UserPassLayout);
+      m_pUsernameLabel->setVisible(false);
+      m_pUsernameLineEdit->setVisible(false);
+      m_pPasswordLineEdit->setFocus(Qt::OtherFocusReason);
+
+      // now we start a QTimer() which resets the layout to the default one and removes
+      // the password stuff after 30 seconds for security reasons.
+      m_pPasswordEnterTimer->start(30000);
+    }
+    break;
+ 
   }
 
   LEAVE();
