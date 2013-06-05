@@ -22,7 +22,7 @@
 #**************************************************************************/
 
 AC_PREREQ(2.57)
-AC_INIT(qutselect, 1.7, Jens.Langner@light-speed.de)
+AC_INIT(qutselect, 1.8, Jens.Langner@light-speed.de)
 AC_COPYRIGHT(Copyright (c) 2009-2013 by Jens Langner <Jens.Langner@light-speed.de>)
 AC_REVISION($Revision$)
 AC_CONFIG_SRCDIR([src/main.cpp])
@@ -33,19 +33,31 @@ AC_MSG_CHECKING(for host operating system)
 AC_SUBST(HOST_OS, `uname -s`)
 AC_MSG_RESULT(${HOST_OS})
 
+# Checks for host machine type
+AC_MSG_CHECKING(for host system machine type)
+AC_SUBST(HOST_MACHINE, `uname -m`)
+AC_MSG_RESULT(${HOST_MACHINE})
+
 # Checks for host processor type
 AC_MSG_CHECKING(for host system processor type)
 AC_SUBST(HOST_CPU, `uname -p`)
 AC_MSG_RESULT(${HOST_CPU})
 
+# check if the user wants to have ansi color output
+AC_ANSI_COLOR
+
 # Checks for programs.
 AC_PROG_CXX
 AC_GNU_SOURCE
 
-# Check for the QT libraries
+# Check if user wants complete static linkage
+AC_ENABLE_STATIC_BUILD
+
+# Check for the Qt4 libraries
 AC_ENABLE_STATIC_QT
-AC_PATH_QT4_LIB
+AC_PATH_QT4
 AC_PATH_QT4_INC
+AC_PATH_QT4_LIB
 AC_PATH_QT4_QMAKE
 
 # Check for the runtime debug library
@@ -54,10 +66,6 @@ AC_ENABLE_STATIC_RTDEBUG
 AC_PATH_RTDEBUG
 AC_PATH_RTDEBUG_LIB
 AC_PATH_RTDEBUG_INC
-
-# own macros
-AC_C_BIGENDIAN
-AC_ANSI_COLOR
 
 # checking gcc version
 AC_PROG_GCC_VERSION
