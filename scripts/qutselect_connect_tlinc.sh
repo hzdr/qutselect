@@ -59,9 +59,9 @@ if [ `hostname` != "${serverName}" ]; then
     # use '-P cat' to read in the password using stdin rather
     # than supplying it on command-line
     cmdArgs="$cmdArgs -P cat"
-    echo ${password} | ${TLCLIENT} ${cmdArgs} ${serverName} &
+    echo ${password} | ${TLCLIENT} ${cmdArgs} ${serverName} &>/dev/null &
   else
-    ${TLCLIENT} ${cmdArgs} ${serverName} &
+    ${TLCLIENT} ${cmdArgs} ${serverName} &>/dev/null &
   fi
 
   # check return value of tlclient

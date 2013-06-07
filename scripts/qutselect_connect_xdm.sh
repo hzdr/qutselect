@@ -70,7 +70,7 @@ if [ "x${dtlogin}" != "xtrue" ]; then
 fi
 
 # run the command
-${XEPHYR} :1 ${cmdArgs} &
+${XEPHYR} :1 ${cmdArgs} &>/dev/null &
 if [ $? != 0 ]; then
    printf "ERROR: ${XEPHYR} returned invalid return code"
    exit 2

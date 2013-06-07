@@ -130,9 +130,9 @@ if [ "x${SUN_SUNRAY_TOKEN}" != "x" ] && [ -x ${UTTSC} ]; then
    # run uttsc finally
    if [ "x${password}" != "xNULL" ]; then
      cmdArgs="$cmdArgs -i"
-     echo ${password} | ${UTTSC} ${cmdArgs} ${serverName} &
+     echo ${password} | ${UTTSC} ${cmdArgs} ${serverName} &>/dev/null &
    else
-     ${UTTSC} ${cmdArgs} ${serverName} &
+     ${UTTSC} ${cmdArgs} ${serverName} &>/dev/null &
    fi
 
    ret=$?
@@ -216,9 +216,9 @@ if [ -z "${cmdArgs}" ] && [ -x ${XFREERDP} ]; then
    # run rdesktop finally
    if [ "x${password}" != "xNULL" ]; then
      cmdArgs="$cmdArgs --from-stdin"
-     echo ${password} | ${XFREERDP} ${cmdArgs} ${serverName} &
+     echo ${password} | ${XFREERDP} ${cmdArgs} ${serverName} &>/dev/null &
    else
-     ${XFREERDP} ${cmdArgs} ${serverName} &
+     ${XFREERDP} ${cmdArgs} ${serverName} &>/dev/null &
    fi
 
    if [ $? != 0 ]; then
@@ -294,9 +294,9 @@ if [ -z "${cmdArgs}" ] && [ -x ${RDESKTOP} ]; then
    # run rdesktop finally
    if [ "x${password}" != "xNULL" ]; then
      cmdArgs="$cmdArgs -p -"
-     echo ${password} | ${RDESKTOP} ${cmdArgs} ${serverName} &
+     echo ${password} | ${RDESKTOP} ${cmdArgs} ${serverName} &>/dev/null &
    else
-     ${RDESKTOP} ${cmdArgs} ${serverName} &
+     ${RDESKTOP} ${cmdArgs} ${serverName} &>/dev/null &
    fi
 
    if [ $? != 0 ]; then
