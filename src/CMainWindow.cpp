@@ -870,7 +870,7 @@ void CMainWindow::connectButtonPressed(void)
       // if the servertype is RDP and the domain is FZR we check if qutselect
       // is running in a ThinLinc session and if so we don't switch to the
       // username/password prompt call startConnection() right away
-      if(serverType != "RDP" || qgetenv("TLSESSIONDATA").isEmpty())
+      if(serverType != "RDP" || m_sDomain != "FZR" || qgetenv("TLSESSIONDATA").isEmpty())
       {
         changeLayout(UserPassLayout);
 
