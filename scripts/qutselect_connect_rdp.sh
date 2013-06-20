@@ -24,6 +24,7 @@ if [ `uname -s` = "SunOS" ]; then
    UTACTION=/opt/SUNWut/bin/utaction
    XVKBD=/usr/openwin/bin/xvkbd
    PKILL=/usr/bin/pkill
+   TLSSOPASSWORD=/opt/thinlinc/bin/tl-sso-password
 else
    RDESKTOP=/usr/local/bin/rdesktop
    XFREERDP=/usr/local/bin/xfreerdp
@@ -31,6 +32,7 @@ else
    UTACTION=/opt/SUNWut/bin/utaction
    XVKBD=/usr/openwin/bin/xvkbd
    PKILL=/usr/bin/pkill
+   TLSSOPASSWORD=/opt/thinlinc/bin/tl-sso-password
 fi
 
 #####################################################
@@ -52,8 +54,20 @@ domain="${8}"
 username="${9}"
 serverName="${10}"
 
-# read the password from stdin
-read password
+# if this is a ThinLinc session we can grab the password
+# using the tl-sso-password command in case the user wants
+# to connect to one of our servers (FZR domain)
+if [ -x ${TLSSOPASSWORD} ]; then
+  ${TLSSOPASSWORD} -c
+  if [ $? -eq 0 ] && [ "x${domain}" = "xFZR" ]; then
+    password=`${TLSSOPASSWORD}`
+  fi
+fi
+
+# read the password from stdin if not specified yet
+if [ "x${password}" = "x" ]; then
+  read password
+fi
 
 # variable to prepare the command arguments
 cmdArgs=""

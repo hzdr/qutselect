@@ -859,12 +859,25 @@ void CMainWindow::connectButtonPressed(void)
     // the connection right away but wait until the user
     // entered username/password
     if(serverType == "VNC")
+    {
       changeLayout(PassLayout);
-    else
-      changeLayout(UserPassLayout);
 
-    LEAVE();
-    return;
+      LEAVE();
+      return;
+    }
+    else
+    {
+      // if the servertype is RDP and the domain is FZR we check if qutselect
+      // is running in a ThinLinc session and if so we don't switch to the
+      // username/password prompt call startConnection() right away
+      if(serverType != "RDP" || qgetenv("TLSESSIONDATA").isEmpty())
+      {
+        changeLayout(UserPassLayout);
+
+        LEAVE();
+        return;
+      }
+    }
   }
 
   // set the password and start the connection
