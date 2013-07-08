@@ -259,9 +259,6 @@ if [ -z "${cmdArgs}" ] && [ -x ${RDESKTOP} ]; then
    # sound 
    cmdArgs="$cmdArgs -r sound:local"
 
-   # disable encryption (saves CPU time)
-   cmdArgs="$cmdArgs -E"
-
    # enable LAN speed features
    cmdArgs="$cmdArgs -x lan"
 
