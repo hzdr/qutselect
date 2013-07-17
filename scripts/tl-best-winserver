@@ -5,7 +5,9 @@
 # to return the name of a server of a supplied server list which is found
 # to be least loaded due to a resources check via check_nrpe
 #
-# version 1.0 (2013-07-17) - initial release
+# ChangeLog:
+# 1.0 (2013-07-17) - initial release
+# 1.1 (2013-07-17) - fixed to run within busybox' bash
 #
 # It has been released under Public Domain in 2013
 # by Jens Langner <j.langner@hzdr.de>
@@ -23,7 +25,7 @@ CHECK_NRPE="/usr/local/bin/check_nrpe"
 # where the user is logged in is chosen and then the name returned. This
 # function assumes The ThinLinc Windows-Extensions are installed on all
 # the corresponding servers.
-function tl-best-winserver()
+tlbestwinserver()
 {
   local serverList=`echo $1 | tr -s ',' ' '`
   local userName="$2"
@@ -112,7 +114,7 @@ function tl-best-winserver()
   return 0
 } 
 
-function displayHelp()
+displayHelp()
 {
   echo >&2 "Select terminal server with lighest load."
   echo >&2 "If the user already has a session on a server, this one will"
@@ -141,7 +143,7 @@ while getopts "$optspec" optchar; do
                     verbose="verbose"
                     ;;
                 user)
-                    username="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                    username="$${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
                     ;;
                 *)
                     displayHelp
@@ -166,5 +168,5 @@ shift `expr $OPTIND - 1`
 serverList=`echo $* | tr -s ' ' ','`
 
 # call our internal tl-best-winserver function
-tl-best-winserver ${serverList} ${username} ${verbose}
+tlbestwinserver ${serverList} ${username} ${verbose}
 exit $?
