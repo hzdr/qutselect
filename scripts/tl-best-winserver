@@ -5,7 +5,9 @@
 # to return the name of a server of a supplied server list which is found
 # to be least loaded due to a resources check via check_nrpe
 #
-# It is released under Public Domain in 2013
+# version 1.0 (2013-07-17) - initial release
+#
+# It has been released under Public Domain in 2013
 # by Jens Langner <j.langner@hzdr.de>
 #
 
