@@ -25,6 +25,7 @@ if [ `uname -s` = "SunOS" ]; then
    XVKBD=/usr/openwin/bin/xvkbd
    PKILL=/usr/bin/pkill
    TLSSOPASSWORD=/opt/thinlinc/bin/tl-sso-password
+   TLBESTWINSERVER=/opt/thinlinc/bin/tl-best-winserver
 else
    RDESKTOP=/usr/local/bin/rdesktop
    XFREERDP=/usr/local/bin/xfreerdp
@@ -33,6 +34,7 @@ else
    XVKBD=/usr/openwin/bin/xvkbd
    PKILL=/usr/bin/pkill
    TLSSOPASSWORD=/opt/thinlinc/bin/tl-sso-password
+   TLBESTWINSERVER=/opt/thinlinc/bin/tl-best-winserver
 fi
 
 #####################################################
@@ -67,6 +69,34 @@ fi
 # read the password from stdin if not specified yet
 if [ "x${password}" = "x" ]; then
   read password
+fi
+
+# if the serverName contains more than one server we go and
+# check via the check_nrpe command which server to prefer
+serverList=`echo ${serverName} | tr -s ',' ' '`
+numServers=`echo ${serverList} | wc -w`
+if [ "${numServers}" -gt 1 ]; then
+  # check if we can find a suitable binary
+  if [ -x ${TLBESTWINSERVER} ]; then
+    bestServer=`${TLBESTWINSERVER} ${serverList}`
+    res=$?
+  else
+    # as an alternative we search for the tool in the scripts subdir
+    # this tool also allows to override the username via -u
+    if [ -x "scripts/tl-best-winserver" ]; then 
+      bestServer=`scripts/tl-best-winserver -u ${username} ${serverList}`
+      res=$?
+    else
+      # we don't have tl-best-winserver so lets simply take the first
+      # one in the list
+      echo argh
+      bestServer=`echo ${serverList} | awk '{ print $1 }'`
+      res=0
+    fi
+  fi
+  if [ $res -eq 0 ]; then
+    serverName=${bestServer}
+  fi
 fi
 
 # variable to prepare the command arguments

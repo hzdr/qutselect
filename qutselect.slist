@@ -3,6 +3,6 @@
 # DISPLAYNAME   HOSTNAME		 DOMAIN   TYPE    OS             DESCRIPTION     PWPRMPT SCRIPT
 # ----------------------------------------------------------------------------------------------------------
 Linux         ; saturn      ;       ; SRSS  ; UNIX - Linux ; Allgemein     ; FALSE ; scripts/qutselect_connect_srss.sh
-Windows       ; kronos      ; FZR   ; RDP   ; Windows      ; Allgemein     ; TRUE  ; scripts/qutselect_connect_rdp.sh
+Windows/kronos; fwpts01,fwpts02      ; FZR   ; RDP   ; Windows      ; Allgemein     ; TRUE  ; scripts/qutselect_connect_rdp.sh
 ===
 UKD-NUK       ; termserver  ; UKD88 ; RDP   ; Windows      ; UKD - Medizin ; TRUE  ; scripts/qutselect_connect_rdp.sh

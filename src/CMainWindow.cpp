@@ -102,7 +102,6 @@ CMainWindow::CMainWindow(CApplication* app)
 		if(userName.isEmpty() == false)
 		{
 			m_bKioskMode = ((QString(userName).startsWith("utku")) || (m_bUseUserName == false));
-std::cout<<m_bUseUserName<<" "<<m_bKioskMode<<std::endl;
 
 			D("kioskmode: %d", m_bKioskMode);
 		}
