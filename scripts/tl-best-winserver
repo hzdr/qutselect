@@ -9,6 +9,7 @@
 # 1.0 (2013-07-17) - initial release
 # 1.1 (2013-07-17) - fixed to run within busybox' bash
 # 1.2 (2013-07-22) - fixed bug where 'bc' on solaris doesn't know 'else'
+# 1.3 (2013-07-22) - removed 'bc' dependency completely and replaced it with 'awk'
 #
 # It has been released under Public Domain in 2013
 # by Jens Langner <j.langner@hzdr.de>
@@ -93,17 +94,17 @@ tlbestwinserver()
     local num_users=`echo $res | awk '{ print $7 }' | cut -d ':' -f 2`
 
     # now calculate the weighting based on fixed values
-    local num_users_mem=`echo "scale=6; (${mem_free}-${swap_used}/2)/${RAM_PER_USER}" | bc`
-    local free_bogomips=`echo "scale=6; ${EST_BOGOMIPS}*(1-${loadavg})" | bc`
-    local num_users_load=`echo "scale=6; ${free_bogomips}/${BOGOMIPS_PER_USER}" | bc`
-    local num_free_users=`echo "if(${num_users_mem} < ${num_users_load}) { ${num_users_mem} }; if(${num_users_mem} >= ${num_users_load}) { ${num_users_load} }" | bc`
-    local rating=`echo "scale=6; ${num_free_users} - (${num_users}/${EXISTING_USERS_WEIGHT})" | bc`
+    local rating=`awk "BEGIN { num_users_mem = (${mem_free}-${swap_used}/2)/${RAM_PER_USER}; \
+                               free_bogomips = ${EST_BOGOMIPS}*(1.0-${loadavg}); \
+                               num_users_load = free_bogomips/${BOGOMIPS_PER_USER}; \
+                               num_free_users = (num_users_mem < num_users_load ? num_users_mem : num_users_load); \
+                               printf(\"%.6f\", num_free_users - (${num_users}/${EXISTING_USERS_WEIGHT})); }"`
 
     if [ "${verbose}" = "verbose" ]; then
       echo >&2 "Rating for server ${server} is ${rating}"
     fi
 
-    if [ -z "${last_server}" ] || [[ "`echo \"${rating}>${last_rating}\" | bc`" == "1" ]]; then
+    if [ -z "${last_server}" ] || [[ "`awk \"BEGIN { print (${rating} > ${last_rating} ? 1 : 0) }\"`" == "1" ]]; then
       last_server=${server}
       last_rating=${rating}
     fi
