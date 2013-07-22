@@ -8,6 +8,7 @@
 # ChangeLog:
 # 1.0 (2013-07-17) - initial release
 # 1.1 (2013-07-17) - fixed to run within busybox' bash
+# 1.2 (2013-07-22) - fixed bug where 'bc' on solaris doesn't know 'else'
 #
 # It has been released under Public Domain in 2013
 # by Jens Langner <j.langner@hzdr.de>
@@ -95,7 +96,7 @@ tlbestwinserver()
     local num_users_mem=`echo "scale=6; (${mem_free}-${swap_used}/2)/${RAM_PER_USER}" | bc`
     local free_bogomips=`echo "scale=6; ${EST_BOGOMIPS}*(1-${loadavg})" | bc`
     local num_users_load=`echo "scale=6; ${free_bogomips}/${BOGOMIPS_PER_USER}" | bc`
-    local num_free_users=`echo "scale=6; if(${num_users_mem}<${num_users_load}) { ${num_users_mem} } else { ${num_users_load} }" | bc`
+    local num_free_users=`echo "if(${num_users_mem} < ${num_users_load}) { ${num_users_mem} }; if(${num_users_mem} >= ${num_users_load}) { ${num_users_load} }" | bc`
     local rating=`echo "scale=6; ${num_free_users} - (${num_users}/${EXISTING_USERS_WEIGHT})" | bc`
 
     if [ "${verbose}" = "verbose" ]; then
