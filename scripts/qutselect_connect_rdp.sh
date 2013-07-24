@@ -238,7 +238,7 @@ if [ -z "${cmdArgs}" ] && [ -x ${XFREERDP} ]; then
    cmdArgs="$cmdArgs --ignore-certificate"
 
    # add the usb path as a local path
-   cmdArgs="$cmdArgs --plugin rdpdr --data disk:USB:/mnt/media/ --"
+   cmdArgs="$cmdArgs --plugin rdpdr --data disk:USB:/mnt/ --"
 
    if [ "x${SUN_SUNRAY_TOKEN}" != "x" ]; then
       # add the usb path as a local path
@@ -319,7 +319,7 @@ if [ -z "${cmdArgs}" ] && [ -x ${RDESKTOP} ]; then
    fi
 
    # add the usb path as a local path
-   cmdArgs="$cmdArgs -r disk:USB=/mnt/media/"
+   cmdArgs="$cmdArgs -r disk:USB=/mnt/"
 
    if [ "x${SUN_SUNRAY_TOKEN}" != "x" ]; then
       # add the usb path as a local path
