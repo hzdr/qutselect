@@ -237,12 +237,17 @@ if [ -z "${cmdArgs}" ] && [ -x ${XFREERDP} ]; then
    # ignore the certificate in case of encryption
    cmdArgs="$cmdArgs --ignore-certificate"
 
-   # add the usb path as a local path
-   cmdArgs="$cmdArgs --plugin rdpdr --data disk:USB:/mnt/ --"
-
-   if [ "x${SUN_SUNRAY_TOKEN}" != "x" ]; then
-      # add the usb path as a local path
-      cmdArgs="$cmdArgs --plugin rdpdr --data disk:USB:/tmp/SUNWut/mnt/${USER}/ --"
+   # add the usb path as a local path. if TLSESSIONDATA is set
+   # we are in a thinlinc session and thus have to forward
+   # ${HOME}/thindrives/mnt instead
+   if [ -n "${TLSESSIONDATA}" ]; then
+     cmdArgs="$cmdArgs --plugin rdpdr --data disk:USB:${HOME}/thindrives/mnt/ --"
+   else
+      if [ -n "${SUN_SUNRAY_TOKEN}" ]; then
+        cmdArgs="$cmdArgs --plugin rdpdr --data disk:USB:/tmp/SUNWut/mnt/${USER}/ --"
+      else
+        cmdArgs="$cmdArgs --plugin rdpdr --data disk:USB:/mnt/ --"
+      fi
    fi
 
    # enable sound redirection
@@ -318,12 +323,17 @@ if [ -z "${cmdArgs}" ] && [ -x ${RDESKTOP} ]; then
      fi
    fi
 
-   # add the usb path as a local path
-   cmdArgs="$cmdArgs -r disk:USB=/mnt/"
-
-   if [ "x${SUN_SUNRAY_TOKEN}" != "x" ]; then
-      # add the usb path as a local path
-      cmdArgs="$cmdArgs -r disk:USB=/tmp/SUNWut/mnt/${USER}/"
+   # add the usb path as a local path. if TLSESSIONDATA is set
+   # we are in a thinlinc session and thus have to forward
+   # ${HOME}/thindrives/mnt instead
+   if [ -n "${TLSESSIONDATA}" ]; then
+     cmdArgs="$cmdArgs -r disk:USB=${HOME}/thindrives/mnt/"
+   else
+      if [ -n "${SUN_SUNRAY_TOKEN}" ]; then
+        cmdArgs="$cmdArgs -r disk:USB=/tmp/SUNWut/mnt/${USER}/"
+      else
+        cmdArgs="$cmdArgs -r disk:USB=/mnt/"
+      fi
    fi
 
    # if we are not in dtlogin mode we go and
