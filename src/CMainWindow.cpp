@@ -61,14 +61,15 @@
 #include <rtdebug.h>
 
 // standard width/height
-#define WINDOW_WIDTH	450
+#define WINDOW_WIDTH	500
 #define WINDOW_HEIGHT 600
 
 // the default startup script pattern
 #define DEFAULT_SCRIPT_PATTERN "scripts/qutselect_connect_%1.sh"
 
 // the serverlist file name
-#define DEFAULT_SERVERFILE "qutselect.slist"
+#define DEFAULT_SLIST_FILE "qutselect.slist"
+#define DEFAULT_MOTD_FILE  "qutselect.motd"
 
 // the column numbers
 enum ColumnNumbers { CN_DISPLAYNAME=0,
@@ -88,8 +89,7 @@ CMainWindow::CMainWindow(CApplication* app)
 		m_bDtLoginMode(app->dtLoginMode()),
 		m_bKioskMode(false),
 		m_bNoSRSS(app->noSunrayServers()),
-		m_bNoList(app->noListDisplay()),
-		m_bUseUserName(app->useUserName())
+		m_bNoList(app->noListDisplay())
 {
 	ENTER();
 
@@ -101,21 +101,21 @@ CMainWindow::CMainWindow(CApplication* app)
 	{
 		if(userName.isEmpty() == false)
 		{
-			m_bKioskMode = ((QString(userName).startsWith("utku")) || (m_bUseUserName == false));
+			m_bKioskMode = (userName.startsWith("utku") || userName == "root");
 
 			D("kioskmode: %d", m_bKioskMode);
 		}
 	}
 
   // skip automated names
-  if((userName.startsWith("utku") == false) && (m_bUseUserName == true))
+  if(userName.startsWith("utku") == false && userName != "root")
     m_sUsername = userName;
 
 	// get/identify the default serverlist file
 	if(app->customServerListFile().isEmpty() == false)
 		m_sServerListFile = app->customServerListFile();
 	else
-		m_sServerListFile = QDir(QApplication::applicationDirPath()).absoluteFilePath(DEFAULT_SERVERFILE);
+		m_sServerListFile = QDir(QApplication::applicationDirPath()).absoluteFilePath(DEFAULT_SLIST_FILE);
 
   // create the central widget to which we are going to add everything
   QWidget* centralWidget = new QWidget;
@@ -216,12 +216,12 @@ CMainWindow::CMainWindow(CApplication* app)
 	QDesktopWidget* desktopWidget = QApplication::desktop();
 	QRect screenSize = desktopWidget->screenGeometry(desktopWidget->primaryScreen());
 
-  QHBoxLayout* screenResolutionLayout = new QHBoxLayout();
+  m_pScreenResolutionLayout = new QHBoxLayout();
 	m_pScreenResolutionBox = new QComboBox();
   m_pScreenResolutionBox->setEditable(true);
-  screenResolutionLayout->addWidget(m_pScreenResolutionBox, 0, Qt::AlignLeft);
-  screenResolutionLayout->addWidget(new QLabel("max: " + QString::number(screenSize.width()) + "x" + QString::number(screenSize.height())));
-  screenResolutionLayout->addStretch(100);
+  m_pScreenResolutionLayout->addWidget(m_pScreenResolutionBox, 0, Qt::AlignLeft);
+  m_pScreenResolutionLayout->addWidget(new QLabel("max: " + QString::number(screenSize.width()) + "x" + QString::number(screenSize.height())));
+  m_pScreenResolutionLayout->addStretch(100);
 
   // now fill the screen resolutionbox with resolutions this screen can handle
   if(screenSize.width() >= 800 && screenSize.height() >= 600)
@@ -305,12 +305,12 @@ CMainWindow::CMainWindow(CApplication* app)
 	colorsButtonGroup->addButton(m_p16bitColorsButton);
 	colorsButtonGroup->addButton(m_p24bitColorsButton);
 	colorsButtonGroup->setExclusive(true);
-	QHBoxLayout* colorsButtonLayout = new QHBoxLayout();
-	colorsButtonLayout->setMargin(0);
-	colorsButtonLayout->addWidget(m_p8bitColorsButton);
-	colorsButtonLayout->addWidget(m_p16bitColorsButton);
-	colorsButtonLayout->addWidget(m_p24bitColorsButton);
-	colorsButtonLayout->addStretch(1);
+	m_pColorsButtonLayout = new QHBoxLayout();
+	m_pColorsButtonLayout->setMargin(0);
+	m_pColorsButtonLayout->addWidget(m_p8bitColorsButton);
+	m_pColorsButtonLayout->addWidget(m_p16bitColorsButton);
+	m_pColorsButtonLayout->addWidget(m_p24bitColorsButton);
+	m_pColorsButtonLayout->addStretch(1);
 
 	// now we check the QSettings for the last selected color depth
 	if(m_bDtLoginMode == false)
@@ -342,11 +342,11 @@ CMainWindow::CMainWindow(CApplication* app)
 	keyboardGroup->addButton(m_pGermanKeyboardButton);
 	keyboardGroup->addButton(m_pEnglishKeyboardButton);
 	keyboardGroup->setExclusive(true);
-	QHBoxLayout* keyboardButtonLayout = new QHBoxLayout();
-	keyboardButtonLayout->setMargin(0);
-	keyboardButtonLayout->addWidget(m_pGermanKeyboardButton);
-	keyboardButtonLayout->addWidget(m_pEnglishKeyboardButton);
-	keyboardButtonLayout->addStretch(1);
+	m_pKeyboardButtonLayout = new QHBoxLayout();
+	m_pKeyboardButtonLayout->setMargin(0);
+	m_pKeyboardButtonLayout->addWidget(m_pGermanKeyboardButton);
+	m_pKeyboardButtonLayout->addWidget(m_pEnglishKeyboardButton);
+	m_pKeyboardButtonLayout->addStretch(1);
 
 	// select the german keyboard as default
 	m_pGermanKeyboardButton->setChecked(true);
@@ -377,7 +377,9 @@ CMainWindow::CMainWindow(CApplication* app)
 	QHBoxLayout* buttonLayout = new QHBoxLayout();
 	buttonLayout->addWidget(m_pQuitButton);
 	buttonLayout->setStretchFactor(m_pQuitButton, 2);
-	buttonLayout->addStretch(1);
+  m_pSpaceWidget = new QWidget;
+  buttonLayout->addWidget(m_pSpaceWidget);
+	buttonLayout->setStretchFactor(m_pSpaceWidget, 1);
 	buttonLayout->addWidget(m_pStartButton);
 	buttonLayout->setStretchFactor(m_pStartButton, 2);
 	connect(m_pQuitButton, SIGNAL(clicked()),
@@ -396,14 +398,34 @@ CMainWindow::CMainWindow(CApplication* app)
 		layout->addLayout(serverLineLayout,					0, 1);
   }
 
-	layout->addWidget(m_pScreenResolutionLabel,		1, 0);
-	layout->addLayout(screenResolutionLayout,			1, 1);
-	layout->addWidget(m_pColorsLabel,							2, 0);
-	layout->addLayout(colorsButtonLayout,					2, 1);
-	layout->addWidget(m_pKeyboardLabel,						3, 0);
-	layout->addLayout(keyboardButtonLayout,				3, 1);
-	layout->addWidget(buttonFrame,								4, 0, 1, 2);
-	layout->addLayout(buttonLayout,								5, 0, 1, 2);
+  m_pOptionsWidget = new QWidget;
+  QGridLayout* optionsLayout = new QGridLayout;
+  optionsLayout->setSpacing(5);
+  optionsLayout->setContentsMargins(0,0,0,0);
+	optionsLayout->addWidget(m_pScreenResolutionLabel,		0, 0);
+	optionsLayout->addLayout(m_pScreenResolutionLayout,	  0, 1);
+	optionsLayout->addWidget(m_pColorsLabel,							1, 0);
+	optionsLayout->addLayout(m_pColorsButtonLayout,			  1, 1);
+	optionsLayout->addWidget(m_pKeyboardLabel,						2, 0);
+	optionsLayout->addLayout(m_pKeyboardButtonLayout,		  2, 1);
+  m_pOptionsWidget->setLayout(optionsLayout);
+
+  // create the MOTD widget
+  m_pMotdWidget = new QWidget;
+  QVBoxLayout* motdLayout = new QVBoxLayout;
+  motdLayout->setSpacing(5);
+  motdLayout->setContentsMargins(0,0,0,0);
+  QFrame* motdFrame = new QFrame;
+  motdFrame->setFrameStyle(QFrame::HLine | QFrame::Raised);
+  motdLayout->addWidget(motdFrame);
+  m_pMotdLabel = new QLabel;
+  motdLayout->addWidget(m_pMotdLabel);
+	motdLayout->addWidget(buttonFrame);
+  m_pMotdWidget->setLayout(motdLayout);
+
+  layout->addWidget(m_pOptionsWidget,           1, 0, 1, 2);
+  layout->addWidget(m_pMotdWidget,              2, 0, 1, 2);
+	layout->addLayout(buttonLayout,								3, 0, 1, 2);
   defaultWidget->setLayout(layout);
 
   QWidget* passwordWidget = new QWidget;
@@ -475,6 +497,7 @@ CMainWindow::CMainWindow(CApplication* app)
 
 	// now we try to open the serverlist file and add the items to our comobox
 	loadServerList();
+  loadMotdText();
 
 	// check if the QSettings contains any info about the last position
 	if(m_bDtLoginMode == true)
@@ -483,7 +506,10 @@ CMainWindow::CMainWindow(CApplication* app)
 		// the dtlogin mode
 		setKeepAlive(true);
 		setFullScreenOnly(true);
-		setQuitText(tr("Close"));		
+
+    // hide the Quit Button in DtLogin Mode as ESC does the same
+    m_pQuitButton->setVisible(false);
+    m_pSpaceWidget->setVisible(false);
 
 		// now we make sure we centre the new window on the current
 		// primary screen
@@ -693,19 +719,41 @@ void CMainWindow::setFullScreenOnly(const bool on)
 		m_pScreenResolutionBox->setEnabled(false);
 
 		// hide some components competely
-		m_pScreenResolutionLabel->setVisible(false);
-		m_pScreenResolutionBox->setVisible(false);
+		m_pOptionsWidget->setVisible(false);
 	}
 	else
 	{
 		m_pScreenResolutionBox->setEnabled(true);
 
 		// hide some components competely
-		m_pScreenResolutionLabel->setVisible(true);
-		m_pScreenResolutionBox->setVisible(true);
+		m_pOptionsWidget->setVisible(true);
 	}
 
 	LEAVE();
+}
+
+void CMainWindow::loadMotdText(void)
+{
+  ENTER();
+
+ 	QFile motdFile(QDir(QApplication::applicationDirPath()).absoluteFilePath(DEFAULT_MOTD_FILE));
+	if(motdFile.open(QFile::ReadOnly))
+	{
+		QTextStream in(&motdFile);
+    QString allText = in.readAll();
+
+    if(allText.isEmpty() == false)
+    {
+      m_pMotdLabel->setText(allText);
+      m_pMotdWidget->setVisible(true);
+    }
+    else
+      m_pMotdWidget->setVisible(false);
+  }
+  else
+    m_pMotdWidget->setVisible(false);
+
+  LEAVE();
 }
 
 void CMainWindow::connectButtonPressed(void)

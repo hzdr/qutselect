@@ -93,15 +93,6 @@ int main(int argc, char* argv[])
 		// install the translator
 		app.installTranslator(&myTranslator);	
 
-		// now we check wheter the user requests some options
-		// to be enabled
-		bool dtLoginCall = false;
-		if(argc > 1)
-		{
-			if(QString(argv[1]).toLower() == "-dtlogin")
-				dtLoginCall = true;
-		}
-
 		// now we do execute our application
 		returnCode = app.exec();
 

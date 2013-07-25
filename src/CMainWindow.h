@@ -44,6 +44,7 @@ class QTreeWidgetItem;
 class QFileSystemWatcher;
 class QStackedLayout;
 class QTimer;
+class QHBoxLayout;
 
 class CMainWindow : public QMainWindow
 {
@@ -67,6 +68,7 @@ class CMainWindow : public QMainWindow
 
 	private:
 		void loadServerList();
+    void loadMotdText();
 		enum ServerType matchServerType(const QString& string);
     void changeLayout(enum LayoutType type);
     bool passwordDialog(const QString& serverName, QString& username, QString& password);
@@ -89,14 +91,18 @@ class CMainWindow : public QMainWindow
 		QComboBox*		      m_pServerListBox;
 		QLabel*				      m_pScreenResolutionLabel;
 		QComboBox*		      m_pScreenResolutionBox;
+    QHBoxLayout*        m_pScreenResolutionLayout;
 		QLabel*				      m_pColorsLabel;
 		QRadioButton*	      m_p8bitColorsButton;
 		QRadioButton*       m_p16bitColorsButton;
 		QRadioButton*       m_p24bitColorsButton;
+    QHBoxLayout*        m_pColorsButtonLayout;
 		QLabel*				      m_pKeyboardLabel;
 		QRadioButton*       m_pGermanKeyboardButton;
 		QRadioButton*       m_pEnglishKeyboardButton;
+    QHBoxLayout*        m_pKeyboardButtonLayout;
 		QPushButton*	      m_pQuitButton;
+    QWidget*            m_pSpaceWidget;
 		QPushButton*	      m_pStartButton;
 		QSettings*		      m_pSettings;
     QTreeWidget*        m_pServerTreeWidget;
@@ -110,13 +116,15 @@ class CMainWindow : public QMainWindow
     QLineEdit*          m_pPasswordLineEdit;
     QDialogButtonBox*   m_pPasswordButtonBox;
     QTimer*             m_pPasswordEnterTimer;
+    QWidget*            m_pOptionsWidget;
+    QWidget*            m_pMotdWidget;
+    QLabel*             m_pMotdLabel;
 
 		bool m_bKeepAlive;
 		bool m_bDtLoginMode;
 		bool m_bKioskMode;
 		bool m_bNoSRSS;
 		bool m_bNoList;
-		bool m_bUseUserName;
 		QString m_sServerListFile;
 
     // stored result before starting a connection
