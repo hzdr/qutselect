@@ -1,8 +1,8 @@
-<table>
-<tr><td colspan=2><u><b>Global Keyboard Shortcuts:</u></b></td></tr>
-<tr><td>PAUSE (or SLEEP)</td><td>Lock Screen</td></tr>
-<tr><td>SHIFT+PAUSE (or STOP)</td><td>Disconnect Session</td></tr>
-<tr><td>CTRL+PAUSE</td><td>Reboot System</td></tr>
-<tr><td>ALT+F10</td><td>Eject all USB drives</td></tr>
-<tr><td>SCROLL-LOCK</td><td>Switch Keyboard Layout (de/en)</td></tr>
+<table width=100%>
+<tr><td colspan=2><u><b>Global Keyboard Shortcuts:</u></b></td><td align=right><small>ts-hzdr v0.5 (25.07.2013)</small></td></tr>
+<tr><td>PAUSE (or SLEEP)</td><td>Lock Screen</td><td align=right><small>(c) 2013 J.Langner, A.Lougovski</small></td></tr>
+<tr><td>SHIFT+PAUSE (or STOP)</td><td colspan=2>Disconnect Session</td></tr>
+<tr><td>CTRL+PAUSE</td><td colspan=2>Reboot System</td></tr>
+<tr><td>ALT+F10</td><td colspan=2>Eject all USB drives</td></tr>
+<tr><td>SCROLL-LOCK</td><td colspan=2>Switch Keyboard Layout (de/en)</td></tr>
 </table>
