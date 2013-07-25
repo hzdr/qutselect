@@ -241,12 +241,12 @@ if [ -z "${cmdArgs}" ] && [ -x ${XFREERDP} ]; then
    # we are in a thinlinc session and thus have to forward
    # ${HOME}/thindrives/mnt instead
    if [ -n "${TLSESSIONDATA}" ]; then
-     cmdArgs="$cmdArgs --plugin rdpdr --data disk:USB:${TLSESSIONDATA}/drives/mnt/ --"
+     cmdArgs="$cmdArgs --plugin rdpdr --data disk:USB:${TLSESSIONDATA}/drives/ --"
    else
       if [ -n "${SUN_SUNRAY_TOKEN}" ]; then
         cmdArgs="$cmdArgs --plugin rdpdr --data disk:USB:/tmp/SUNWut/mnt/${USER}/ --"
       else
-        cmdArgs="$cmdArgs --plugin rdpdr --data disk:USB:/mnt/ --"
+        cmdArgs="$cmdArgs --plugin rdpdr --data disk:USB:/mnt/`hostname`/ --"
       fi
    fi
 
@@ -327,12 +327,12 @@ if [ -z "${cmdArgs}" ] && [ -x ${RDESKTOP} ]; then
    # we are in a thinlinc session and thus have to forward
    # ${HOME}/thindrives/mnt instead
    if [ -n "${TLSESSIONDATA}" ]; then
-     cmdArgs="$cmdArgs -r disk:USB=${TLSESSIONDATA}/drives/mnt/"
+     cmdArgs="$cmdArgs -r disk:USB=${TLSESSIONDATA}/drives/"
    else
       if [ -n "${SUN_SUNRAY_TOKEN}" ]; then
         cmdArgs="$cmdArgs -r disk:USB=/tmp/SUNWut/mnt/${USER}/"
       else
-        cmdArgs="$cmdArgs -r disk:USB=/mnt/"
+        cmdArgs="$cmdArgs -r disk:USB=/mnt/`hostname`"
       fi
    fi
 
