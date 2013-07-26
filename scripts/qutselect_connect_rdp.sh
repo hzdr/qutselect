@@ -234,6 +234,9 @@ if [ -z "${cmdArgs}" ] && [ -x ${XFREERDP} ]; then
      fi
    fi
 
+   # set the window title to the server name we connect to
+   cmdArgs="$cmdArgs -T ${serverName}"
+
    # ignore the certificate in case of encryption
    cmdArgs="$cmdArgs --ignore-certificate"
 
@@ -299,6 +302,9 @@ if [ -z "${cmdArgs}" ] && [ -x ${RDESKTOP} ]; then
 
    # add client name
    cmdArgs="$cmdArgs -n `hostname`"
+
+   # set the window title to the server name we connect to
+   cmdArgs="$cmdArgs -T ${serverName}"
 
    # keyboard
    if [ "x${keyLayout}" = "xde" ]; then
