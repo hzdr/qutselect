@@ -89,7 +89,6 @@ if [ "${numServers}" -gt 1 ]; then
     else
       # we don't have tl-best-winserver so lets simply take the first
       # one in the list
-      echo argh
       bestServer=`echo ${serverList} | awk '{ print $1 }'`
       res=0
     fi
