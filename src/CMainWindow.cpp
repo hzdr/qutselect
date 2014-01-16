@@ -87,29 +87,18 @@ enum ColumnNumbers { CN_DISPLAYNAME=0,
 CMainWindow::CMainWindow(CApplication* app)
 	: m_bKeepAlive(app->keepAlive()),
 		m_bDtLoginMode(app->dtLoginMode()),
-		m_bKioskMode(false),
 		m_bNoSRSS(app->noSunrayServers()),
 		m_bNoList(app->noListDisplay())
 {
 	ENTER();
 
-	// we find out if this is a kioskmode session by simply querying for
-	// the username and comparing it to utk* as in SRSS all kiosk users
-	// start with that name
-	QString userName = QString(getenv("USER"));
-	if(m_bDtLoginMode)
-	{
-		if(userName.isEmpty() == false)
-		{
-			m_bKioskMode = (userName.startsWith("utku") || userName == "root");
-
-			D("kioskmode: %d", m_bKioskMode);
-		}
-	}
-
   // skip automated names
-  if(userName.startsWith("utku") == false && userName != "root")
-    m_sUsername = userName;
+  if(app->noUserName() == false)
+  {
+	  QString userName = QString(getenv("USER"));
+    if(userName.startsWith("utku") == false && userName != "root")
+      m_sUsername = userName;
+  }
 
 	// get/identify the default serverlist file
 	if(app->customServerListFile().isEmpty() == false)
@@ -534,7 +523,7 @@ CMainWindow::CMainWindow(CApplication* app)
 		resize(m_pSettings->value("size", QSize(WINDOW_WIDTH, WINDOW_HEIGHT)).toSize());
 	}
 	
-	setWindowTitle("qutselect v" PACKAGE_VERSION " - (c) 2005-2013 hzdr.de");
+	setWindowTitle("qutselect v" PACKAGE_VERSION " - (c) 2005-2014 hzdr.de");
 
 	LEAVE();
 }

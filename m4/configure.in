@@ -22,8 +22,8 @@
 #**************************************************************************/
 
 AC_PREREQ(2.57)
-AC_INIT(qutselect, 1.11, Jens.Langner@light-speed.de)
-AC_COPYRIGHT(Copyright (c) 2009-2013 by Jens Langner <Jens.Langner@light-speed.de>)
+AC_INIT(qutselect, 1.12, mail@jens-maus.de)
+AC_COPYRIGHT(Copyright (c) 2009-2014 Jens Maus <mail@jens-maus.de>)
 AC_REVISION($Revision$)
 AC_CONFIG_SRCDIR([src/main.cpp])
 AC_CONFIG_HEADER([src/includes/config.h])

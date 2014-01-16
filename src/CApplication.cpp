@@ -47,6 +47,7 @@ CApplication::CApplication(int& argc, char** argv)
 		m_bDtLoginMode(false),
 		m_bNoSRSS(false),
 		m_bNoList(false),
+		m_bNoUserName(false),
 		m_bKeepAlive(false)
 {
 	ENTER();
@@ -135,6 +136,9 @@ bool CApplication::parseCommandLine(int& argc, char** argv)
 		if(args.contains("-nolist"))
 			m_bNoList = true;
 
+		if(args.contains("-nouser"))
+			m_bNoUserName = true;
+
 		if(args.contains("-keep"))
 			m_bKeepAlive = true;
 
@@ -146,7 +150,7 @@ bool CApplication::parseCommandLine(int& argc, char** argv)
 	if(result == false)
 	{
 		cout << "qutselect " << PACKAGE_VERSION << " - a simple Qt4 based GUI frontend for terminal clients" << endl
-				 << "(" __DATE__ ")  Copyright (c) 2008-2013 by Jens Langner, www.hzdr.de" << endl << endl;
+				 << "(" __DATE__ ")  Copyright (c) 2008-2014 Jens Maus, hzdr.de" << endl << endl;
 	}
 
 	// in case "-v" is specified we output some version
