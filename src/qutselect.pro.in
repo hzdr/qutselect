@@ -43,8 +43,8 @@ win32 {
 }
 
 # define headers and source files for compilation
-DEPENDPATH  = . includes
-INCLUDEPATH = . includes
+DEPENDPATH  = . include
+INCLUDEPATH = . include
 
 # find out the host os/cpu
 HOST_OS=@HOST_OS@

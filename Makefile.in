@@ -55,13 +55,13 @@ RECURSIVE_TARGETS = all-recursive dist-recursive clean-recursive distclean-recur
 DIST_COMMON = AUTHORS COPYING ChangeLog README TODO \
 							Makefile.in configure \
 							m4/Makefile.in m4/aclocal.m4 m4/acinclude.m4 m4/configure.in \
-							src/includes/config.h.in src/qutselect.pro.in
+							src/include/config.h.in src/qutselect.pro.in
 
 DIST_DOC = doc/user doc/developer
 
 # Which extra files are to clean
 CONFIG_DISTCLEAN_FILES = config.status config.cache config.log configure.lineno \
-												 Makefile src/qutselect.pro src/includes/config.h src/Makefile
+												 Makefile src/qutselect.pro src/include/config.h src/Makefile
 
 all: qmakefiles all-recursive
 
@@ -109,11 +109,11 @@ Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && ./config.status 
 
 # Check on config.h.in in src dir
-src/config.h: $(srcdir)/src/includes/config.h.in $(top_builddir)/config.status
+src/config.h: $(srcdir)/src/include/config.h.in $(top_builddir)/config.status
 	cd $(top_builddir) && ./config.status
 
 # Check on lmmc.pro.in in src dir
-src/qutselect.pro: $(srcdir)/src/qutselect.pro.in src/includes/config.h.in $(top_builddir)/config.status 
+src/qutselect.pro: $(srcdir)/src/qutselect.pro.in src/include/config.h.in $(top_builddir)/config.status 
 	cd $(top_builddir) && ./config.status
 
 # Developer documentation

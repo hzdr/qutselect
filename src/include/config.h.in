@@ -1,4 +1,4 @@
-/* src/includes/config.h.in.  Generated from m4/configure.in by autoheader.  */
+/* src/include/config.h.in.  Generated from m4/configure.in by autoheader.  */
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H

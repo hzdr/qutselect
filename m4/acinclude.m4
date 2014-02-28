@@ -670,8 +670,9 @@ AC_DEFUN([AC_PATH_RTDEBUG_INC],
   if test -z "$ac_cv_header_rtdebuginc"; then
     have_rtdebug_inc="no"
     AC_MSG_RESULT([no])
-    AC_MSG_WARN([rtdebug.h include not found, you may run into problems.
+    AC_MSG_WARN([rtdebug.h include not found, assuming disabled debug.
 Try --with-rtdebug-inc to specify the path, manually.])
+    ac_cv_header_rtdebuginc="include/rtdebug"
   else
     have_rtdebug_inc="yes"
     AC_MSG_RESULT([yes, in $ac_cv_header_rtdebuginc])
