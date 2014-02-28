@@ -51,7 +51,7 @@ class CMainWindow : public QMainWindow
   Q_OBJECT
 
   public:
-    enum ServerType { SRSS=0, TLINC, RDP, XDM, VNC };
+    enum ServerType { SRSS=0, TLINC, RDP, XDM, VNC, APP };
     enum LayoutType { DefaultLayout=0, UserPassLayout, PassLayout };
 
     CMainWindow(CApplication* app);

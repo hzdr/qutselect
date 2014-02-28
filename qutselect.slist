@@ -1,8 +1,10 @@
 # Serverlist for qutselect
 # 
-# DISPLAYNAME   HOSTNAME		 DOMAIN   TYPE    OS             DESCRIPTION     PWPRMPT SCRIPT
-# ----------------------------------------------------------------------------------------------------------
-Linux         ; saturn      ;       ; SRSS  ; UNIX - Linux ; Allgemein     ; FALSE ; scripts/qutselect_connect_srss.sh
-Windows/kronos; fwpts01,fwpts02      ; FZR   ; RDP   ; Windows      ; Allgemein     ; TRUE  ; scripts/qutselect_connect_rdp.sh
+# DISPLAYNAME   HOSTNAME		     DOMAIN   TYPE    OS             DESCRIPTION     PWPRMPT SCRIPT
+# --------------------------------------------------------------------------------------------------------------
+Linux         ; saturn          ;       ; SRSS  ; UNIX - Linux ; Allgemein     ; FALSE ; scripts/qutselect_connect_srss.sh
+Windows/kronos; fwpts01,fwpts02 ; FZR   ; RDP   ; Windows      ; Allgemein     ; TRUE  ; scripts/qutselect_connect_rdp.sh
 ===
-UKD-NUK       ; termserver  ; UKD88 ; RDP   ; Windows      ; UKD - Medizin ; TRUE  ; scripts/qutselect_connect_rdp.sh
+UKD-NUK       ; termserver      ; UKD88 ; RDP   ; Windows      ; UKD - Medizin ; TRUE  ; scripts/qutselect_connect_rdp.sh
+===
+WWW-Browser   ; firefox         ;       ; APP   ; Firefox      ; Firefox       ; FALSE ; scripts/qutselect_connect_app.sh

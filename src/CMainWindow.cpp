@@ -168,6 +168,7 @@ CMainWindow::CMainWindow(CApplication* app)
 	m_pServerTypeComboBox->addItem("Windows (RDP)");
 	m_pServerTypeComboBox->addItem("X11 (XDM)");
 	m_pServerTypeComboBox->addItem("VNC");
+	m_pServerTypeComboBox->addItem("Application");
 	m_pServerTypeComboBox->setCurrentIndex(-1);
 	m_pServerTypeComboBox->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
 	connect(m_pServerTypeComboBox, SIGNAL(currentIndexChanged(int)),
@@ -601,6 +602,7 @@ void CMainWindow::serverTypeChanged(int id)
 			m_p24bitColorsButton->setEnabled(false);
 			m_pGermanKeyboardButton->setEnabled(false);
 			m_pEnglishKeyboardButton->setEnabled(false);
+      m_pServerLineEdit->setEnabled(true);
 		}
 		break;
 
@@ -612,6 +614,7 @@ void CMainWindow::serverTypeChanged(int id)
 			m_p24bitColorsButton->setEnabled(false);
 			m_pGermanKeyboardButton->setEnabled(false);
 			m_pEnglishKeyboardButton->setEnabled(false);
+      m_pServerLineEdit->setEnabled(true);
     }
     break;
 
@@ -623,6 +626,7 @@ void CMainWindow::serverTypeChanged(int id)
 			m_p24bitColorsButton->setEnabled(true);
 			m_pGermanKeyboardButton->setEnabled(true);
 			m_pEnglishKeyboardButton->setEnabled(true);
+      m_pServerLineEdit->setEnabled(true);
 		}
 		break;
 
@@ -634,6 +638,7 @@ void CMainWindow::serverTypeChanged(int id)
 			m_p24bitColorsButton->setEnabled(true);
 			m_pGermanKeyboardButton->setEnabled(false);
 			m_pEnglishKeyboardButton->setEnabled(false);
+      m_pServerLineEdit->setEnabled(true);
 		}
 		break;
 
@@ -644,6 +649,18 @@ void CMainWindow::serverTypeChanged(int id)
 			m_p8bitColorsButton->setEnabled(true);
 			m_p16bitColorsButton->setEnabled(true);
 			m_p24bitColorsButton->setEnabled(true);
+			m_pGermanKeyboardButton->setEnabled(false);
+			m_pEnglishKeyboardButton->setEnabled(false);
+      m_pServerLineEdit->setEnabled(true);
+		}
+		break;
+
+    case APP:
+		{
+			m_pScreenResolutionBox->setEnabled(false);
+			m_p8bitColorsButton->setEnabled(false);
+			m_p16bitColorsButton->setEnabled(false);
+			m_p24bitColorsButton->setEnabled(false);
 			m_pGermanKeyboardButton->setEnabled(false);
 			m_pEnglishKeyboardButton->setEnabled(false);
 		}
@@ -827,6 +844,10 @@ void CMainWindow::connectButtonPressed(void)
 
 		case VNC:
 			serverType = "VNC";
+		break;
+
+		case APP:
+			serverType = "APP";
 		break;
 	}
 
@@ -1156,6 +1177,8 @@ void CMainWindow::loadServerList()
 						serverIcon = QIcon(":/images/windows-logo.png");
 					else if(osType.contains("macos", Qt::CaseInsensitive))
 						serverIcon = QIcon(":/images/macos-logo.png");
+					else if(osType.contains("firefox", Qt::CaseInsensitive))
+						serverIcon = QIcon(":/images/firefox-logo.png");
 
 					// add the icon to our items
 					item->setIcon(0, serverIcon);

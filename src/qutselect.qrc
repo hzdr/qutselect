@@ -5,6 +5,7 @@
     <file>images/solaris-logo.png</file>
     <file>images/windows-logo.png</file>
     <file>images/macos-logo.png</file>
+    <file>images/firefox-logo.png</file>
     <file>lang/qutselect_de.qm</file>
     <file>lang/qt_de.qm</file>		
   </qresource>
