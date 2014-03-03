@@ -599,6 +599,7 @@ void CMainWindow::serverTypeChanged(int id)
 			m_pGermanKeyboardButton->setEnabled(false);
 			m_pEnglishKeyboardButton->setEnabled(false);
       m_pServerLineEdit->setEnabled(true);
+      m_pStartButton->setText(tr("Connect"));
 		}
 		break;
 
@@ -611,6 +612,7 @@ void CMainWindow::serverTypeChanged(int id)
 			m_pGermanKeyboardButton->setEnabled(false);
 			m_pEnglishKeyboardButton->setEnabled(false);
       m_pServerLineEdit->setEnabled(true);
+      m_pStartButton->setText(tr("Connect"));
     }
     break;
 
@@ -623,6 +625,7 @@ void CMainWindow::serverTypeChanged(int id)
 			m_pGermanKeyboardButton->setEnabled(true);
 			m_pEnglishKeyboardButton->setEnabled(true);
       m_pServerLineEdit->setEnabled(true);
+      m_pStartButton->setText(tr("Connect"));
 		}
 		break;
 
@@ -635,6 +638,7 @@ void CMainWindow::serverTypeChanged(int id)
 			m_pGermanKeyboardButton->setEnabled(false);
 			m_pEnglishKeyboardButton->setEnabled(false);
       m_pServerLineEdit->setEnabled(true);
+      m_pStartButton->setText(tr("Connect"));
 		}
 		break;
 
@@ -648,6 +652,7 @@ void CMainWindow::serverTypeChanged(int id)
 			m_pGermanKeyboardButton->setEnabled(false);
 			m_pEnglishKeyboardButton->setEnabled(false);
       m_pServerLineEdit->setEnabled(true);
+      m_pStartButton->setText(tr("Connect"));
 		}
 		break;
 
@@ -659,6 +664,7 @@ void CMainWindow::serverTypeChanged(int id)
 			m_p24bitColorsButton->setEnabled(false);
 			m_pGermanKeyboardButton->setEnabled(false);
 			m_pEnglishKeyboardButton->setEnabled(false);
+      m_pStartButton->setText(tr("Run Application"));
 		}
 		break;
 	}
