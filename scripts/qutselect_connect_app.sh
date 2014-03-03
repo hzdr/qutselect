@@ -37,19 +37,9 @@ serverName="${10}"
 
 if [ "x${serverName}" = "xfirefox" ]; then
 
-  # resolution
-  #if [ "x${resolution}" = "xfullscreen" ]; then
-  #  cmdArgs="$cmdArgs -fullscreen"
-  #fi
-
-  #if [ "x${dtlogin}" != "xtrue" ]; then
-  #  echo ${VNCVIEWER} ${cmdArgs} ${serverName}
-  #fi
-
   # start the firefox browser
   /bin/firefox-startup.sh
   if [ $? != 0 ]; then
-    printf "ERROR: ${VNCVIEWER} returned invalid return code ($?)"
     exit 2
   fi
 fi

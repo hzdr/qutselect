@@ -156,9 +156,11 @@ TRANSLATIONS = lang/qutselect_de.ts
 
 HEADERS = CApplication.h \
 					CMainWindow.h \
-          CLoginDialog.h
+          CLoginDialog.h \
+          CServerTreeWidget.h
            
 SOURCES = main.cpp \
 					CApplication.cpp \
 					CMainWindow.cpp \
-          CLoginDialog.cpp
+          CLoginDialog.cpp \
+          CServerTreeWidget.cpp

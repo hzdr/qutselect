@@ -24,6 +24,7 @@
 #include "CMainWindow.h"
 #include "CApplication.h"
 #include "CLoginDialog.h"
+#include "CServerTreeWidget.h"
 
 #include <QApplication>
 #include <QLabel>
@@ -54,6 +55,7 @@
 #include <QLineEdit>
 #include <QFileSystemWatcher>
 #include <QTimer>
+#include <QHeaderView>
 
 #include <iostream>
 #include <unistd.h>
@@ -130,11 +132,11 @@ CMainWindow::CMainWindow(CApplication* app)
   paint.drawText(195,40,150,100, Qt::AlignLeft|Qt::AlignTop, QString("@ ")+hostName);
   paint.end(); 
 	m_pLogoLabel->setPixmap(logo);
-	m_pLogoLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+	//m_pLogoLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	m_pLogoLabel->setAlignment(Qt::AlignCenter);
 	
   // create the treewidget we are going to populate
-  m_pServerTreeWidget = new QTreeWidget();
+  m_pServerTreeWidget = new CServerTreeWidget();
   m_pServerTreeWidget->setRootIsDecorated(false);
   m_pServerTreeWidget->setAllColumnsShowFocus(true);
 	connect(m_pServerTreeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
@@ -157,6 +159,7 @@ CMainWindow::CMainWindow(CApplication* app)
   m_pServerTreeWidget->setColumnHidden(CN_SERVERTYPE, true);
   m_pServerTreeWidget->setColumnHidden(CN_PWPROMPT, true);
   m_pServerTreeWidget->setColumnHidden(CN_STARTUPSCRIPT, true);
+	m_pServerTreeWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
   // create the ServerLineEdit
   m_pServerLineEdit = new QLineEdit();
@@ -399,6 +402,7 @@ CMainWindow::CMainWindow(CApplication* app)
 	optionsLayout->addWidget(m_pKeyboardLabel,						2, 0);
 	optionsLayout->addLayout(m_pKeyboardButtonLayout,		  2, 1);
   m_pOptionsWidget->setLayout(optionsLayout);
+  m_pOptionsWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
 
   // create the MOTD widget
   m_pMotdWidget = new QWidget;
@@ -412,6 +416,7 @@ CMainWindow::CMainWindow(CApplication* app)
   motdLayout->addWidget(m_pMotdLabel);
 	motdLayout->addWidget(buttonFrame);
   m_pMotdWidget->setLayout(motdLayout);
+  m_pMotdWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
 
   layout->addWidget(m_pOptionsWidget,           1, 0, 1, 2);
   layout->addWidget(m_pMotdWidget,              2, 0, 1, 2);
@@ -500,16 +505,7 @@ CMainWindow::CMainWindow(CApplication* app)
     // hide the Quit Button in DtLogin Mode as ESC does the same
     m_pQuitButton->setVisible(false);
     m_pSpaceWidget->setVisible(false);
-
-		// now we make sure we centre the new window on the current
-		// primary screen
-		QDesktopWidget* desktopWidget = QApplication::desktop();
-		QRect screenSize = desktopWidget->screenGeometry(desktopWidget->primaryScreen());
-
-		// set the geometry of the current widget
-		setGeometry((screenSize.width() - WINDOW_WIDTH)/2, (screenSize.height() - WINDOW_HEIGHT)/2,
-								WINDOW_WIDTH, WINDOW_HEIGHT);
-	}
+  }
 	else
 	{
     QPoint position = m_pSettings->value("position", QPoint(10, 10)).toPoint();
@@ -1011,6 +1007,15 @@ void CMainWindow::startConnection(void)
     if(script.waitForFinished() == false)
       std::cout << "ERROR: Failed to wait for script being finished" << std::endl;
 
+    // check the exit code
+    if(script.exitCode() != 0)
+    {
+      std::cout << "ERROR: startup script '" << m_sStartupScript.toAscii().constData() << "' returned an error code " << script.exitCode() << std::endl;
+
+      QMessageBox::warning(this, tr("Could not start application"),
+                                 tr("An Error occurred during startup. This could be caused because the application is not yet available. Please retry later."));
+    }
+
     // output the standard output to cout
     QString standardOut = QString(script.readAllStandardOutput());
     if(standardOut.isEmpty() == false)
@@ -1113,6 +1118,26 @@ void CMainWindow::closeEvent(QCloseEvent* e)
   LEAVE();
 }
 
+void CMainWindow::showEvent(QShowEvent* e)
+{
+  ENTER();
+
+  // call super method
+  QMainWindow::showEvent(e);
+
+  // if in DtLogin mode we center the window on the current screen
+  if(m_bDtLoginMode == true)
+  {
+		// now we make sure we centre the new window on the current
+		// primary screen
+		QDesktopWidget* desktopWidget = QApplication::desktop();
+		QRect screenSize = desktopWidget->screenGeometry(desktopWidget->primaryScreen());
+    move(QPoint((screenSize.width() - width())/2, (screenSize.height() - height())/2));
+  }
+
+  LEAVE();
+}
+
 void CMainWindow::loadServerList()
 {
 	ENTER();
@@ -1209,9 +1234,15 @@ void CMainWindow::loadServerList()
 
 		// resize all columns to its content
 		m_pServerTreeWidget->resizeColumnToContents(CN_DISPLAYNAME);
+    m_pServerTreeWidget->header()->setResizeMode(CN_DISPLAYNAME, QHeaderView::ResizeToContents);
 		m_pServerTreeWidget->resizeColumnToContents(CN_HOSTNAME);
+    m_pServerTreeWidget->header()->setResizeMode(CN_HOSTNAME, QHeaderView::ResizeToContents);
 		m_pServerTreeWidget->resizeColumnToContents(CN_SERVEROS);
+    m_pServerTreeWidget->header()->setResizeMode(CN_SERVEROS, QHeaderView::ResizeToContents);
 		m_pServerTreeWidget->resizeColumnToContents(CN_DESCRIPTION);
+    m_pServerTreeWidget->header()->setResizeMode(CN_DESCRIPTION, QHeaderView::ResizeToContents);
+    m_pServerTreeWidget->updateGeometry();
+    this->updateGeometry();
 
     QString selectServerName;
 		bool serverFound = false;

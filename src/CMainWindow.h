@@ -30,7 +30,9 @@
 
 // forward declarations
 class CApplication;
+class CServerTreeWidget;
 class QCloseEvent;
+class QShowEvent;
 class QDialogButtonBox;
 class QLabel;
 class QLineEdit;
@@ -65,6 +67,7 @@ class CMainWindow : public QMainWindow
 		// overloaded methods
 		void keyPressEvent(QKeyEvent* e);
     void closeEvent(QCloseEvent* e);
+    void showEvent(QShowEvent* e);
 
 	private:
 		void loadServerList();
@@ -105,7 +108,7 @@ class CMainWindow : public QMainWindow
     QWidget*            m_pSpaceWidget;
 		QPushButton*	      m_pStartButton;
 		QSettings*		      m_pSettings;
-    QTreeWidget*        m_pServerTreeWidget;
+    CServerTreeWidget*  m_pServerTreeWidget;
     QLineEdit*          m_pServerLineEdit;
 		QComboBox*					m_pServerTypeComboBox;
 		QFileSystemWatcher* m_pServerListWatcher;
