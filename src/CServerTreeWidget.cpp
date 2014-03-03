@@ -43,12 +43,23 @@ QSize CServerTreeWidget::sizeHint() const
   ENTER();
 
   int width=0;
-  QSize sh = QTreeWidget::sizeHint();
+  int height=0;
+  QSize sh;
 
+  // iterate through all columns to calculate the width
   for(int i=0; i < columnCount(); ++i)
     width += 2 + columnWidth(i);
 
+  // iterate through all TreeWidgetItems to calculate the height
+  for(int i=0; i < topLevelItemCount(); ++i)
+  {
+    QTreeWidgetItem *item = topLevelItem(i);
+    height += 2 + visualItemRect(item).height();
+  }
+
+  // set the QSize
   sh.setWidth(width + qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent));
+  sh.setHeight(height + qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent));
 
   LEAVE();
   return sh;
