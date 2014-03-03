@@ -1128,6 +1128,9 @@ void CMainWindow::showEvent(QShowEvent* e)
   // if in DtLogin mode we center the window on the current screen
   if(m_bDtLoginMode == true)
   {
+    // make sure the sizes (width/height) are correct before continuing
+    adjustSize();
+
 		// now we make sure we centre the new window on the current
 		// primary screen
 		QDesktopWidget* desktopWidget = QApplication::desktop();
@@ -1242,7 +1245,6 @@ void CMainWindow::loadServerList()
 		m_pServerTreeWidget->resizeColumnToContents(CN_DESCRIPTION);
     m_pServerTreeWidget->header()->setResizeMode(CN_DESCRIPTION, QHeaderView::ResizeToContents);
     m_pServerTreeWidget->updateGeometry();
-    this->updateGeometry();
 
     QString selectServerName;
 		bool serverFound = false;
