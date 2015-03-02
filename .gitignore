@@ -1,0 +1,14 @@
+/Makefile
+/autom4te.cache
+/config.log
+/config.status
+/m4/Makefile
+/m4/aclocal.m4
+/m4/autom4te.cache
+/qutselect
+/src/.moc
+/src/.obj
+/src/Makefile
+/src/include/config.h
+/src/qrc_qutselect.cpp
+/src/qutselect.pro
