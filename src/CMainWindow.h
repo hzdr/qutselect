@@ -1,6 +1,6 @@
 /* vim:set ts=2 nowrap: ****************************************************
 
- qutselect - A simple Qt4 based GUI frontend for SRSS (utselect)
+ qutselect - A simple Qt based GUI frontend for SRSS (utselect)
  Copyright (C) 2009 by Jens Langner <Jens.Langner@light-speed.de>
 
  This program is free software; you can redistribute it and/or modify

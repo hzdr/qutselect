@@ -1,6 +1,6 @@
 /* vim:set ts=2 nowrap: ****************************************************
 
- qutselect - A simple Qt4 based GUI frontend for SRSS (utselect)
+ qutselect - A simple Qt based GUI frontend for SRSS (utselect)
  Copyright (C) 2009-2013 by Jens Langner <Jens.Langner@light-speed.de>
 
  This program is free software; you can redistribute it and/or modify
@@ -44,7 +44,6 @@
 #include <QProcess>
 #include <QRegExp>
 #include <QSettings>
-#include <QSound>
 #include <QString>
 #include <QStringList>
 #include <QTextStream>
@@ -348,9 +347,9 @@ CMainWindow::CMainWindow(CApplication* app)
 	if(m_bDtLoginMode == true)
 	{
 		// in dtlogin mode we identify the keyboard vis QApplication::keyboardInputLocale()
-		QLocale keyboardLocale = QApplication::keyboardInputLocale();
+		QLocale keyboardLocale = QApplication::inputMethod()->locale();
 
-		D("keyboardLocalName: %s", keyboardLocale.name().toAscii().constData());
+		D("keyboardLocalName: %s", keyboardLocale.name().toLatin1().constData());
 	}
 	else
 	{
@@ -520,7 +519,7 @@ CMainWindow::CMainWindow(CApplication* app)
 		resize(m_pSettings->value("size", QSize(WINDOW_WIDTH, WINDOW_HEIGHT)).toSize());
 	}
 	
-	setWindowTitle("qutselect v" PACKAGE_VERSION " - (c) 2005-2014 hzdr.de");
+	setWindowTitle("qutselect v" + QString(PROJECT_VERSION) + " - (c) 2005-2015 hzdr.de");
 
 	LEAVE();
 }
@@ -555,7 +554,7 @@ void CMainWindow::serverListChanged(const QString& path)
 {
 	ENTER();
 
-	D("FileSystemWatcher triggered: '%s'", path.toAscii().constData());
+	D("FileSystemWatcher triggered: '%s'", path.toLatin1().constData());
 	
 	if(path == m_sServerListFile)
 	{
@@ -566,7 +565,7 @@ void CMainWindow::serverListChanged(const QString& path)
 		if(QFileInfo(m_sServerListFile).exists())
 		{
 			// found server list file changed, so go and reload it
-			D("server list file '%s' changed. reloading...", m_sServerListFile.toAscii().constData());
+			D("server list file '%s' changed. reloading...", m_sServerListFile.toLatin1().constData());
 			loadServerList();
 
 			// refresh the FileSystemWatcher
@@ -574,7 +573,7 @@ void CMainWindow::serverListChanged(const QString& path)
 			m_pServerListWatcher->addPath(m_sServerListFile);
 		}
 		else
-			W("server list file '%s' does not exist anymore...", m_sServerListFile.toAscii().constData());
+			W("server list file '%s' does not exist anymore...", m_sServerListFile.toLatin1().constData());
 	}
 
 	LEAVE();
@@ -678,7 +677,7 @@ void CMainWindow::currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem*)
 
 	if(current != NULL)
 	{
-		D("currentItemChanged to '%s'", current->text(CN_HOSTNAME).toAscii().constData());
+		D("currentItemChanged to '%s'", current->text(CN_HOSTNAME).toLatin1().constData());
 
     if(current->text(0).isEmpty() == false && current->text(0).startsWith("===") == false)
     {
@@ -709,7 +708,7 @@ void CMainWindow::itemDoubleClicked(QTreeWidgetItem* item, int)
 {
 	ENTER();
 
-	D("Server '%s' doubleclicked", item->text(CN_HOSTNAME).toAscii().constData());
+	D("Server '%s' doubleclicked", item->text(CN_HOSTNAME).toLatin1().constData());
 
 	// a doubleclick is like pressing the "connect" button
 	connectButtonPressed();
@@ -804,7 +803,7 @@ void CMainWindow::connectButtonPressed(void)
     // calculated WITH the windows bar in GNOME :(
 		resolution = QString().sprintf("%dx%d", screenSize.width()-8, screenSize.height()-28);
 
-		D("Desktop size of '%s' selected", resolution.toAscii().constData());
+		D("Desktop size of '%s' selected", resolution.toLatin1().constData());
 	}
 
 	// get the keyboard layout the user wants to have
@@ -865,7 +864,7 @@ void CMainWindow::connectButtonPressed(void)
     {
 	    currentHost = QString(hostname).toLower();
 
-	    D("got hostname: '%s'", currentHost.toAscii().constData());
+	    D("got hostname: '%s'", currentHost.toLatin1().constData());
 
       if(serverName == currentHost)
       {
@@ -988,7 +987,7 @@ void CMainWindow::startConnection(void)
 	
 	// now we can create a QProcess object and execute the
 	// startup script
-	D("executing: %s %s", m_sStartupScript.toAscii().constData(), cmdArgs.join(" ").toAscii().constData());
+	D("executing: %s %s", m_sStartupScript.toLatin1().constData(), cmdArgs.join(" ").toLatin1().constData());
 
 	// start it now with the working directory pointing at the
   // directory where the app resists
@@ -999,7 +998,7 @@ void CMainWindow::startConnection(void)
   {
     // now send the password via stdin
     if(m_sPassword.isEmpty() == false)
-      script.write(m_sPassword.toAscii().constData());
+      script.write(m_sPassword.toLatin1().constData());
     else
       script.write("NULL");
 
@@ -1016,7 +1015,7 @@ void CMainWindow::startConnection(void)
     // check the exit code
     if(script.exitCode() != 0)
     {
-      std::cout << "ERROR: startup script '" << m_sStartupScript.toAscii().constData() << "' returned an error code " << script.exitCode() << std::endl;
+      std::cout << "ERROR: startup script '" << m_sStartupScript.toLatin1().constData() << "' returned an error code " << script.exitCode() << std::endl;
 
       QMessageBox::warning(this, tr("Could not start application"),
                                  tr("An Error occurred during startup. This could be caused because the application is not yet available. Please retry later."));
@@ -1025,18 +1024,18 @@ void CMainWindow::startConnection(void)
     // output the standard output to cout
     QString standardOut = QString(script.readAllStandardOutput());
     if(standardOut.isEmpty() == false)
-      std::cout << standardOut.toAscii().constData() << std::endl;
+      std::cout << standardOut.toLatin1().constData() << std::endl;
 
     QString standardErr = QString(script.readAllStandardError());
     if(standardErr.isEmpty() == false)
-      std::cerr << standardErr.toAscii().constData() << std::endl;
+      std::cerr << standardErr.toLatin1().constData() << std::endl;
 
 		if(m_bKeepAlive == false)
 			close();
   }
   else
   {
-    std::cout << "ERROR: Failed to execute startup script " << m_sStartupScript.toAscii().constData() << std::endl;
+    std::cout << "ERROR: Failed to execute startup script " << m_sStartupScript.toLatin1().constData() << std::endl;
     QApplication::beep();
   }
 
@@ -1243,13 +1242,13 @@ void CMainWindow::loadServerList()
 
 		// resize all columns to its content
 		m_pServerTreeWidget->resizeColumnToContents(CN_DISPLAYNAME);
-    m_pServerTreeWidget->header()->setResizeMode(CN_DISPLAYNAME, QHeaderView::ResizeToContents);
+    m_pServerTreeWidget->header()->setSectionResizeMode(CN_DISPLAYNAME, QHeaderView::ResizeToContents);
 		m_pServerTreeWidget->resizeColumnToContents(CN_HOSTNAME);
-    m_pServerTreeWidget->header()->setResizeMode(CN_HOSTNAME, QHeaderView::ResizeToContents);
+    m_pServerTreeWidget->header()->setSectionResizeMode(CN_HOSTNAME, QHeaderView::ResizeToContents);
 		m_pServerTreeWidget->resizeColumnToContents(CN_SERVEROS);
-    m_pServerTreeWidget->header()->setResizeMode(CN_SERVEROS, QHeaderView::ResizeToContents);
+    m_pServerTreeWidget->header()->setSectionResizeMode(CN_SERVEROS, QHeaderView::ResizeToContents);
 		m_pServerTreeWidget->resizeColumnToContents(CN_DESCRIPTION);
-    m_pServerTreeWidget->header()->setResizeMode(CN_DESCRIPTION, QHeaderView::ResizeToContents);
+    m_pServerTreeWidget->header()->setSectionResizeMode(CN_DESCRIPTION, QHeaderView::ResizeToContents);
     m_pServerTreeWidget->updateGeometry();
 
     QString selectServerName;
@@ -1262,7 +1261,7 @@ void CMainWindow::loadServerList()
       if(gethostname(hostName, 256) == 0)
 			  selectServerName = QString(hostName).toLower();
 
-			D("got hostname: '%s'", selectServerName.toAscii().constData());
+			D("got hostname: '%s'", selectServerName.toLatin1().constData());
 		}
 		else
 		{
@@ -1271,7 +1270,7 @@ void CMainWindow::loadServerList()
 			{
 				selectServerName = m_pSettings->value("serverused").toString().toLower();
 
-				D("read serverused from QSettings: '%s'", selectServerName.toAscii().constData());
+				D("read serverused from QSettings: '%s'", selectServerName.toLatin1().constData());
       }
     }
 
@@ -1298,7 +1297,7 @@ void CMainWindow::loadServerList()
 	}
 	else
 	{
-		W("couldn't open server list file: '%s'", m_sServerListFile.toAscii().constData());
+		W("couldn't open server list file: '%s'", m_sServerListFile.toLatin1().constData());
 		m_pServerListBox->setEditable(true);
 		m_pServerTypeComboBox->setCurrentIndex(RDP);
 	}

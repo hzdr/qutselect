@@ -1,6 +1,6 @@
 /* vim:set ts=2 nowrap: ****************************************************
 
- qutselect - A simple Qt4 based GUI frontend for SRSS (utselect)
+ qutselect - A simple Qt based GUI frontend for SRSS (utselect)
  Copyright (C) 2008 by Jens Langner <Jens.Langner@light-speed.de>
 
  This program is free software; you can redistribute it and/or modify
@@ -149,8 +149,8 @@ bool CApplication::parseCommandLine(int& argc, char** argv)
 	// output some general program information
 	if(result == false)
 	{
-		cout << "qutselect " << PACKAGE_VERSION << " - a simple Qt4 based GUI frontend for terminal clients" << endl
-				 << "(" __DATE__ ")  Copyright (c) 2008-2014 Jens Maus, hzdr.de" << endl << endl;
+		cout << "qutselect " << PROJECT_VERSION << " - a simple Qt based GUI frontend for terminal clients" << endl
+				 << "(" __DATE__ ")  Copyright (c) 2008-2015 Jens Maus, hzdr.de" << endl << endl;
 	}
 
 	// in case "-v" is specified we output some version
@@ -182,11 +182,10 @@ bool CApplication::parseCommandLine(int& argc, char** argv)
 				 << endl << endl
 
 				 // Qt version information
-				 << "  Qt " << QString::number((QT_VERSION & 0xff0000)>>16).toAscii().constData() << "."
-										<< QString::number((QT_VERSION & 0x00ff00)>>8).toAscii().constData() << "." 
-										<< QString::number((QT_VERSION & 0x0000ff)).toAscii().constData()
-										<< " (" << qVersion() << ")" << endl
-										<< "  Copyright (C) 2006-2013 Nokia Corporation" << endl;
+				 << "  Qt " << QString::number((QT_VERSION & 0xff0000)>>16).toLatin1().constData() << "."
+										<< QString::number((QT_VERSION & 0x00ff00)>>8).toLatin1().constData() << "." 
+										<< QString::number((QT_VERSION & 0x0000ff)).toLatin1().constData()
+										<< " (" << qVersion() << ")" << endl;
 	}
 	else if(result == false) // output usage information on the console.
 	{

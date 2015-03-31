@@ -1,6 +1,6 @@
 /* vim:set ts=2 nowrap: ****************************************************
 
- qutselect - A simple Qt4 based GUI frontend for SRSS (utselect)
+ qutselect - A simple Qt based GUI frontend for SRSS (utselect)
  Copyright (C) 2008 by Jens Langner <Jens.Langner@light-speed.de>
 
  This program is free software; you can redistribute it and/or modify
@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
 
 	if(app.isInitialized())
 	{
-		W("active language: %d (%s)", QLocale::system().language(), QLocale::system().name().toAscii().constData());
+		W("active language: %d (%s)", QLocale::system().language(), QLocale::system().name().toLatin1().constData());
 
 		// we now load & initialize eventually existing
 		// translation files for the system's default
@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
 		if(qtTranslator.load(":/lang/qt_de"))
 			D("successfully loaded 'qt_de' translation file.");
 		else if(qtTranslator.load(":/lang/qt_"+QLocale::system().name()))
-			D("successfully loaded 'qt_%s' translation file.", QLocale::system().name().toAscii().constData());
+			D("successfully loaded 'qt_%s' translation file.", QLocale::system().name().toLatin1().constData());
 		else
 			E("couldn't load any Qt translation file.");
 
@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
 		if(myTranslator.load(":/lang/qutselect_de"))
 			D("successfully loaded 'qutselect_de' translation file.");
 		else if(myTranslator.load(":/lang/qutselect_"+QLocale::system().name()))
-			D("successfully loaded 'qutselect_%s' translation file.", QLocale::system().name().toAscii().constData());
+			D("successfully loaded 'qutselect_%s' translation file.", QLocale::system().name().toLatin1().constData());
 		else
 			E("couldn't load any qutselect translation file.");
 
