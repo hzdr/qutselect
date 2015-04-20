@@ -49,6 +49,7 @@ target_link_libraries(qutselect Qt5::Core
                                 Qt5::Widgets
                                 Qt5::Network
                                 ${RTDEBUG_STATIC_LIB} 
+                                ${DEPEND_STATIC_LIB}
 )
 
 # set target properties so that install only installs with

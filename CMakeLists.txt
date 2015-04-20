@@ -32,12 +32,6 @@ if (NOT CMAKE_BUILD_TYPE)
       FORCE)
 endif()
 
-# Install to "dist" directory in Windows for testing and as a staging directory
-# for the installer.
-if (WIN32 AND NOT CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX dist CACHE STRING "Install path prefix.")
-endif()
-
 # define the project and the version number
 project(qutselect)
 set(PROJECT_LONGNAME "qutselect")
@@ -57,33 +51,42 @@ set(CMAKE_AUTOMOC ON)
 # set the cmake modules path
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
+# In case we are cross compiling we have to setup
+# everything for different search paths
+if(CMAKE_CROSS_COMPILING)
+  set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE BOTH)
+  set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY BOTH)
+  set(PETLIB_PATH "/usr/local/petlib/${CROSS_OS}")
+else()
+  set(PETLIB_PATH "/usr/local/petlib")
+endif()
+
 # if /usr/local/petlib is found use that one for install and search prefix
-if(EXISTS "/usr/local/petlib/")
-  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/local/petlib")
+if(EXISTS ${PETLIB_PATH})
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${PETLIB_PATH})
   if(CMAKE_INSTALL_PREFIX STREQUAL "/usr/local")
-    set(CMAKE_INSTALL_PREFIX "/usr/local/petlib")
+    set(CMAKE_INSTALL_PREFIX ${PETLIB_PATH})
   endif()
 endif()
 
 # Configure third party packages
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5Network REQUIRED)
+find_package(Qt5 REQUIRED Core Gui Widgets Network)
 find_package(RTDEBUG REQUIRED)
 
+# add some special libraries in case we are build for windows
+# WARNING: This seems to be a workaround because Qt5 itself should
+# include them?!?!
+if(WIN32 AND CMAKE_CROSS_COMPILING)
+  if(${CMAKE_C_COMPILER} MATCHES "static-gcc")
+    set(DEPEND_STATIC_LIB ${Qt5_STATIC_LIB_DEPENDENCIES})
+    set(RTDEBUG_SHARED_LIB ${RTDEBUG_STATIC_LIB})
+  endif()
+endif()
+
 # Set some better optimization options
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mtune=generic -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mtune=generic -std=c++11 -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_RELEASE, "${CMAKE_CXX_FLAGS_RELEASE} -O3 -fomit-frame-pointer")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO, "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3 -g -fomit-frame-pointer")
 set(CMAKE_CXX_FLAGS_DEBUG, "${CMAKE_CXX_FLAGS_RELEASE} -O0")
-
-# depending on CMAKE_SYSTEM_PROCESSOR we define some processor specific
-# preprocessor defines
-if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__X86_64__")
-elseif(${CMAKE_SYSTEM_PROCESSOR} MATCHES "i[63]86")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__i386__")
-endif()
 
 add_subdirectory(src)

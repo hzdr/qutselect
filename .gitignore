@@ -1,4 +1,5 @@
-/Makefile
+.DS_Store
+.AppleDouble
 /autom4te.cache
 /config.log
 /config.status
@@ -12,3 +13,4 @@
 /src/include/config.h
 /src/qrc_qutselect.cpp
 /src/qutselect.pro
+/build-*

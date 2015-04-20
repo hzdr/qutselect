@@ -173,7 +173,7 @@ bool CApplication::parseCommandLine(int& argc, char** argv)
 				 << "[ppc]"
 				 #elif defined(__i386__)
 				 << "[x86]"
-				 #elif defined(__X86_64__)
+				 #elif defined(__x86_64__)
 				 << "[x86_64]"
 				 #else
 				 #warning Unknown CPU model

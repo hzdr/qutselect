@@ -18,10 +18,10 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
             PATH_SUFFIXES include/rtdebug
   )
   
-  find_library(RTDEBUG_STATIC_LIB NAMES librtdebug.a
+  find_library(RTDEBUG_STATIC_LIB NAMES librtdebug${CMAKE_STATIC_LIBRARY_SUFFIX}
                PATH_SUFFIXES lib
   )
-  find_library(RTDEBUG_SHARED_LIB NAMES librtdebug.so rtdebug
+  find_library(RTDEBUG_SHARED_LIB NAMES librtdebug${CMAKE_SHARED_LIBRARY_SUFFIX} rtdebug
                PATH_SUFFIXES lib
   )
  
