@@ -27,8 +27,8 @@ if [ `uname -s` = "SunOS" ]; then
    TLSSOPASSWORD=/opt/thinlinc/bin/tl-sso-password
    TLBESTWINSERVER=/opt/thinlinc/bin/tl-best-winserver
 else
-   RDESKTOP=/usr/local/bin/rdesktop
-   XFREERDP=/usr/local/bin/xfreerdp
+   RDESKTOP=/usr/bin/rdesktop
+   XFREERDP=/usr/bin/xfreerdp
    UTTSC=/opt/SUNWuttsc/bin/uttsc
    UTACTION=/opt/SUNWut/bin/utaction
    XVKBD=/usr/openwin/bin/xvkbd
@@ -203,22 +203,23 @@ if [ -z "${cmdArgs}" ] && [ -x ${XFREERDP} ]; then
     # resolution
     if [ "x${resolution}" = "xfullscreen" ]; then
        cmdArgs="$cmdArgs /f"
+
+       # enable multi monitor support, but only if the two displays
+       # are not mirrored (offset = 0)
+       for r in `xrandr | grep " connected" | cut -d " " -f3`; do
+         x=`echo $r | cut -d "+" -f2`
+
+         # check the x-offset for being non-zero and if so
+         # enable multimon support
+         if [ $x -ne 0 ]; then
+           cmdArgs="$cmdArgs /multimon"
+           break
+         fi
+       done
+
     else
        cmdArgs="$cmdArgs /size:${resolution}"
     fi
-
-    # enable multi monitor support, but only if the two displays
-    # are not mirrored (offset = 0)
-    for r in `xrandr | grep " connected" | cut -d " " -f3`; do
-      x=`echo $r | cut -d "+" -f2`
-      
-      # check the x-offset for being non-zero and if so
-      # enable multimon support
-      if [ $x -ne 0 ]; then
-        cmdArgs="$cmdArgs /multimon"
-        break
-      fi
-    done
 
     # color depth
     cmdArgs="$cmdArgs /bpp:${colorDepth}"
