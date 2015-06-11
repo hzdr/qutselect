@@ -104,8 +104,10 @@ CMainWindow::CMainWindow(CApplication* app)
 	// get/identify the default serverlist file
 	if(app->customServerListFile().isEmpty() == false)
 		m_sServerListFile = app->customServerListFile();
-	else
+	else if(QFileInfo(QDir(QApplication::applicationDirPath()).absoluteFilePath(DEFAULT_SLIST_FILE)).exists())
 		m_sServerListFile = QDir(QApplication::applicationDirPath()).absoluteFilePath(DEFAULT_SLIST_FILE);
+  else
+    m_sServerListFile = QDir::home().absoluteFilePath(".qutselect/" DEFAULT_SLIST_FILE);
 
   // create the central widget to which we are going to add everything
   QWidget* centralWidget = new QWidget;
@@ -743,7 +745,12 @@ void CMainWindow::loadMotdText(void)
 {
   ENTER();
 
- 	QFile motdFile(QDir(QApplication::applicationDirPath()).absoluteFilePath(DEFAULT_MOTD_FILE));
+  QString motdFilePath = QDir(QApplication::applicationDirPath()).absoluteFilePath(DEFAULT_MOTD_FILE);
+
+  if(QFileInfo(motdFilePath).exists() == false)
+    motdFilePath = QDir::home().absoluteFilePath(".qutselect/" DEFAULT_MOTD_FILE);
+
+  QFile motdFile(motdFilePath);
 	if(motdFile.open(QFile::ReadOnly))
 	{
 		QTextStream in(&motdFile);
