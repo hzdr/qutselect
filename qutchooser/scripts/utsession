@@ -1,0 +1,6 @@
+#!/bin/sh
+
+cd /opt/bin
+export LD_LIBRARY_PATH=/opt/bin
+#./chooser `hostname` twn4
+./chooser `hostname` >> /var/log/utsession.log 2>&1
