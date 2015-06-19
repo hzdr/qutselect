@@ -76,7 +76,6 @@ int Form1::LoadPrivateKey( const char * tokenid )
 	  fclose(f);
 	  chmod("/tmp/user.key", 0600 );
 	  memset(sc_pk,0,1024);
-printf("saved key to /tmp/user.key\n");
 	  return 1;
 	} else {
 	  switch (r) {
@@ -86,16 +85,13 @@ printf("saved key to /tmp/user.key\n");
 	  }
 	}
       } else {
-printf("error executing PIN dialog\n");
 	return 0;
       }
     } while (sc_authok==0);
 
-printf("failed to unlock Token\n");
     return 0;
 
   } else {
-printf("non PIN Token\n");
     // QMessageBox::critical( NULL, "UT Session", "Invalid Token" );
     return -1;
   }
@@ -120,7 +116,6 @@ void Form1::StartWindows()
       char* const argv[]={"utrun.sh","1",TokenID,NULL};
       char cmd[8192];
       sprintf(cmd,"%s/utrun.sh",path);
-printf("EXECV: [%s 1 %s]\n",cmd,TokenID);
       execv(cmd,argv);
       exit(0);
     } else {
@@ -130,7 +125,6 @@ printf("EXECV: [%s 1 %s]\n",cmd,TokenID);
 	if (token_valid) {
 	  char cmd[8192];
 	  sprintf(cmd,"%s/utupdate.sh 1 %s xats",path,TokenID);
-printf("EXEC: [%s]\n",cmd);
 	  system(cmd);
 	}
       }
@@ -160,14 +154,12 @@ void Form1::StartLinux()
 	  char* const argv[]={"utrun.sh","0",TokenID,NULL};
 	  char cmd[8192];
 	  sprintf(cmd,"%s/utrun.sh",path);
-printf("EXECV.1: [%s 0 %s]\n",cmd,TokenID);
 	  execv(cmd,argv);
 	  exit(0);
 	} else {
 	  char* const argv[]={"utrun.sh","0",TokenID,"password",NULL};
 	  char cmd[8192];
 	  sprintf(cmd,"%s/utrun.sh",path);
-printf("EXECV.2: [%s 0 %s password]\n",cmd,TokenID);
 	  execv(cmd,argv);
 	  exit(0);
 	}
@@ -181,7 +173,6 @@ printf("EXECV.2: [%s 0 %s password]\n",cmd,TokenID);
 	      sprintf(cmd,"%s/utupdate.sh 0 %s lts1",path,TokenID);   // "lts1" should be read from some config file or ldap ...
 	    else
 	      sprintf(cmd,"%s/utupdate.sh 0 %s lts1 password",path,TokenID);   // "lts1" should be read from some config file or ldap ...
-printf("EXEC: [%s]\n",cmd);
 	    system(cmd);
 	    
 	    // shall we wait for session to terminate here?
@@ -209,7 +200,6 @@ void Form1::StartFirefox()
       char* const argv[]={"utrun.sh","2",TokenID,NULL};
       char cmd[8192];
       sprintf(cmd,"%s/utrun.sh",path);
-printf("EXECV: [%s 2 %s]\n",cmd,TokenID);
       execv(cmd,argv);
       exit(0);
     } else {
@@ -218,7 +208,6 @@ printf("EXECV: [%s 2 %s]\n",cmd,TokenID);
       } else {
 	char cmd[8192];
 	sprintf(cmd,"%s/utupdate.sh 2 %s \"$HOSTNAME\"",path,TokenID);
-printf("EXEC: [%s]\n",cmd);
 	system(cmd);
       }
     }
@@ -336,19 +325,14 @@ void Form1::updateState()
 	  char SDN[4096];
 	
 	  // check, if card is registered with ldap
-printf("check, if token is registered\n");
 	  if (LDAP_GetCardDN(TokenID,CDN)) {
-printf("Token DN=%s\n",CDN);
 	    token_valid=1;
-
+	    
 	    // now check, if there is a session for this token ...
-printf("check if there is an open session\n");
 	    if (LDAP_GetSessionDN(TokenID,SDN)) {
-printf("Session DN=%s\n",SDN);
               int tr=LoadPrivateKey(TokenID);
 	      if ((tr==1) || (tr==-1)) {
 		if (sessionid==0) {
-printf("spawn session\n");
 		  sessionid=fork();
 		  
 		  if (sessionid==0) {
@@ -358,13 +342,11 @@ printf("spawn session\n");
 		      char* const argv[]={"utrun.sh","reconnect",TokenID,NULL};
 		      char cmd[8192];
 		      sprintf(cmd,"%s/utrun.sh",path);
-printf("EXECV: [%s reconnect %s]\n",cmd,TokenID);
 		      execv(cmd,argv);
 		    } else {
 		      char* const argv[]={"utrun.sh","reconnect",TokenID,"password",NULL};
 		      char cmd[8192];
 		      sprintf(cmd,"%s/utrun.sh",path);
-printf("EXECV: [%s reconnect %s password]\n",cmd,TokenID);
 		      execv(cmd,argv);
 		    }
 		    exit(0);
@@ -373,11 +355,7 @@ printf("EXECV: [%s reconnect %s password]\n",cmd,TokenID);
 		      QMessageBox::critical( NULL, "UT Session", "Could not start utsession." );
 		    }
 		  }
-		} else
-printf("session still running\n");
-	      } else {
-printf("failed to use token\n");
-		sessionid=0;
+		}
 	      }
 	    } else {
 	      printf("  no session\n");
@@ -395,9 +373,8 @@ printf("failed to use token\n");
 	}
 	
       } else {
-	TOKEN->setText(QString(hostname));
+	TOKEN->setText(QString(""));
 	if (card_rdy) {
-printf("could not detect token, assuming it was removed\n");
 	  if (sessionid>0) {
 	    printf("kill.1: %d %d\n",sessionid,kill(sessionid,SIGTERM));
 	    sessionid=0;
@@ -410,9 +387,8 @@ printf("could not detect token, assuming it was removed\n");
       }
 
     } else {
-      TOKEN->setText(QString(hostname));
+      TOKEN->setText(QString(""));
       if (card_rdy) {
-printf("could not detect token, assuming it was removed\n");
 	if (sessionid>0) {
 	  printf("kill.2: %d %d\n",sessionid,kill(sessionid,SIGTERM));
 	  sessionid=0;
@@ -443,7 +419,7 @@ printf("could not detect token, assuming it was removed\n");
 void Form1::OpenInfo()
 {
     QMessageBox::information( NULL, "HZDR UT About",
-			      QString("HZDR UT Client Version 1.7\n")+
+			      QString("HZDR UT Client Version 1.8\n")+
 			      QString("Detected readers: ")+QString(PCSC_Readers()));
 }
 
