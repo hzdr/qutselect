@@ -30,13 +30,20 @@
 #include <pindlg.h>
 #include <carddlg.h>
 
+#include <unistd.h>
 #include <sys/stat.h>
 
 static int use_pcsc=0;
 static int card_rdy=0;
 static int new_card_inserted=0;
 
+//--- some hard-coded constants --------------------------------
+
 const char * ldapsrv[]={"ldap1.fz-rossendorf.de",NULL};
+const char * keyfile  = "/tmp/user.key";
+const char * logfile  = "/home/tsuser/chooser.log";
+
+//---------------------------------------------------------------
 
 static QTimer *timer;
 
@@ -52,6 +59,33 @@ static CARDDLG *cdlg=NULL;
 
 static char *path=NULL;
 
+void log(const char* lm)
+{
+  FILE *f=fopen(logfile,"a");
+  if (f) {
+    fprintf(f,lm);
+    fclose(f);
+  }
+}
+
+void log(const char* lf,int ld)
+{
+  FILE *f=fopen(logfile,"a");
+  if (f) {
+    fprintf(f,lf,ld);
+    fclose(f);
+  }
+}
+
+void log(const char* lf,const char * ld)
+{
+  FILE *f=fopen(logfile,"a");
+  if (f) {
+    fprintf(f,lf,ld);
+    fclose(f);
+  }
+}
+
 int Form1::LoadPrivateKey( const char * tokenid )
 {
   char sc_pk[1024];
@@ -62,21 +96,29 @@ int Form1::LoadPrivateKey( const char * tokenid )
 
     do {
       pdlg->Init();
-      if (pdlg->exec()) {
+      int dr=pdlg->exec();
+
+      if (dr) {
 	char sc_pin[16];
 	pdlg->GetPIN(sc_pin);
-	
-	printf("Read key from CARD\n");
 	
 	int r=PCSC_GetPrivateKey(sc_pin,sc_pk);
 
 	if (r==1) {
-	  FILE *f=fopen("/tmp/user.key","w");
-	  fprintf(f,"%s",sc_pk);
-	  fclose(f);
-	  chmod("/tmp/user.key", 0600 );
-	  memset(sc_pk,0,1024);
-	  return 1;
+	  log("trying to create user.key : ");
+	  FILE *f=fopen(keyfile,"w");
+	  if (f) {
+	    log("success\n");
+	    fprintf(f,"%s",sc_pk);
+	    fclose(f);
+	    chmod(keyfile, 0600 );
+	    memset(sc_pk,0,1024);
+	    return 1;
+	  } else {
+	    log("fail\n");
+	    QMessageBox::critical( NULL, "UT Session", "Could not create key-file!" );
+	    return 0;
+	  }
 	} else {
 	  switch (r) {
 	  case -1: QMessageBox::critical( NULL, "UT Session", "Invalid PIN!" ); break;
@@ -104,7 +146,7 @@ void Form1::StartWindows()
   if (sessionid!=0) {
     int pstate;
     if (wait(&pstate)==sessionid) {
-      printf("child session %d was terminated\n",sessionid);
+      log("child session %d was terminated\n",sessionid);
       sessionid=0;
     }
   }
@@ -125,7 +167,7 @@ void Form1::StartWindows()
 	if (token_valid) {
 	  char cmd[8192];
 	  sprintf(cmd,"%s/utupdate.sh 1 %s xats",path,TokenID);
-	  system(cmd);
+	  int r=system(cmd);
 	}
       }
     }
@@ -138,7 +180,7 @@ void Form1::StartLinux()
   if (sessionid!=0) {
     int pstate;
     if (wait(&pstate)==sessionid) {
-      printf("child session %d was terminated\n",sessionid);
+      log("child session %d was terminated\n",sessionid);
       sessionid=0;
     }
   }
@@ -173,7 +215,7 @@ void Form1::StartLinux()
 	      sprintf(cmd,"%s/utupdate.sh 0 %s lts1",path,TokenID);   // "lts1" should be read from some config file or ldap ...
 	    else
 	      sprintf(cmd,"%s/utupdate.sh 0 %s lts1 password",path,TokenID);   // "lts1" should be read from some config file or ldap ...
-	    system(cmd);
+	    int r=system(cmd);
 	    
 	    // shall we wait for session to terminate here?
 	  }
@@ -188,7 +230,7 @@ void Form1::StartFirefox()
   if (sessionid!=0) {
     int pstate;
     if (wait(&pstate)==sessionid) {
-      printf("child session %d was terminated\n",sessionid);
+      log("child session %d was terminated\n",sessionid);
       sessionid=0;
     }
   }
@@ -208,7 +250,7 @@ void Form1::StartFirefox()
       } else {
 	char cmd[8192];
 	sprintf(cmd,"%s/utupdate.sh 2 %s \"$HOSTNAME\"",path,TokenID);
-	system(cmd);
+	int r=system(cmd);
       }
     }
   }
@@ -222,7 +264,7 @@ int main(int argc,char* argv[])
        // get executable path
        char buffer[8192];
        memset(buffer,0,8192);
-       readlink("/proc/self/exe",buffer,8192);
+       int r=readlink("/proc/self/exe",buffer,8192);
        unsigned int i=strlen(buffer)-1;
        while ((buffer[i]!='/') && (i>0)) i--;
 
@@ -257,20 +299,10 @@ void Form1::SetHostname()
   if (getenv("DISPLAY")) {
     char dpy[1024];
     strcpy(dpy,getenv("DISPLAY"));
-    printf("DISPLAY=%s\n",dpy);
   }
-  
-  if (getenv("HOSTNAME")) {
-    printf("HOSTNAME=%s\n",getenv("HOSTNAME"));
-    strcpy(hostname,getenv("HOSTNAME"));
-  } else {
-    printf("could not set HOSTNAME from env,trying /etc/hostname\n");
-    FILE *f=fopen("/etc/hostname","r");
-    if (f) {
-      fscanf(f,"%s",hostname);
-      fclose(f);
-    }
-  }
+
+  gethostname(hostname,512);
+
   char hname[1024];
   sprintf(hname,"<p align=\"center\">Welcome to %s</p>",hostname);
   HOSTNAME->setText(QString(hname));
@@ -311,7 +343,7 @@ void Form1::updateState()
     if (card_rdy) {
       strcpy(TokenID,PCSC_CardID());
 
-      if (new_card_inserted) printf("new card inserted: %s\n",TokenID);
+      if (new_card_inserted) log("new card inserted: %s\n",TokenID);
 
       if (strlen(TokenID)>0) {
 	TOKEN->setText("<p align=\"right\">"+QString(TokenID)+"</p>");
@@ -358,7 +390,7 @@ void Form1::updateState()
 		}
 	      }
 	    } else {
-	      printf("  no session\n");
+	      log("  no session\n");
 	      sessionid=0;
 	    }
 	  } else {
@@ -376,13 +408,14 @@ void Form1::updateState()
 	TOKEN->setText(QString(""));
 	if (card_rdy) {
 	  if (sessionid>0) {
-	    printf("kill.1: %d %d\n",sessionid,kill(sessionid,SIGTERM));
+	    log("kill.1: %d",sessionid);
+	    log(" %d\n",kill(sessionid,SIGTERM));
 	    sessionid=0;
 	  }
 	  card_rdy=0;
 	}
 	// remove local copy of key in any case
-	unlink("/tmp/user.key");
+	unlink(keyfile);
 	sprintf(TokenID,"pseudo.%s",hostname);
       }
 
@@ -390,14 +423,15 @@ void Form1::updateState()
       TOKEN->setText(QString(""));
       if (card_rdy) {
 	if (sessionid>0) {
-	  printf("kill.2: %d %d\n",sessionid,kill(sessionid,SIGTERM));
+	  log("kill.2: %d",sessionid);
+	  log(" %d\n",kill(sessionid,SIGTERM));
 	  sessionid=0;
 	  new_card_inserted=0;
 
 	  if (strlen(LastTokenID)>0) {
 	    char cmd[8192];
 	    sprintf(cmd,"%s/utupdate.sh 255 %s",path,LastTokenID);
-	    system(cmd);
+	    int r=system(cmd);
 	    strcpy(LastTokenID,"");
 	  }
 
@@ -405,7 +439,7 @@ void Form1::updateState()
 	card_rdy=0;
 
 	// remove local copy of key in any case
-	unlink("/tmp/user.key");
+	unlink(keyfile);
 
       }
       sprintf(TokenID,"pseudo.%s",hostname);
@@ -419,7 +453,7 @@ void Form1::updateState()
 void Form1::OpenInfo()
 {
     QMessageBox::information( NULL, "HZDR UT About",
-			      QString("HZDR UT Client Version 1.8\n")+
+			      QString("HZDR UT Client Version 1.10\n")+
 			      QString("Detected readers: ")+QString(PCSC_Readers()));
 }
 
