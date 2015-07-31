@@ -102,4 +102,4 @@ else
     ldapmodify -x -y $UTBIN/.pwd  -h $LDAP -D "cn=manager,o=fsr,dc=de" -a -f $LDIF >> $LOG 2>&1
     echo "Added session data for $SDN" >> $LOG
 fi
-    
+
