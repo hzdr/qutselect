@@ -99,15 +99,21 @@ echo "EXEC: $STYPE @ $HOST : $APP" >> $LOG 2>&1
 
 case $STYPE in
     RDP)
-        if [ "$UNAME" != "" ];
+        PWDARG=`./utpwd $HOST $UNAME`
+        if [ "$?" != "0" ];
         then
-           UNP = "/u:$UNAME"
+          PWD_UNAME=$(echo $PWDARG | cut -f1 -d~)
+          PWD_PWD=$(echo $PWDARG | cut -f2 -d~)
+
+          if [ "$PWD_UNAME" != "" ];
+          then
+             xfreerdp /f /multimon /kbd:German /d:FZR /u:${PWD_UNAME} /p:${PWD_PWD} /t:${UNAME}@${HOST} /cert-ignore /drive:USB,/mnt/$(hostname)/ /sound:latency:400 /microphone:sys:pulse +fonts +window-drag -menu-anims -themes +wallpaper -toggle-fullscreen /v:${HOST} & >> $LOG 2>&1
+          fi
+          CPID=$!
+          echo $CPID > /tmp/ut.pid
         else
-           UNP = ""
+          CPID=-1
         fi
-        xfreerdp $UNP /d:FZR /f /v:$HOST & >> $LOG 2>&1
-        CPID=$!
-        echo $CPID > /tmp/ut.pid
         ;;
     NX)
         if [ "$UNAME" != "" ];
@@ -137,7 +143,7 @@ case $STYPE in
         ;;
 esac
 
-sleep 5
+sleep 30
 rm -f /tmp/user.key
 CPID=`cat /tmp/ut.pid`
 ps >> $LOG 2>&1
