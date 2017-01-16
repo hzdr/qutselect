@@ -39,7 +39,6 @@ then
         case $STYPE in
             NX) 
                 APP="xterm -fn 10x20"
-                HOST="lts1"
                 ;;
             RDP) 
                 APP="rdesktop"
