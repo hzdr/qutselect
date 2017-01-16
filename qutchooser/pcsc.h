@@ -17,6 +17,8 @@ extern int PCSC_HasPIN();
 
 extern int PCSC_Verify(const char *pin,unsigned short *ec=NULL);
 extern int PCSC_Verify(BYTE *key,unsigned short *ec=NULL);
+extern int PCSC_SupportDirectPIN();
+extern int PCSC_Verify_Secure(unsigned short *ec);
 
 extern int PCSC_Change(BYTE *okey,BYTE *nkey,unsigned short *ec);
 extern int PCSC_Change(const char *opin,const char *npin,unsigned short *ec);

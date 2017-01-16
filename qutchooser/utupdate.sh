@@ -1,7 +1,7 @@
 #!/bin/sh
 
-UTBIN=/bin
-LOG="${HOME}/pfx.log"
+UTBIN=/opt/bin
+LOG="/var/log/pfx.log"
 
 UTOU="ou=uttoken,ou=utdata,o=fsr,dc=de"
 UTSD="ou=utsession,ou=utdata,o=fsr,dc=de"
@@ -12,7 +12,7 @@ LDIF=/tmp/$$.ldif
 echo "utupdate $*" >> $LOG 2>&1
 echo "LDIF = $LDIF" >> $LOG 2>&1
 
-#export LD_LIBRARY_PATH=$UTBIN
+export LD_LIBRARY_PATH=$UTBIN
 
 RTYPE=$1
 PID=$2
@@ -34,7 +34,7 @@ then
     echo "Session of type $STYPE exists on host $HOST" >> $LOG 2>&1
     if [ "$STYPE" = "RDP" ];
     then
-        RIP=`netstat -anp | grep "$RPID/xfreerdp" | grep tcp | grep ESTABLISHED | awk '{ print $5; }' | awk -F: '{ print $1; }'`
+	RIP=`netstat -anp | grep "$RPID/rdesktop" | grep tcp | grep ESTABLISHED | awk '{ print $5; }' | awk -F: '{ print $1; }'`
     else
         RIP=$3
     fi
@@ -60,15 +60,15 @@ then
 
     echo "replace: radiusClientIPAddress" >> $LDIF
     echo -n "radiusClientIPAddress: " >> $LDIF
-    hostname -i >> $LDIF
+    hostname -I >> $LDIF
 
     ldapmodify -x -y $UTBIN/.pwd -h $LDAP -D "cn=manager,o=fsr,dc=de" -v -f $LDIF >> $LOG 2>&1
     echo "Updated session data for $SDN" >> $LOG
 else
     if [ "$RTYPE" = "1" ];
     then
-        RIP=`netstat -anp | grep "$RPID/xfreerdp" | grep tcp | grep ESTABLISHED | awk '{ print $5; }' | awk -F: '{ print $1; }'`
-        echo "Opened RDP session to $HOST" >> $LOG
+	RIP=`netstat -anp | grep "$RPID/rdesktop" | grep tcp | grep ESTABLISHED | awk '{ print $5; }' | awk -F: '{ print $1; }'`
+	echo "Opened RDP session to $HOST" >> $LOG
     else
         RIP=$3
     fi
@@ -86,20 +86,21 @@ else
     date +"%Y-%m-%d %H:%M:%S" >> $LDIF
 
     echo -n "radiusClientIPAddress: " >> $LDIF
-    hostname -i >> $LDIF
+    hostname -I >> $LDIF
 
     case $RTYPE in
-        0)
-            echo "radiusServiceType: NX" >> $LDIF
-            ;;
-        1)
-            echo "radiusServiceType: RDP" >> $LDIF
-            ;;
-        2)
-            echo "radiusServiceType: APP" >> $LDIF
-            ;;
+	0)
+	    echo "radiusServiceType: NX" >> $LDIF
+	    ;;
+	1)
+	    echo "radiusServiceType: RDP" >> $LDIF
+	    ;;
+	2)
+	    echo "radiusServiceType: APP" >> $LDIF
+	    ;;
     esac
     ldapmodify -x -y $UTBIN/.pwd  -h $LDAP -D "cn=manager,o=fsr,dc=de" -a -f $LDIF >> $LOG 2>&1
     echo "Added session data for $SDN" >> $LOG
 fi
-
+    
+#rm $LDIF

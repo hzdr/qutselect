@@ -23,6 +23,7 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <sys/time.h>
+#include <arpa/inet.h>
 
 #include <termios.h>
 
@@ -39,6 +40,10 @@ static char *pcReaders, *mszReaders;
 static unsigned char pbAtr[MAX_ATR_SIZE];
 static const char *mszGroups;
 static long rv;
+
+DWORD verify_ioctl = 0;
+DWORD modify_ioctl = 0;
+
 // static int i, p, iReader;
 // static int iList[16];
 
@@ -110,12 +115,12 @@ unsigned short PCSC_err2str(const char *s,BYTE *sw) {
 
   ec=(((unsigned short)sw[0]) << 8) | ((unsigned short)sw[1]);
 
-  if ((ec!=0x0000) && (ec!=0x9000)) {
+  if ((ec!=0x0000) && (ec!=0x9000) && (ec!=0x0090)) {
     if (s) if (strlen(s)>0) printf("%s: ",s);
     printf("%02x %02x: ",sw[0],sw[1]);
   }
 
-  if ((sw[0]&0xf0==0x60)) printf("Transmission protocol related codes\n");
+  if ((sw[0] & 0xf0==0x60)) printf("Transmission protocol related codes\n");
   if ((sw[0]==0x61)) printf("SW2 indicates the number of response bytes still available\n");
   if ((sw[0]==0x62) && (sw[1]==0x00)) printf("No information given\n");
   if ((sw[0]==0x62) && (sw[1]==0x81)) printf("Returned data may be corrupted\n");
@@ -208,11 +213,12 @@ int PCSC_Init(PCSC_TYPE t_) {
 	  pcsc_rdy=1;
 	  
 	  printf("Found PC/SC reader\n");
+
 	}
       }
     }
   }
-  
+
   twn4_port=open("/dev/ttyACM0",O_RDWR|O_NOCTTY|O_NDELAY);
   if (twn4_port==-1) {
     twn4_port=-1;
@@ -255,7 +261,7 @@ int TWN4_ReadID() {
   memset(twn4_id,0,1024);
 
   if (twn4_port>0) {
-    write(twn4_port,"050010\n\r",8);
+    write(twn4_port,"050010\n\r",8);    // 0008
     fsync(twn4_port);
     int gr=0;
     int cc=0;
@@ -283,6 +289,40 @@ int TWN4_ReadID() {
     // printf("ReadMifare: %s\n",twn4_id);
     if (strlen(twn4_id)==18) return 1;
   }
+
+  return 0;
+}
+int PCSC_SupportDirectPIN() {
+  verify_ioctl=0;
+  modify_ioctl=0;
+
+  if (connected_type==1) {
+    unsigned char bRecvBuffer [4096];
+    DWORD length;
+    
+    rv = SCardControl(hCard, CM_IOCTL_GET_FEATURE_REQUEST, NULL, 0, bRecvBuffer, sizeof(bRecvBuffer), &length);
+    if (length % sizeof(PCSC_TLV_STRUCTURE)) {
+      printf("Inconsistent result! Bad TLV values!\n");
+      return -1;
+    } else {
+      length /= sizeof(PCSC_TLV_STRUCTURE);
+      PCSC_TLV_STRUCTURE *pcsc_tlv = (PCSC_TLV_STRUCTURE *)bRecvBuffer;
+
+      for (DWORD i = 0; i < length; i++) {
+	if (pcsc_tlv[i].tag == FEATURE_VERIFY_PIN_DIRECT) {
+	  verify_ioctl = ntohl(pcsc_tlv[i].value);
+	  printf("Reader supports VERIFY PIN DIRECT (%x)\n",verify_ioctl);
+	}
+	if (pcsc_tlv[i].tag == FEATURE_MODIFY_PIN_DIRECT) {
+	  modify_ioctl = ntohl(pcsc_tlv[i].value);
+	  printf("Reader supports MODIFY PIN DIRECT (%x)\n",modify_ioctl);
+	}
+      }
+    }
+  }
+
+  if (verify_ioctl)
+    return 1;
 
   return 0;
 }
@@ -522,6 +562,71 @@ int PCSC_HasPIN() {
   return 0;
 }
 
+int PCSC_Verify_Secure(unsigned short *ec) {
+  if (PCSC_SupportDirectPIN()) {
+    unsigned char bRecvBuffer [4096];
+    unsigned char bSendBuffer [4096];
+    DWORD length;
+    
+    PIN_VERIFY_STRUCTURE *pin_verify;
+    
+    /* verify PIN */
+    pin_verify = (PIN_VERIFY_STRUCTURE *)bSendBuffer;
+    
+    /* PC/SC v2.02.05 Part 10 PIN verification data structure */
+    pin_verify -> bTimerOut = 0x40;                          // < timeout is seconds (00 means use default timeout)
+    pin_verify -> bTimerOut2 = 0x40;                         // < timeout in seconds after first key stroke 
+    pin_verify -> bmFormatString = 0x82;                     // < formatting options 
+    pin_verify -> bmPINBlockString = 0x44;                   /* < bits 7-4 bit size of PIN length in APDU,
+								+ * bits 3-0 PIN block size in bytes after
+								+ * justification and formatting */
+    pin_verify -> bmPINLengthFormat = 0x00;                  /**< bits 7-5 RFU,
+								+ * bit 4 set if system units are bytes, clear if
+								+ * system units are bits,
+								+ * bits 3-0 PIN length position in system units */
+    pin_verify -> wPINMaxExtraDigit = HOST_TO_CCID_16(0x0404); /**< 0xXXYY where XX is minimum PIN size in digits,
+								  + and YY is maximum PIN size in digits */
+    pin_verify -> bEntryValidationCondition = 0x02;	/**< Conditions under which PIN entry should
+							   + * be considered complete,
+							   + 0x02 : validation key pressed */
+    pin_verify -> bEntryValidationCondition = 0x01;     // max pin size reached
+
+    pin_verify -> bNumberMessage = 0x01;                /**< Number of messages to display for PIN verification */
+    pin_verify -> wLangId = HOST_TO_CCID_16(0x0904);    /**< Language for messages, here: english */
+    pin_verify -> bMsgIndex = 0x00;                     /**< Message index (should be 00) */
+    pin_verify -> bTeoPrologue[0] = 0x00;               /**< T=1 block prologue field to use (fill with 00) */
+    pin_verify -> bTeoPrologue[1] = 0x00;               
+    pin_verify -> bTeoPrologue[2] = 0x00;
+    
+    /* APDU: 00 20 00 00 08 30 30 30 30 00 00 00 00 */
+    int offset = 0;
+    pin_verify -> abData[offset++] = 0x00;	/* CLA */
+    pin_verify -> abData[offset++] = 0x20;	/* INS: VERIFY */
+    pin_verify -> abData[offset++] = 0x00;	/* P1 */
+    pin_verify -> abData[offset++] = 0x00;	/* P2 */
+    pin_verify -> abData[offset++] = 0x08;	/* Lc: 8 data bytes */
+    pin_verify -> abData[offset++] = 0x00;	/* '0' */
+    pin_verify -> abData[offset++] = 0x00;	/* '0' */
+    pin_verify -> abData[offset++] = 0x00;	/* '0' */
+    pin_verify -> abData[offset++] = 0x00;	/* '0' */
+    pin_verify -> abData[offset++] = 0x00;	/* '\0' */
+    pin_verify -> abData[offset++] = 0x00;	/* '\0' */
+    pin_verify -> abData[offset++] = 0x00;	/* '\0' */
+    pin_verify -> abData[offset++] = 0x00;	/* '\0' */
+    pin_verify -> ulDataLength = HOST_TO_CCID_32(offset);	/* APDU size */
+    
+    length = sizeof(PIN_VERIFY_STRUCTURE) + offset;	/* because PIN_VERIFY_STRUCTURE contains the first byte of abData[] */
+    
+    rv = SCardControl(hCard, verify_ioctl , bSendBuffer,length, bRecvBuffer, sizeof(bRecvBuffer), &length);
+    
+    for (int i=0; i<length; i++) ec[i]=bRecvBuffer[i];
+
+    return 1;
+
+  } else
+    return 0;
+}
+
 int PCSC_Verify(BYTE *key,unsigned short *ec) {
   SCARD_IO_REQUEST pioRecvPci;
   BYTE   apdu[] = { 0x00, 0x20, 0x00, 0x00, 0x08,        0x47, 0x46, 0x58, 0x49, 0x32, 0x56, 0x78, 0x40 }; // Paylfex TK ?
@@ -537,18 +642,21 @@ int PCSC_Verify(BYTE *key,unsigned short *ec) {
   BYTE buffer[blen];
 
   rv = SCardTransmit(hCard, SCARD_PCI_T0, apdu, 13, &pioRecvPci , buffer, &blen);
+
   if (rv != SCARD_S_SUCCESS) {
     printf("%s\n", pcsc_stringify_error(rv));
     return 0;
   }
 
   if (blen>0) {
-    unsigned short lec=0;
-    lec=PCSC_err2str("Verify",buffer);
-    if (ec) *ec=lec;
-    if (lec==0x9000) return 1;
+    *ec=PCSC_err2str("Verify",buffer);
+    if (*ec==0x9000) {
+      return 1;
+    } else {
+	return 0;
+    }
   }
-
+  
   return 0;
 }
 
@@ -586,11 +694,14 @@ int PCSC_Change(BYTE *okey,BYTE *nkey,unsigned short *ec) {
     }
     
     if (blen>0) {
-      unsigned short lec=0;
-      lec=PCSC_err2str("Change",buffer);
-      if (ec) *ec=lec;
-      if (lec==0x9000) return 1;
+      *ec=PCSC_err2str("Verify",buffer);
+      if (*ec==0x9000) {
+	return 1;
+      } else {
+	return 0;
+      }
     }
+
   }
 
   return 0;
@@ -736,6 +847,8 @@ int PCSC_CreateLFEF(unsigned short fid, unsigned short bs,BYTE rl) {
 
   return 0;
 }
+
+
 
 int PCSC_ResetPIN(BYTE *oldpin,BYTE *newpin) {
   SCARD_IO_REQUEST pioRecvPci;
@@ -947,13 +1060,20 @@ int PCSC_GetPrivateKey(const char *pin,char *pcsc_id_dsa) {
   if ((haspin) && (pin) && (strlen(pin)==4)) {
     BYTE PIN[8];
     for (unsigned int i=0;i<8;i++) PIN[i]=0;
-    PIN[0]=(BYTE)(pin[0]-'0');
-    PIN[1]=(BYTE)(pin[1]-'0');
-    PIN[2]=(BYTE)(pin[2]-'0');
-    PIN[3]=(BYTE)(pin[3]-'0');
+
+    if (pin) {
+      PIN[0]=(BYTE)(pin[0]-'0');
+      PIN[1]=(BYTE)(pin[1]-'0');
+      PIN[2]=(BYTE)(pin[2]-'0');
+      PIN[3]=(BYTE)(pin[3]-'0');
+    }
 
     unsigned short ec;
-    int r=PCSC_Verify(PIN,&ec);
+    int r=-1;
+    //if (PCSC_SupportDirectPIN())
+    //      r=PCSC_Verify_Secure(ec);
+    //    else
+    r=PCSC_Verify(PIN,&ec);
 
     if (ec==0x6300) return -1; // wrong pin, but not locked yet
     if (ec==0x6983) return -2; // locked!
@@ -966,13 +1086,14 @@ int PCSC_GetPrivateKey(const char *pin,char *pcsc_id_dsa) {
   unsigned int ofs=0;
   unsigned short bsize;
   do {
-    bsize = PCSC_ReadBinary(ofs,16,data+ofs);
+    bsize = PCSC_ReadBinary(ofs,8,data+ofs);
+
     if (bsize == 0) {
-      printf("Error getting PKI data\n");
+      printf("Error getting PKI data: %d\n",bsize);
       delete data;
       return 0;
     }
-    ofs=ofs+16;
+    ofs=ofs+8;
   } while (ofs<976);
   
   memcpy(pcsc_id_dsa,data,1024);

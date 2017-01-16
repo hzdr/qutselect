@@ -40,7 +40,7 @@
     </property>
     <property name="paletteBackgroundColor">
         <color>
-            <red>255</red>
+            <red>85</red>
             <green>255</green>
             <blue>255</blue>
         </color>
@@ -107,6 +107,13 @@ Please use your HZDR credentials to register this card.</string>
                 <widget class="QLineEdit">
                     <property name="name">
                         <cstring>T_PASSWD</cstring>
+                    </property>
+                    <property name="paletteBackgroundColor">
+                        <color>
+                            <red>170</red>
+                            <green>255</green>
+                            <blue>255</blue>
+                        </color>
                     </property>
                     <property name="font">
                         <font>
@@ -178,6 +185,13 @@ Please use your HZDR credentials to register this card.</string>
                     <property name="name">
                         <cstring>T_UNAME</cstring>
                     </property>
+                    <property name="paletteBackgroundColor">
+                        <color>
+                            <red>170</red>
+                            <green>255</green>
+                            <blue>255</blue>
+                        </color>
+                    </property>
                     <property name="font">
                         <font>
                             <pointsize>12</pointsize>
@@ -234,7 +248,7 @@ Please use your HZDR credentials to register this card.</string>
                     </property>
                     <property name="paletteBackgroundColor">
                         <color>
-                            <red>255</red>
+                            <red>170</red>
                             <green>255</green>
                             <blue>255</blue>
                         </color>
@@ -254,7 +268,7 @@ Please use your HZDR credentials to register this card.</string>
                     </property>
                     <property name="paletteBackgroundColor">
                         <color>
-                            <red>255</red>
+                            <red>170</red>
                             <green>255</green>
                             <blue>255</blue>
                         </color>

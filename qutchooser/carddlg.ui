@@ -9,12 +9,12 @@
             <x>0</x>
             <y>0</y>
             <width>600</width>
-            <height>249</height>
+            <height>252</height>
         </rect>
     </property>
     <property name="paletteBackgroundColor">
         <color>
-            <red>255</red>
+            <red>85</red>
             <green>255</green>
             <blue>255</blue>
         </color>
@@ -48,6 +48,13 @@
             </property>
             <property name="enabled">
                 <bool>true</bool>
+            </property>
+            <property name="paletteBackgroundColor">
+                <color>
+                    <red>170</red>
+                    <green>255</green>
+                    <blue>255</blue>
+                </color>
             </property>
             <property name="font">
                 <font>
@@ -84,6 +91,13 @@
             <property name="enabled">
                 <bool>false</bool>
             </property>
+            <property name="paletteBackgroundColor">
+                <color>
+                    <red>170</red>
+                    <green>255</green>
+                    <blue>255</blue>
+                </color>
+            </property>
             <property name="font">
                 <font>
                     <pointsize>18</pointsize>
@@ -102,6 +116,13 @@
             </property>
             <property name="enabled">
                 <bool>false</bool>
+            </property>
+            <property name="paletteBackgroundColor">
+                <color>
+                    <red>170</red>
+                    <green>255</green>
+                    <blue>255</blue>
+                </color>
             </property>
             <property name="font">
                 <font>
@@ -124,7 +145,7 @@
             </property>
             <property name="paletteBackgroundColor">
                 <color>
-                    <red>255</red>
+                    <red>170</red>
                     <green>255</green>
                     <blue>255</blue>
                 </color>
@@ -253,6 +274,13 @@
             </property>
             <property name="enabled">
                 <bool>false</bool>
+            </property>
+            <property name="paletteBackgroundColor">
+                <color>
+                    <red>170</red>
+                    <green>255</green>
+                    <blue>255</blue>
+                </color>
             </property>
             <property name="font">
                 <font>

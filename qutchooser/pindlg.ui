@@ -9,12 +9,12 @@
             <x>0</x>
             <y>0</y>
             <width>310</width>
-            <height>58</height>
+            <height>60</height>
         </rect>
     </property>
     <property name="paletteBackgroundColor">
         <color>
-            <red>255</red>
+            <red>85</red>
             <green>255</green>
             <blue>255</blue>
         </color>
@@ -29,6 +29,13 @@
         <widget class="QLineEdit" row="0" column="1">
             <property name="name">
                 <cstring>PINS</cstring>
+            </property>
+            <property name="paletteBackgroundColor">
+                <color>
+                    <red>170</red>
+                    <green>255</green>
+                    <blue>255</blue>
+                </color>
             </property>
             <property name="font">
                 <font>
