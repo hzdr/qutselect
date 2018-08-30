@@ -1,5 +1,6 @@
 sudo: required
 language: cpp
+
 install:
  - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu trusty universe"
  - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu trusty main"
@@ -10,6 +11,25 @@ install:
  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
  - sudo apt-get -qq install cmake
  - sudo apt-get -qq install qdbus qmlscene qt5-default qt5-qmake qtbase5-dev-tools qtchooser qtdeclarative5-dev xbitmaps xterm libqt5svg5-dev qttools5-dev qtscript5-dev qtdeclarative5-folderlistmodel-plugin qtdeclarative5-controls-plugin -y
+
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "HOv8XcWbq3WT/DHxy7S/VQI3aVkXMCQXJ0MJVwqRO4ebHJsKgkuYo7e3kGL8SPUSjXWwSl6OJeFdC26v/bURK5+zl63c+GrQS9B48sy5P7hSLQaBnPVXEaR9eRadk6YmaIfWJyG32bfRvSzRKrzaBlda2GpnfLsBFjmZwJ54clXX97PN76n8y3WRt1eb9TXR+dC0BalH7bSSVBMI3A3RW0ODs1aw+2ZyhirzlLUYeA50o/Y7LilUddCNwG7Qw2mKSXzuhvDJcD3MUkdz/OsgipOZMuBLP41G3CTCwvUgL+Jz5XAVkSaw5kd3QAtcI8rC1Ifz2ZNdkqQsOXMmqVdYyfX57SFZbafHc/JbnmQsGCPlI82btIhvUmNL2VuWOrscsr8T3CIg1PHP6/XPbispcjmr+JGFPahBO0ZpkMf2V8c98pr1DJ9YSE0kMiO+K87oIwo8pO6KFYfWEqxC75AwuYYqi/TOKWH78tpb7m/zy7q+UC7zP23zSrPqQQuFNN8lXQt8Sk7+myXdgfXlNtYv2o8K/VL/ZdVKPbgVCf5Y6BlxpjkDDkmrooeQ4oWHXI7mBeLQ8oSfdx0EDorSFczaclI/QZz697MdmXea33jGBdnDoSyMP2baipne6LhDMKXB7ZykzBfYWCCY3gS6HMXgTNegrvDn8aqkin+nGPmSECk="
+
+before_install:
+  - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+
+addons:
+  coverity_scan:
+    project:
+      name: "hzdr/qutselect"
+      description: "A Qt-based (unix) terminal server selection tool "
+    notification_email: mail@jens-maus.de
+    build_command_prepend: ""
+    build_command: "make"
+    branch_pattern: coverity_scan
 
 script:
  - make
