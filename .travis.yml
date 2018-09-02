@@ -28,7 +28,7 @@ addons:
     notification_email: mail@jens-maus.de
     build_command_prepend: ""
     build_command: "make"
-    branch_pattern: coverity_scan
+    branch_pattern: master
 
 script:
  - make
