@@ -86,10 +86,12 @@ enum ColumnNumbers { CN_DISPLAYNAME=0,
 #include "config.h"
 
 CMainWindow::CMainWindow(CApplication* app)
-	: m_bKeepAlive(app->keepAlive()),
+	: m_pSettings(NULL),
+		m_bKeepAlive(app->keepAlive()),
 		m_bDtLoginMode(app->dtLoginMode()),
 		m_bNoSRSS(app->noSunrayServers()),
-		m_bNoList(app->noListDisplay())
+		m_bNoList(app->noListDisplay()),
+		m_iColorDepth(32)
 {
 	ENTER();
 

@@ -44,7 +44,6 @@ class CApplication : public QApplication
 		bool noListDisplay() const { return m_bNoList; }
 		bool noUserName() const { return m_bNoUserName; }
 		bool keepAlive() const { return m_bKeepAlive; }
-		bool useUserName() const {return m_bUseUserName;}
 		QString customServerListFile() const { return m_sServerListFile; }
 
 	private:
@@ -62,7 +61,6 @@ class CApplication : public QApplication
 		bool		m_bNoList;
 		bool		m_bNoUserName;
 		bool		m_bKeepAlive;
-		bool 		m_bUseUserName;
 		QString m_sServerListFile;
 };
 
