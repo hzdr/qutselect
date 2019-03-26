@@ -1,4 +1,4 @@
-#/bin/bash
+#/bin/sh
 #
 # This is a shell script which mimics the behaviour of tl-best-winserver
 # which is installed with the Server component of ThinLinc. It can be used

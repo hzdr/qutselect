@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # This is a startup script for qutselect which initates a
 # ThinLinc session to a thinlinc server

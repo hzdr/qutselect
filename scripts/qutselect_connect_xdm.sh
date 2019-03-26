@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # This is a startup script for qutselect which initates a
 # RDP session to a windows server either via rdesktop or uttsc

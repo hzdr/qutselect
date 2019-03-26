@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # This is a startup script for qutselect which initates a
 # SRSS session to another sunray server via utswitch
