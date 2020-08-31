@@ -257,13 +257,13 @@ if [ -z "${cmdArgs}" ] && [ -x ${XFREERDP} ]; then
     # we are in a thinlinc session and thus have to forward
     # ${HOME}/thindrives/mnt instead
     if [ -n "${TLSESSIONDATA}" ]; then
-      cmdArgs="$cmdArgs /drive:USB,${TLSESSIONDATA}/drives/"
-    else
-       if [ -n "${SUN_SUNRAY_TOKEN}" ]; then
-         cmdArgs="$cmdArgs /drive:USB,/tmp/SUNWut/mnt/${USER}/"
-       else
-         cmdArgs="$cmdArgs /drive:USB,/mnt/`hostname`/"
-       fi
+      if [ -d ${TLSESSIONDATA}/drives ]; then
+        cmdArgs="$cmdArgs /drive:USB,${TLSESSIONDATA}/drives/"
+      fi
+    elif [ -n "${SUN_SUNRAY_TOKEN}" ]; then
+      if [ -d /tmp/SUNWut/mnt/${USER} ]; then
+        cmdArgs="$cmdArgs /drive:USB,/tmp/SUNWut/mnt/${USER}/"
+      fi
     fi
 
     # enable sound redirection
