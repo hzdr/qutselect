@@ -150,7 +150,7 @@ bool CApplication::parseCommandLine(int& argc, char** argv)
 	if(result == false)
 	{
 		cout << "qutselect " << PROJECT_VERSION << " - a simple Qt based GUI frontend for terminal clients" << endl
-				 << "(" __DATE__ ")  Copyright (c) 2005-2019 Jens Maus, hzdr.de" << endl << endl;
+				 << "(" __DATE__ ")  Copyright (c) 2005-2021 Jens Maus, hzdr.de" << endl << endl;
 	}
 
 	// in case "-v" is specified we output some version
