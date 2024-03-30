@@ -30,7 +30,6 @@
 #include <QLabel>
 #include <QButtonGroup>
 #include <QComboBox>
-#include <QDesktopWidget>
 #include <QDialogButtonBox>
 #include <QDir>
 #include <QFile>
@@ -42,7 +41,7 @@
 #include <QPushButton>
 #include <QRadioButton>
 #include <QProcess>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QSettings>
 #include <QString>
 #include <QStringList>
@@ -209,8 +208,7 @@ CMainWindow::CMainWindow(CApplication* app)
 
   // lets find out the aspect ratio and min/max size for width/height of
   // the screen
-	QDesktopWidget* desktopWidget = QApplication::desktop();
-	QRect screenSize = desktopWidget->screenGeometry(desktopWidget->primaryScreen());
+	QRect screenSize = app->primaryScreen()->availableGeometry();
 
   m_pScreenResolutionLayout = new QHBoxLayout();
 	m_pScreenResolutionBox = new QComboBox();
@@ -302,7 +300,7 @@ CMainWindow::CMainWindow(CApplication* app)
 	colorsButtonGroup->addButton(m_p24bitColorsButton);
 	colorsButtonGroup->setExclusive(true);
 	m_pColorsButtonLayout = new QHBoxLayout();
-	m_pColorsButtonLayout->setMargin(0);
+	m_pColorsButtonLayout->setContentsMargins(0,0,0,0);
 	m_pColorsButtonLayout->addWidget(m_p8bitColorsButton);
 	m_pColorsButtonLayout->addWidget(m_p16bitColorsButton);
 	m_pColorsButtonLayout->addWidget(m_p24bitColorsButton);
@@ -339,7 +337,7 @@ CMainWindow::CMainWindow(CApplication* app)
 	keyboardGroup->addButton(m_pEnglishKeyboardButton);
 	keyboardGroup->setExclusive(true);
 	m_pKeyboardButtonLayout = new QHBoxLayout();
-	m_pKeyboardButtonLayout->setMargin(0);
+	m_pKeyboardButtonLayout->setContentsMargins(0,0,0,0);
 	m_pKeyboardButtonLayout->addWidget(m_pGermanKeyboardButton);
 	m_pKeyboardButtonLayout->addWidget(m_pEnglishKeyboardButton);
 	m_pKeyboardButtonLayout->addStretch(1);
@@ -545,7 +543,7 @@ void CMainWindow::serverComboBoxChanged(int index)
 	QString serverName = m_pServerListBox->itemText(index);
   if(serverName.isEmpty() == false)
   {
-    serverName = serverName.split("\\s+", QString::SkipEmptyParts).at(0);
+    serverName = serverName.split("\\s+", Qt::SkipEmptyParts).at(0);
 	  QList<QTreeWidgetItem*> items = m_pServerTreeWidget->findItems(serverName, Qt::MatchStartsWith, CN_HOSTNAME);
     if(items.isEmpty() == false)
 		  m_pServerTreeWidget->setCurrentItem(items.first());
@@ -805,12 +803,11 @@ void CMainWindow::connectButtonPressed(void)
 	// desktop width here and supply it accordingly.
 	if(resolution == "desktop")
 	{
-		QDesktopWidget* desktopWidget = QApplication::desktop();
-		QRect screenSize = desktopWidget->availableGeometry(desktopWidget->primaryScreen());
+	  QRect screenSize = qApp->primaryScreen()->availableGeometry();
 
     // create the resolution string but substract 50 pixel beause the desktop size is always
     // calculated WITH the windows bar in GNOME :(
-		resolution = QString().sprintf("%dx%d", screenSize.width()-8, screenSize.height()-28);
+		resolution = QString::asprintf("%dx%d", screenSize.width()-8, screenSize.height()-28);
 
 		D("Desktop size of '%s' selected", resolution.toLatin1().constData());
 	}
@@ -1147,8 +1144,7 @@ void CMainWindow::showEvent(QShowEvent* e)
 
 		// now we make sure we centre the new window on the current
 		// primary screen
-		QDesktopWidget* desktopWidget = QApplication::desktop();
-		QRect screenSize = desktopWidget->screenGeometry(desktopWidget->primaryScreen());
+	  QRect screenSize = qApp->primaryScreen()->availableGeometry();
     move(QPoint((screenSize.width() - width())/2, (screenSize.height() - height())/2));
   }
 
@@ -1167,23 +1163,25 @@ void CMainWindow::loadServerList()
 	if(serverListFile.open(QFile::ReadOnly))
 	{
 		QTextStream in(&serverListFile);
-		QRegExp regexp("^(.*);(.*);(.*);(.*);(.*);(.*);(.*);(.*)");
+		QRegularExpression regexp("^(.*);(.*);(.*);(.*);(.*);(.*);(.*);(.*)");
 		QString curLine;
 
     // parse through the file now and add things to the ServerList and ComboBox
 		while((curLine = in.readLine()).isNull() == false)
 		{
+      QRegularExpressionMatch match = regexp.match(curLine);
+
 			// skip any comment line starting with '#'
-			if(curLine.at(0) != '#' && curLine.at(0) != '=' && regexp.indexIn(curLine) > -1)
+			if(curLine.at(0) != '#' && curLine.at(0) != '=' && match.hasMatch())
 			{
-        QString displayname = regexp.cap(CN_DISPLAYNAME+1).simplified();
-				QString hostname = regexp.cap(CN_HOSTNAME+1).simplified().toLower();
-        QString domain = regexp.cap(CN_DOMAIN+1).simplified();
-        QString serverType = regexp.cap(CN_SERVERTYPE+1).simplified();
-        QString osType = regexp.cap(CN_SERVEROS+1).simplified();
-				QString description = regexp.cap(CN_DESCRIPTION+1).simplified();
-        QString pwprompt = regexp.cap(CN_PWPROMPT+1).simplified();
-				QString script = regexp.cap(CN_STARTUPSCRIPT+1).simplified();
+        QString displayname = match.captured(CN_DISPLAYNAME+1).simplified();
+				QString hostname = match.captured(CN_HOSTNAME+1).simplified().toLower();
+        QString domain = match.captured(CN_DOMAIN+1).simplified();
+        QString serverType = match.captured(CN_SERVERTYPE+1).simplified();
+        QString osType = match.captured(CN_SERVEROS+1).simplified();
+				QString description = match.captured(CN_DESCRIPTION+1).simplified();
+        QString pwprompt = match.captured(CN_PWPROMPT+1).simplified();
+				QString script = match.captured(CN_STARTUPSCRIPT+1).simplified();
 
 				// if m_bNoSRSS we filter out any SRSS in our list
 				if(m_bNoSRSS == false || serverType != "SRSS")

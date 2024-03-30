@@ -36,7 +36,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/include
 file(GLOB_RECURSE SOURCE_FILES *.cpp)
 
 # add the qt resource files
-qt5_add_resources(UI_RESOURCES qutselect.qrc)
+qt6_add_resources(UI_RESOURCES qutselect.qrc)
 
 # specify the executable we are going to build
 add_executable(qutselect ${SOURCE_FILES}
@@ -44,10 +44,10 @@ add_executable(qutselect ${SOURCE_FILES}
 )
 
 # define link libraries dependencies
-target_link_libraries(qutselect Qt5::Core 
-                                Qt5::Gui
-                                Qt5::Widgets
-                                Qt5::Network
+target_link_libraries(qutselect Qt6::Core 
+                                Qt6::Gui
+                                Qt6::Widgets
+                                Qt6::Network
                                 ${RTDEBUG_STATIC_LIB} 
                                 ${DEPEND_STATIC_LIB}
 )

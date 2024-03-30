@@ -21,7 +21,7 @@
 #
 #**************************************************************************/
 
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.22.1)
 
 # Default configuration values. These must be before the project command or
 # they won't work in Windows.
@@ -35,8 +35,8 @@ endif()
 # define the project and the version number
 project(qutselect)
 set(PROJECT_LONGNAME "qutselect")
-set(PROJECT_VERSION_MAJOR 2)
-set(PROJECT_VERSION_MINOR 4)
+set(PROJECT_VERSION_MAJOR 3)
+set(PROJECT_VERSION_MINOR 0)
 set(PROJECT_VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR})
 
 # change output directory to top-level 'bin' dir.
@@ -70,7 +70,7 @@ if(EXISTS ${PETLIB_PATH})
 endif()
 
 # Configure third party packages
-find_package(Qt5 REQUIRED Core Gui Widgets Network)
+find_package(Qt6 REQUIRED Core Gui Widgets Network)
 find_package(RTDEBUG REQUIRED)
 
 # add some special libraries in case we are build for windows
@@ -83,8 +83,11 @@ if(WIN32 AND CMAKE_CROSS_COMPILING)
   endif()
 endif()
 
+# make sure to require Qt6
+add_compile_definitions(QT_DISABLE_DEPRECATED_BEFORE=0x050F00)
+
 # Set some better optimization options
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_RELEASE, "${CMAKE_CXX_FLAGS_RELEASE} -O3 -fomit-frame-pointer")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO, "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3 -g -fomit-frame-pointer")
 set(CMAKE_CXX_FLAGS_DEBUG, "${CMAKE_CXX_FLAGS_RELEASE} -O0")
