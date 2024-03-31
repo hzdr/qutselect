@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This is a startup script for qutselect which initates a
 # RDP session to a windows server either via rdesktop or uttsc
@@ -28,13 +28,14 @@ if [ `uname -s` = "SunOS" ]; then
    TLBESTWINSERVER=/opt/thinlinc/bin/tl-best-winserver
 else
    RDESKTOP=/usr/bin/rdesktop
-   XFREERDP=/usr/bin/xfreerdp
+   XFREERDP=/usr/local/bin/xfreerdp
    UTTSC=/opt/SUNWuttsc/bin/uttsc
    UTACTION=/opt/SUNWut/bin/utaction
    XVKBD=/usr/openwin/bin/xvkbd
    PKILL=/usr/bin/pkill
    TLSSOPASSWORD=/opt/thinlinc/bin/tl-sso-password
    TLBESTWINSERVER=/opt/thinlinc/bin/tl-best-winserver
+   ZENITY=/bin/zenity
 fi
 
 #####################################################
@@ -59,11 +60,13 @@ serverName="${10}"
 # if this is a ThinLinc session we can grab the password
 # using the tl-sso-password command in case the user wants
 # to connect to one of our servers (FZR domain)
-if [ -x ${TLSSOPASSWORD} ]; then
-  ${TLSSOPASSWORD} -c
-  if [ $? -eq 0 ] && [ "x${domain}" = "xFZR" ]; then
-    password=`${TLSSOPASSWORD}`
+if [[ -x ${TLSSOPASSWORD} ]] &&
+  ${TLSSOPASSWORD} -c 2>/dev/null; then
+  if [[ $? -eq 0 ]] && [[ "x${domain}" = "xFZR" ]]; then
+    password=$(${TLSSOPASSWORD})
   fi
+else
+  password=$(${ZENITY} --password --title="${serverName}" --timeout=20)
 fi
 
 # read the password from stdin if not specified yet
@@ -222,7 +225,8 @@ if [ -z "${cmdArgs}" ] && [ -x ${XFREERDP} ]; then
     fi
 
     # color depth
-    cmdArgs="$cmdArgs /bpp:${colorDepth}"
+    #cmdArgs="$cmdArgs /bpp:${colorDepth}"
+    cmdArgs="$cmdArgs /bpp:32"
 
     # keyboard
     if [ "x${keyLayout}" = "xde" ]; then
@@ -257,9 +261,8 @@ if [ -z "${cmdArgs}" ] && [ -x ${XFREERDP} ]; then
     # we are in a thinlinc session and thus have to forward
     # ${HOME}/thindrives/mnt instead
     if [ -n "${TLSESSIONDATA}" ]; then
-      if [ -d ${TLSESSIONDATA}/drives ]; then
-        cmdArgs="$cmdArgs /drive:USB,${TLSESSIONDATA}/drives/"
-      fi
+      mkdir -p "${TLSESSIONDATA}/drives"
+      cmdArgs="$cmdArgs /drive:USB,${TLSESSIONDATA}/drives/"
     elif [ -n "${SUN_SUNRAY_TOKEN}" ]; then
       if [ -d /tmp/SUNWut/mnt/${USER} ]; then
         cmdArgs="$cmdArgs /drive:USB,/tmp/SUNWut/mnt/${USER}/"
@@ -267,14 +270,19 @@ if [ -z "${cmdArgs}" ] && [ -x ${XFREERDP} ]; then
     fi
 
     # enable sound redirection
-    cmdArgs="$cmdArgs /sound:latency:400"
+    cmdArgs="$cmdArgs /sound:sys:pulse /sound:latency:400"
 
     # enable audio input redirection
     cmdArgs="$cmdArgs /microphone:sys:pulse"
 
     # performance optimization options
-    cmdArgs="$cmdArgs +fonts +window-drag -menu-anims -themes +wallpaper"
-    
+    cmdArgs="$cmdArgs +auto-reconnect +fonts +window-drag -menu-anims -themes +wallpaper +heartbeat /dynamic-resolution /gdi:hw /rfx /gfx:avc444 /video /network:auto"
+
+    # exception for old servers
+    if [ "x${serverName}" == "xfwpdev01" ]; then
+      cmdArgs="$cmdArgs /tls-seclevel:0"
+    fi
+
     # if we are not in dtlogin mode we go and
     # output the rdesktop line that is to be executed
     if [ "x${dtlogin}" != "xtrue" ]; then
@@ -288,8 +296,12 @@ if [ -z "${cmdArgs}" ] && [ -x ${XFREERDP} ]; then
       cmdArgs="$cmdArgs -toggle-fullscreen"
     fi
 
+    # increase logging
+    cmdArgs="$cmdArgs /log-level:INFO"
+
     # run xfreerdp finally
     if [ "x${password}" != "xNULL" ]; then
+      cmdArgs="$cmdArgs /from-stdin"
       ${XFREERDP} ${cmdArgs} /p:${password} /v:${serverName} &>/dev/null &
     else
       ${XFREERDP} ${cmdArgs} /v:${serverName} &>/dev/null &
