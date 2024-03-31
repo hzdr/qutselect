@@ -521,7 +521,7 @@ CMainWindow::CMainWindow(CApplication* app)
 		resize(m_pSettings->value("size", QSize(WINDOW_WIDTH, WINDOW_HEIGHT)).toSize());
 	}
 	
-	setWindowTitle("qutselect v" + QString(PROJECT_VERSION) + " - (c) 2005-2019 hzdr.de");
+	setWindowTitle("qutselect v" + QString(PROJECT_VERSION) + " - (c) 2005-2024 hzdr.de");
 
 	LEAVE();
 }
