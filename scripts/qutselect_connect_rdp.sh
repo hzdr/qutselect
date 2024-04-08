@@ -61,7 +61,7 @@ fi
 # if we still have not a password yet we query it from the user via
 # zenity
 if [[ -x ${ZENITY} ]] && [[ "${password}" == "NULL" ]]; then
-  password=$(${ZENITY} --password --title="${serverName}" --timeout=20)
+  password=$(${ZENITY} --password --title="${username}@${serverName}" --timeout=20)
 fi
 
 # if the serverName contains more than one server we go and
