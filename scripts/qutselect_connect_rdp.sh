@@ -51,7 +51,7 @@ if [[ -x ${TLSSOPASSWORD} ]] &&
   if [[ "${domain}" = "FZR" ]]; then
     password=$(${TLSSOPASSWORD})
   fi
-else
+elif [[ -x ${ZENITY} ]]; then
   password=$(${ZENITY} --password --title="${serverName}" --timeout=20)
 fi
 
@@ -91,6 +91,7 @@ fi
 
 # variable to prepare the command arguments
 cmdArgs=""
+res=2
 
 # now we find out which RDP client we use (xfreerdp/rdesktop)
 
@@ -131,19 +132,17 @@ if [[ -z "${cmdArgs}" ]] && [[ -x ${XFREERDP} ]]; then
   fi
 
   # add domain
-  if [ "x${domain}" != "xNULL" ]; then
+  if [[ "${domain}" != "NULL" ]]; then
     cmdArgs="$cmdArgs /d:${domain}"
   else
     cmdArgs="$cmdArgs /d:FZR"
   fi
 
   # add username
-  if [ "x${username}" != "xNULL" ]; then
+  if [[ "${username}" != "NULL" ]]; then
     cmdArgs="$cmdArgs /u:${username}"
-  else
-    if [ "x${domain}" != "xNULL" ]; then
-      cmdArgs="$cmdArgs /u:${domain}\\"
-    fi
+  elif [[ "${domain}" != "NULL" ]]; then
+    cmdArgs="$cmdArgs /u:${domain}\\"
   fi
 
   # set the window title to the server name we connect to
@@ -158,16 +157,18 @@ if [[ -z "${cmdArgs}" ]] && [[ -x ${XFREERDP} ]]; then
   if [ -n "${TLSESSIONDATA}" ]; then
     mkdir -p "${TLSESSIONDATA}/drives"
     cmdArgs="$cmdArgs /drive:USB,${TLSESSIONDATA}/drives/"
+  else
+    cmdArgs="$cmdArgs /drive:USB,/run/usbmount/"
   fi
 
   # enable sound redirection
-  cmdArgs="$cmdArgs /sound:sys:pulse /sound:latency:400"
+  cmdArgs="$cmdArgs /sound:sys:pulse"
 
   # enable audio input redirection
   cmdArgs="$cmdArgs /microphone:sys:pulse"
 
   # performance optimization options
-  cmdArgs="$cmdArgs +auto-reconnect +fonts +window-drag -menu-anims -themes +wallpaper +heartbeat /dynamic-resolution /gdi:hw /rfx /gfx:avc444 /video /network:auto"
+  cmdArgs="$cmdArgs +auto-reconnect +fonts +window-drag -menu-anims -themes +wallpaper +heartbeat /dynamic-resolution /gdi:hw /rfx /gfx:avc444 +gfx-thin-client /video /network:auto"
 
   # exception for old servers with weak security footprints
   if [[ "${serverName}" == "fwpdev01" ]]; then
@@ -194,11 +195,11 @@ if [[ -z "${cmdArgs}" ]] && [[ -x ${XFREERDP} ]]; then
   if [[ "${password}" != "NULL" ]]; then
     cmdArgs="$cmdArgs /from-stdin"
     # shellcheck disable=SC2086
-    ${XFREERDP} ${cmdArgs} /p:${password} /v:${serverName} &>/dev/null &
+    echo "${password}" | ${XFREERDP} ${cmdArgs} /v:"${serverName}" >/tmp/xfreerdp-${USER}-$$.log 2>&1 &
     res=$?
   else
     # shellcheck disable=SC2086
-    ${XFREERDP} ${cmdArgs} /v:${serverName} &>/dev/null &
+    ${XFREERDP} ${cmdArgs} /v:"${serverName}" >/tmp/xfreerdp-${USER}-$$.log 2>&1 &
     res=$?
   fi
 
@@ -276,18 +277,17 @@ if [[ -z "${cmdArgs}" ]] && [[ -x ${RDESKTOP} ]]; then
    if [[ "${password}" != "NULL" ]]; then
      cmdArgs="$cmdArgs -p -"
      # shellcheck disable=SC2086
-     echo ${password} | ${RDESKTOP} ${cmdArgs} ${serverName} &>/dev/null &
+     echo ${password} | ${RDESKTOP} ${cmdArgs} "${serverName}" >/tmp/rdesktop-${USER}-$$.log 2>&1 &
      res=$?
    else
      # shellcheck disable=SC2086
-     ${RDESKTOP} ${cmdArgs} ${serverName} &>/dev/null &
+     ${RDESKTOP} ${cmdArgs} "${serverName}" >/tmp/rdesktop-${USER}-$$.log 2>&1 &
      res=$?
    fi
 
    if [[ ${res} != 0 ]]; then
       echo "ERROR: rdesktop returned invalid return code"
-      exit 2
    fi
 fi
 
-exit 0
+exit ${res}
