@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/sh
+# shellcheck shell=dash disable=SC3010,SC3020
 #
 # This is a startup script for qutselect which initates a
 # RDP session to a windows server
