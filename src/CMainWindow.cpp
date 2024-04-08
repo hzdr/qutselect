@@ -165,7 +165,7 @@ CMainWindow::CMainWindow(CApplication* app)
 
 	// create a combobox for the different ServerTypes we have
 	m_pServerTypeComboBox = new QComboBox();
-	m_pServerTypeComboBox->addItem("Unix (TLINC)");
+	m_pServerTypeComboBox->addItem("Linux (TLINC)");
 	m_pServerTypeComboBox->addItem("Windows (RDP)");
 	m_pServerTypeComboBox->addItem("VNC");
 	m_pServerTypeComboBox->addItem("Application");
