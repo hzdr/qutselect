@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # shellcheck shell=dash disable=SC3010,SC3020
 #
 # This is a startup script for qutselect which initates a
@@ -252,10 +252,8 @@ if [[ -z "${cmdArgs}" ]] && [[ -x ${RDESKTOP} ]]; then
    # add username
    if [[ "${username}" != "NULL" ]]; then
      cmdArgs="$cmdArgs -u ${username}"
-   else
-     if [[ "${domain}" != "NULL" ]]; then
-       cmdArgs="$cmdArgs -u ${domain}\\"
-     fi
+   elif [[ "${domain}" != "NULL" ]]; then
+     cmdArgs="$cmdArgs -u ${domain}\\"
    fi
 
    # add the usb path as a local path. if TLSESSIONDATA is set
