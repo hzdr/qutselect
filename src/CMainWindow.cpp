@@ -1,23 +1,21 @@
 /* vim:set ts=2 nowrap: ****************************************************
 
- qutselect - A simple Qt based GUI frontend for SRSS (utselect)
- Copyright (C) 2009-2013 by Jens Langner <Jens.Langner@light-speed.de>
+ qutselect - A simple Qt-based GUI frontend for remote terminals
+ Copyright (C) 2008-2024 by Jens Maus <mail@jens-maus.de>
 
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 2 of the License, or
- (at your option) any later version.
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 3 of the License, or (at your option) any later version.
 
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
- $Id$
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program; if not, write to the Free Software Foundation,
+ Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 **************************************************************************/
 
@@ -88,7 +86,6 @@ CMainWindow::CMainWindow(CApplication* app)
 	: m_pSettings(NULL),
 		m_bKeepAlive(app->keepAlive()),
 		m_bDtLoginMode(app->dtLoginMode()),
-		m_bNoSRSS(app->noSunrayServers()),
 		m_bNoList(app->noListDisplay()),
 		m_iColorDepth(32)
 {
@@ -168,10 +165,8 @@ CMainWindow::CMainWindow(CApplication* app)
 
 	// create a combobox for the different ServerTypes we have
 	m_pServerTypeComboBox = new QComboBox();
-	m_pServerTypeComboBox->addItem("Unix (SRSS)");
 	m_pServerTypeComboBox->addItem("Unix (TLINC)");
 	m_pServerTypeComboBox->addItem("Windows (RDP)");
-	m_pServerTypeComboBox->addItem("X11 (XDM)");
 	m_pServerTypeComboBox->addItem("VNC");
 	m_pServerTypeComboBox->addItem("Application");
 	m_pServerTypeComboBox->setCurrentIndex(-1);
@@ -588,22 +583,8 @@ void CMainWindow::serverTypeChanged(int id)
 
 	D("serverTypeChanged to '%d'", index);
 
-	// we disable everything if this is a SRSS
 	switch(index)
 	{
-		case SRSS:
-		{
-			m_pScreenResolutionBox->setEnabled(false);
-			m_p8bitColorsButton->setEnabled(false);
-			m_p16bitColorsButton->setEnabled(false);
-			m_p24bitColorsButton->setEnabled(false);
-			m_pGermanKeyboardButton->setEnabled(false);
-			m_pEnglishKeyboardButton->setEnabled(false);
-      m_pServerLineEdit->setEnabled(true);
-      m_pStartButton->setText(tr("Connect"));
-		}
-		break;
-
     case TLINC:
     {
   	  m_pScreenResolutionBox->setEnabled(true);
@@ -625,19 +606,6 @@ void CMainWindow::serverTypeChanged(int id)
 			m_p24bitColorsButton->setEnabled(true);
 			m_pGermanKeyboardButton->setEnabled(true);
 			m_pEnglishKeyboardButton->setEnabled(true);
-      m_pServerLineEdit->setEnabled(true);
-      m_pStartButton->setText(tr("Connect"));
-		}
-		break;
-
-		case XDM:
-		{
-			m_pScreenResolutionBox->setEnabled(true);
-			m_p8bitColorsButton->setEnabled(true);
-			m_p16bitColorsButton->setEnabled(true);
-			m_p24bitColorsButton->setEnabled(true);
-			m_pGermanKeyboardButton->setEnabled(false);
-			m_pEnglishKeyboardButton->setEnabled(false);
       m_pServerLineEdit->setEnabled(true);
       m_pStartButton->setText(tr("Connect"));
 		}
@@ -706,11 +674,11 @@ void CMainWindow::currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem*)
 	LEAVE();
 }
 
-void CMainWindow::itemDoubleClicked(QTreeWidgetItem* item, int)
+void CMainWindow::itemDoubleClicked(QTreeWidgetItem*, int)
 {
 	ENTER();
 
-	D("Server '%s' doubleclicked", item->text(CN_HOSTNAME).toLatin1().constData());
+	//D("Server '%s' doubleclicked", item->text(CN_HOSTNAME).toLatin1().constData());
 
 	// a doubleclick is like pressing the "connect" button
 	connectButtonPressed();
@@ -833,20 +801,12 @@ void CMainWindow::connectButtonPressed(void)
 	QString serverType;
 	switch(m_pServerTypeComboBox->currentIndex())
 	{
-		case SRSS:
-			serverType = "SRSS";
-		break;
-
 		case TLINC:
 			serverType = "TLINC";
 		break;
 
 		case RDP:
 			serverType = "RDP";
-		break;
-
-		case XDM:
-			serverType = "XDM";
 		break;
 
 		case VNC:
@@ -857,30 +817,6 @@ void CMainWindow::connectButtonPressed(void)
 			serverType = "APP";
 		break;
 	}
-
-  // if we are going to switch to the same SRSS we are already on we go
-  // and close qutselect completely so that the real login of that
-  // server shows up instead
-  if(m_bDtLoginMode == true && m_pServerTypeComboBox->currentIndex() == SRSS)
-  {
-    char hostname[256];
-    QString currentHost;
-
-    if(gethostname(hostname, 256) == 0)
-    {
-	    currentHost = QString(hostname).toLower();
-
-	    D("got hostname: '%s'", currentHost.toLatin1().constData());
-
-      if(serverName == currentHost)
-      {
-        close();
-
-        LEAVE();
-        return;
-      }
-    }
-  }
 
 	// find the selected server in the tree widget to retrieve some more
   // information (pw prompt, domain, script, etc.)
@@ -964,7 +900,7 @@ void CMainWindow::startConnection(void)
 	// 1.Option: the 'pid' of this application
 	cmdArgs << QString::number(QApplication::applicationPid());
 
-	// 2.Option: supply the servertype (SRSS, RDP, etc)
+	// 2.Option: supply the servertype (RDP, etc)
 	cmdArgs << m_sServerType;
 
 	// 3.Option: say "true" if dtLoginMode is enabled
@@ -1183,8 +1119,9 @@ void CMainWindow::loadServerList()
         QString pwprompt = match.captured(CN_PWPROMPT+1).simplified();
 				QString script = match.captured(CN_STARTUPSCRIPT+1).simplified();
 
-				// if m_bNoSRSS we filter out any SRSS in our list
-				if(m_bNoSRSS == false || serverType != "SRSS")
+				// filter out all legacy servertypes not available in Version 3.0+
+        // anymore
+				if(serverType != "SRSS" && serverType != "XDM")
 				{
 					// add the server to our listview
 					QStringList columnList;
@@ -1211,8 +1148,6 @@ void CMainWindow::loadServerList()
 					QIcon serverIcon;
 					if(osType.contains("linux", Qt::CaseInsensitive))
 						serverIcon = QIcon(":/images/linux-logo.png");
-					else if(osType.contains("solaris", Qt::CaseInsensitive))
-						serverIcon = QIcon(":/images/solaris-logo.png");
 					else if(osType.contains("windows", Qt::CaseInsensitive))
 						serverIcon = QIcon(":/images/windows-logo.png");
 					else if(osType.contains("macos", Qt::CaseInsensitive))
