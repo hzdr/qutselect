@@ -51,13 +51,17 @@ if [[ -x ${TLSSOPASSWORD} ]] &&
   if [[ "${domain}" = "FZR" ]]; then
     password=$(${TLSSOPASSWORD})
   fi
-elif [[ -x ${ZENITY} ]]; then
-  password=$(${ZENITY} --password --title="${serverName}" --timeout=20)
 fi
 
 # read the password from stdin if not specified yet
 if [[ -z "${password}" ]]; then
   read -r password
+fi
+
+# if we still have not a password yet we query it from the user via
+# zenity
+if [[ -x ${ZENITY} ]] && [[ "${password}" == "NULL" ]]; then
+  password=$(${ZENITY} --password --title="${serverName}" --timeout=20)
 fi
 
 # if the serverName contains more than one server we go and
