@@ -2,7 +2,6 @@
   <qresource prefix="">
     <file>images/banner-en.png</file>
     <file>images/linux-logo.png</file>
-    <file>images/solaris-logo.png</file>
     <file>images/windows-logo.png</file>
     <file>images/macos-logo.png</file>
     <file>images/firefox-logo.png</file>

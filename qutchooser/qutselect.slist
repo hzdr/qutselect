@@ -1,7 +1,0 @@
-# Serverlist for qutselect
-# 
-# DISPLAYNAME   HOSTNAME     DOMAIN   TYPE    OS             DESCRIPTION            PWPRMPT SCRIPT
-# ---------------------------------------------------------------------------------------------------------------------------
-XATS        ; xats     ; FZR   ; RDP   ; Windows      ; Zentraler Windows-Terminalserver      ; TRUE ; scripts/qutselect_connect_rdp.sh
-UTS         ; uts      ;       ; TLINC ; UNIX - Linux ; Zentraler Linux-Terminalserver        ; TRUE ; scripts/qutselect_connect_tlinc.sh
-
