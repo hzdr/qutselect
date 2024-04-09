@@ -18,8 +18,14 @@
 # $10 = the servername (hostname) to connect to
 #
 
-RDESKTOP=/usr/bin/rdesktop
-XFREERDP=/usr/local/bin/xfreerdp
+if [[ -x /usr/local/bin/xfreerdp ]]; then
+  XFREERDP=/usr/local/bin/xfreerdp
+elif [[ -x /usr/bin/xfreerdp ]]; then
+  XFREERDP=/usr/bin/xfreerdp
+else
+  XFREERDP=xfreerdp
+fi
+
 TLSSOPASSWORD=/opt/thinlinc/bin/tl-sso-password
 TLBESTWINSERVER=/opt/thinlinc/bin/tl-best-winserver
 ZENITY=/bin/zenity
@@ -97,199 +103,115 @@ fi
 cmdArgs=""
 res=2
 
-# now we find out which RDP client we use (xfreerdp/rdesktop)
-
 ## XFREERDP
-# if $cmdArgs is empty and xfreerdp exists use that one
-if [[ -z "${cmdArgs}" ]] && [[ -x ${XFREERDP} ]]; then
 
-  # resolution
-  if [[ "${resolution}" == "fullscreen" ]]; then
-     cmdArgs="$cmdArgs /f"
+# resolution
+if [[ "${resolution}" == "fullscreen" ]]; then
+   cmdArgs="$cmdArgs /f"
 
-     # enable multi monitor support, but only if the two displays
-     # are not mirrored (offset = 0)
-     for r in $(xrandr | grep " connected" | cut -d " " -f3); do
-       x=$(echo "${r}" | cut -d "+" -f2)
+   # enable multi monitor support, but only if the two displays
+   # are not mirrored (offset = 0)
+   for r in $(xrandr | grep " connected" | cut -d " " -f3); do
+     x=$(echo "${r}" | cut -d "+" -f2)
 
-       # check the x-offset for being non-zero and if so
-       # enable multimon support
-       if [[ $x -ne 0 ]]; then
-         cmdArgs="$cmdArgs /multimon"
-         break
-       fi
-     done
+     # check the x-offset for being non-zero and if so
+     # enable multimon support
+     if [[ $x -ne 0 ]]; then
+       cmdArgs="$cmdArgs /multimon"
+       break
+     fi
+   done
 
-  else
-     cmdArgs="$cmdArgs /size:${resolution}"
-  fi
-
-  # color depth
-  #cmdArgs="$cmdArgs /bpp:${colorDepth}"
-  cmdArgs="$cmdArgs /bpp:32"
-
-  # keyboard
-  if [[ "${keyLayout}" == "de" ]]; then
-     cmdArgs="$cmdArgs /kbd:0x407" # German
-  else
-     cmdArgs="$cmdArgs /kbd:0x409" # US
-  fi
-
-  # add domain
-  if [[ "${domain}" != "NULL" ]]; then
-    cmdArgs="$cmdArgs /d:${domain}"
-  else
-    cmdArgs="$cmdArgs /d:FZR"
-  fi
-
-  # add username
-  if [[ "${username}" != "NULL" ]]; then
-    cmdArgs="$cmdArgs /u:${username}"
-  elif [[ "${domain}" != "NULL" ]]; then
-    cmdArgs="$cmdArgs /u:${domain}\\"
-  fi
-
-  # set the window title to the server name we connect to
-  cmdArgs="$cmdArgs /t:${username}@${serverName}"
-
-  # ignore the certificate in case of encryption
-  cmdArgs="$cmdArgs /cert-ignore"
-
-  # add the usb path as a local path. if TLSESSIONDATA is set
-  # we are in a thinlinc session and thus have to forward
-  # ${HOME}/thindrives/mnt instead
-  if [ -n "${TLSESSIONDATA}" ]; then
-    mkdir -p "${TLSESSIONDATA}/drives"
-    cmdArgs="$cmdArgs /drive:USB,${TLSESSIONDATA}/drives/"
-  else
-    cmdArgs="$cmdArgs /drive:USB,/run/usbmount/"
-  fi
-
-  # enable sound redirection
-  cmdArgs="$cmdArgs /sound:sys:pulse"
-
-  # enable audio input redirection
-  cmdArgs="$cmdArgs /microphone:sys:pulse"
-
-  # performance optimization options
-  cmdArgs="$cmdArgs +multitransport +auto-reconnect +fonts +window-drag -menu-anims -themes +wallpaper +heartbeat /dynamic-resolution /gdi:hw /rfx /gfx:avc444 /video /network:auto"
-
-  # exception for old servers with weak security footprints
-  if [[ "${serverName}" == "fwpdev01" ]]; then
-    cmdArgs="$cmdArgs /tls-seclevel:0"
-  fi
-
-  # if we are not in dtlogin mode we go and
-  # output the rdesktop line that is to be executed
-  if [[ "${dtlogin}" != "true" ]]; then
-
-    # add clipboard synchronization (only required in non-dtlogin mode)
-    cmdArgs="$cmdArgs /clipboard"
-
-    echo "${XFREERDP} ${cmdArgs} /v:${serverName}"
-  else
-    # disable the full-screen toggling in case we are in dtlogin mode
-    cmdArgs="$cmdArgs -toggle-fullscreen"
-  fi
-
-  # increase logging
-  cmdArgs="$cmdArgs /log-level:INFO"
-
-  # run xfreerdp finally
-  if [[ "${password}" != "NULL" ]]; then
-    cmdArgs="$cmdArgs /from-stdin"
-    # shellcheck disable=SC2086
-    echo "${password}" | ${XFREERDP} ${cmdArgs} /v:"${serverName}" >/tmp/xfreerdp-${USER}-$$.log 2>&1 &
-    res=$?
-  else
-    # shellcheck disable=SC2086
-    ${XFREERDP} ${cmdArgs} /v:"${serverName}" >/tmp/xfreerdp-${USER}-$$.log 2>&1 &
-    res=$?
-  fi
-
-  if [[ ${res} != 0 ]]; then
-     cmdArgs=""
-     echo "WARNING: couldn't start xfreerdp, retrying with other remote desktop"
-  fi
+else
+   cmdArgs="$cmdArgs /size:${resolution}"
 fi
 
-## RDESKTOP
-# if $cmdArgs is empty and rdesktop exists use that one
-if [[ -z "${cmdArgs}" ]] && [[ -x ${RDESKTOP} ]]; then
+# color depth
+#cmdArgs="$cmdArgs /bpp:${colorDepth}"
+cmdArgs="$cmdArgs /bpp:32"
 
-   # resolution
-   if [[ "${resolution}" == "fullscreen" ]]; then
-      cmdArgs="$cmdArgs -f"
-   else
-      cmdArgs="$cmdArgs -g ${resolution}"
-   fi
+# keyboard
+if [[ "${keyLayout}" == "de" ]]; then
+   cmdArgs="$cmdArgs /kbd:0x407" # German
+else
+   cmdArgs="$cmdArgs /kbd:0x409" # US
+fi
 
-   # color depth
-   cmdArgs="$cmdArgs -a ${colorDepth}"
+# add domain
+if [[ "${domain}" != "NULL" ]]; then
+  cmdArgs="$cmdArgs /d:${domain}"
+else
+  cmdArgs="$cmdArgs /d:FZR"
+fi
 
-   # sound 
-   cmdArgs="$cmdArgs -r sound:local"
+# add username
+if [[ "${username}" != "NULL" ]]; then
+  cmdArgs="$cmdArgs /u:${username}"
+elif [[ "${domain}" != "NULL" ]]; then
+  cmdArgs="$cmdArgs /u:${domain}\\"
+fi
 
-   # enable LAN speed features
-   cmdArgs="$cmdArgs -x lan"
+# set the window title to the server name we connect to
+cmdArgs="$cmdArgs /t:${username}@${serverName}"
 
-   # add client name
-   cmdArgs="$cmdArgs -n $(hostname)"
+# ignore the certificate in case of encryption
+cmdArgs="$cmdArgs /cert-ignore"
 
-   # set the window title to the server name we connect to
-   cmdArgs="$cmdArgs -T ${username}@${serverName}"
+# add the usb path as a local path. if TLSESSIONDATA is set
+# we are in a thinlinc session and thus have to forward
+# ${HOME}/thindrives/mnt instead
+if [ -n "${TLSESSIONDATA}" ]; then
+  mkdir -p "${TLSESSIONDATA}/drives"
+  cmdArgs="$cmdArgs /drive:USB,${TLSESSIONDATA}/drives/"
+else
+  cmdArgs="$cmdArgs /drive:USB,/run/usbmount/"
+fi
 
-   # keyboard
-   if [[ "${keyLayout}" == "de" ]]; then
-      cmdArgs="$cmdArgs -k de"
-   else
-      cmdArgs="$cmdArgs -k en-US"
-   fi
+# enable sound redirection
+cmdArgs="$cmdArgs /sound:sys:pulse"
 
-   # add domain
-   if [[ "${domain}" != "NULL" ]]; then
-     cmdArgs="$cmdArgs -d ${domain}"
-   else
-     cmdArgs="$cmdArgs -d FZR"
-   fi
+# enable audio input redirection
+cmdArgs="$cmdArgs /microphone:sys:pulse"
 
-   # add username
-   if [[ "${username}" != "NULL" ]]; then
-     cmdArgs="$cmdArgs -u ${username}"
-   elif [[ "${domain}" != "NULL" ]]; then
-     cmdArgs="$cmdArgs -u ${domain}\\"
-   fi
+# performance optimization options
+cmdArgs="$cmdArgs +multitransport +auto-reconnect +fonts +window-drag -menu-anims -themes +wallpaper +heartbeat /dynamic-resolution /gdi:hw /rfx /gfx:avc444 /video /network:auto"
 
-   # add the usb path as a local path. if TLSESSIONDATA is set
-   # we are in a thinlinc session and thus have to forward
-   # ${HOME}/thindrives/mnt instead
-   if [[ -n "${TLSESSIONDATA}" ]]; then
-     cmdArgs="$cmdArgs -r disk:USB=${TLSESSIONDATA}/drives/"
-   else
-     cmdArgs="$cmdArgs -r disk:USB=/mnt/$(hostname)"
-   fi
+# exception for old servers with weak security footprints
+if [[ "${serverName}" == "fwpdev01" ]]; then
+  cmdArgs="$cmdArgs /tls-seclevel:0"
+fi
 
-   # if we are not in dtlogin mode we go and
-   # output the rdesktop line that is to be executed
-   if [[ "${dtlogin}" != "true" ]]; then
-      echo "${RDESKTOP} ${cmdArgs} ${serverName}"
-   fi
+# if we are not in dtlogin mode we go and
+# output the xfreerdp line that is to be executed
+if [[ "${dtlogin}" != "true" ]]; then
 
-   # run rdesktop finally
-   if [[ "${password}" != "NULL" ]]; then
-     cmdArgs="$cmdArgs -p -"
-     # shellcheck disable=SC2086
-     echo ${password} | ${RDESKTOP} ${cmdArgs} "${serverName}" >/tmp/rdesktop-${USER}-$$.log 2>&1 &
-     res=$?
-   else
-     # shellcheck disable=SC2086
-     ${RDESKTOP} ${cmdArgs} "${serverName}" >/tmp/rdesktop-${USER}-$$.log 2>&1 &
-     res=$?
-   fi
+  # add clipboard synchronization (only required in non-dtlogin mode)
+  cmdArgs="$cmdArgs /clipboard"
 
-   if [[ ${res} != 0 ]]; then
-      echo "ERROR: rdesktop returned invalid return code"
-   fi
+  echo "${XFREERDP} ${cmdArgs} /v:${serverName}"
+else
+  # disable the full-screen toggling in case we are in dtlogin mode
+  cmdArgs="$cmdArgs -toggle-fullscreen"
+fi
+
+# increase logging
+cmdArgs="$cmdArgs /log-level:INFO"
+
+# run xfreerdp finally
+if [[ "${password}" != "NULL" ]]; then
+  cmdArgs="$cmdArgs /from-stdin"
+  # shellcheck disable=SC2086
+  echo "${password}" | ${XFREERDP} ${cmdArgs} /v:"${serverName}" >/tmp/xfreerdp-${USER}-$$.log 2>&1 &
+  res=$?
+else
+  # shellcheck disable=SC2086
+  ${XFREERDP} ${cmdArgs} /v:"${serverName}" >/tmp/xfreerdp-${USER}-$$.log 2>&1 &
+  res=$?
+fi
+
+if [[ ${res} != 0 ]]; then
+   cmdArgs=""
+   echo "WARNING: couldn't start xfreerdp, retrying with other remote desktop"
 fi
 
 exit ${res}
