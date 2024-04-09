@@ -42,7 +42,7 @@ fi
 #serverType="${2}"
 dtlogin="${3}"
 resolution="${4}"
-colorDepth="${5}"
+#colorDepth="${5}"
 #curDepth="${6}"
 keyLayout="${7}"
 domain="${8}"
