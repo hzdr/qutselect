@@ -21,8 +21,10 @@ if [[ -x /opt/thinlinc/lib/tlclient/vncviewer ]]; then
   VNCVIEWER=/opt/thinlinc/lib/tlclient/vncviewer
 elif [[ -x /lib/tlclient/vncviewer ]]; then
   VNCVIEWER=/lib/tlclient/vncviewer
-else
+elif [[ -x /usr/bin/vncviewer ]]; then
   VNCVIEWER=/usr/bin/vncviewer
+else
+  VNCVIEWER=vncviewer
 fi
 
 #####################################################
