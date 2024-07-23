@@ -167,6 +167,7 @@ CMainWindow::CMainWindow(CApplication* app)
 	m_pServerTypeComboBox = new QComboBox();
 	m_pServerTypeComboBox->addItem("Linux (TLINC)");
 	m_pServerTypeComboBox->addItem("Windows (RDP)");
+	m_pServerTypeComboBox->addItem("VDI (PVE)");
 	m_pServerTypeComboBox->addItem("VNC");
 	m_pServerTypeComboBox->addItem("Application");
 	m_pServerTypeComboBox->setCurrentIndex(-1);
@@ -636,6 +637,19 @@ void CMainWindow::serverTypeChanged(int id)
       m_pStartButton->setText(tr("Run Application"));
 		}
 		break;
+
+    case PVE:
+    {
+      m_pScreenResolutionBox->setEnabled(false);
+      m_p8bitColorsButton->setEnabled(false);
+      m_p16bitColorsButton->setEnabled(false);
+      m_p24bitColorsButton->setEnabled(false);
+      m_pGermanKeyboardButton->setEnabled(false);
+      m_pEnglishKeyboardButton->setEnabled(false);
+      m_pServerLineEdit->setEnabled(true);
+      m_pStartButton->setText(tr("Connect"));
+    }
+    break;
 	}
 
 	LEAVE();
@@ -816,6 +830,10 @@ void CMainWindow::connectButtonPressed(void)
 		case APP:
 			serverType = "APP";
 		break;
+
+		case PVE:
+			serverType = "PVE";
+		break;
 	}
 
 	// find the selected server in the tree widget to retrieve some more
@@ -838,7 +856,7 @@ void CMainWindow::connectButtonPressed(void)
 
     // now we find out if we will show a password prompt or not by using the default values
     // for certain protocols
-    if(serverType == "RDP" || serverType == "VNC" || serverType == "TLINC")
+    if(serverType == "RDP" || serverType == "VNC" || serverType == "TLINC" || serverType == "PVE")
       pwprompt = true;
 	}
 
@@ -870,7 +888,8 @@ void CMainWindow::connectButtonPressed(void)
       // if the servertype is RDP and the domain is FZR we check if qutselect
       // is running in a ThinLinc session and if so we don't switch to the
       // username/password prompt call startConnection() right away
-      if(serverType != "RDP" || m_sDomain != "FZR" || qgetenv("TLSESSIONDATA").isEmpty())
+      if(((serverType != "RDP" || m_sDomain != "FZR") && serverType != "PVE") ||
+         qgetenv("TLSESSIONDATA").isEmpty())
       {
         changeLayout(UserPassLayout);
 
