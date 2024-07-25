@@ -51,7 +51,7 @@ serverName="${10}"
 # if this is a ThinLinc session we can grab the password
 # using the tl-sso-password command in case the user wants
 # to connect to one of our servers (FZR domain)
-if [[ ${username} == ${USER} ]] && [[ -x ${TLSSOPASSWORD} ]] &&
+if [[ "${username}" == "${USER}" ]] && [[ -x ${TLSSOPASSWORD} ]] &&
   ${TLSSOPASSWORD} -c 2>/dev/null; then
   password=$(${TLSSOPASSWORD})
 fi
