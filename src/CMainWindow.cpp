@@ -765,10 +765,23 @@ void CMainWindow::connectButtonPressed(void)
 
 	// get the currently selected server name
 	QString serverName;
+	QString domain;
 	if(m_bNoList == true)
 		serverName = m_pServerListBox->currentText().section(" ", 0, 0).toLower();
 	else
+	{
 		serverName = m_pServerLineEdit->text().section(" ", 0, 0).toLower();
+
+		// check if the serverName contains a @XXXX part and if so this will overwrite
+		// the domain/proxy part
+		QRegularExpression regexp("^(.*)@(.*)$");
+		QRegularExpressionMatch match = regexp.match(serverName);
+		if(match.hasMatch())
+		{
+			serverName = match.captured(1).simplified().toLower();
+			domain = match.captured(2).simplified().toLower();
+		}
+	}
 
 	if(m_bDtLoginMode == false)
 		m_pSettings->setValue("serverused", serverName);
@@ -840,13 +853,13 @@ void CMainWindow::connectButtonPressed(void)
   // information (pw prompt, domain, script, etc.)
 	// startup script name
 	QString startupScript;
-  QString domain;
   bool pwprompt = false;
 	QList<QTreeWidgetItem*> items = m_pServerTreeWidget->findItems(serverName, Qt::MatchStartsWith, CN_HOSTNAME);
 	if(items.isEmpty() == false && items.first()->text(CN_SERVERTYPE) == serverType)
 	{
 		startupScript = items.first()->text(CN_STARTUPSCRIPT);
-    domain = items.first()->text(CN_DOMAIN);
+		if(domain.isEmpty())
+			domain = items.first()->text(CN_DOMAIN);
     pwprompt = items.first()->text(CN_PWPROMPT) == "TRUE" ? true : false;
 	}
 	else
