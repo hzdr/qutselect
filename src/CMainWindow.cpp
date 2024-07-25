@@ -1110,6 +1110,10 @@ void CMainWindow::showEvent(QShowEvent* e)
     // make sure the sizes (width/height) are correct before continuing
     adjustSize();
 
+    // WORKAROUND: add pixels in height for the treewidget to not show
+    // any vertical scrollbar
+    resize(width(), height()+10);
+
     // now we make sure we centre the new window on the current
     // primary screen
     QRect screenSize = qApp->primaryScreen()->availableGeometry();
