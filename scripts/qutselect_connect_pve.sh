@@ -45,20 +45,25 @@ resolution="${4}"
 #curDepth="${6}"
 #keyLayout="${7}"
 proxy="${8}"
-username="${9}@hzdr.de"
+username="${9}"
 serverName="${10}"
-
-# fallback to fwppve.fz-rossendorf.de as PVE proxy
-if [[ -z ${proxy} ]] || [[ "${proxy}" == "NULL" ]]; then
-  proxy=fwppve.fz-rossendorf.de
-fi
 
 # if this is a ThinLinc session we can grab the password
 # using the tl-sso-password command in case the user wants
 # to connect to one of our servers (FZR domain)
-if [[ -x ${TLSSOPASSWORD} ]] &&
+if [[ ${username} == ${USER} ]] && [[ -x ${TLSSOPASSWORD} ]] &&
   ${TLSSOPASSWORD} -c 2>/dev/null; then
   password=$(${TLSSOPASSWORD})
+fi
+
+# if username does not contain a @ we add our @hzdr.de
+if [[ ! ${username} =~ "@" ]]; then
+  username="${username}@hzdr.de"
+fi
+
+# fallback to fwppve.fz-rossendorf.de as PVE proxy
+if [[ -z ${proxy} ]] || [[ "${proxy}" == "NULL" ]]; then
+  proxy=fwppve.fz-rossendorf.de
 fi
 
 # read the password from stdin if not specified yet

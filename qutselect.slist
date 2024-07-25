@@ -9,4 +9,5 @@ UKD-NUK       ; termserver      ; UKD88       ; RDP   ; Windows      ; UKD - Med
 ===
 WWW-Browser   ; firefox         ;             ; APP   ; Firefox      ; Firefox       ; FALSE ; scripts/qutselect_connect_app.sh
 ===
-FWPVM40       ; fwpvm40         ; fwppve      ; PVE   ; Windows      ; VDI           ; TRUE  ; scripts/qutselect_connect_pve.sh
+FWPVM40       ; fwpvm40         ; fwppve.fz-rossendorf.de ; PVE   ; Windows      ; VDI           ; TRUE  ; scripts/qutselect_connect_pve.sh
+FWP112VM      ; fwp112vm        ; 149.220.72.17:8006      ; PVE   ; Windows      ; VDI           ; TRUE  ; scripts/qutselect_connect_pve.sh
