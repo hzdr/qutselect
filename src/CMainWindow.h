@@ -55,61 +55,61 @@ class CMainWindow : public QMainWindow
     enum LayoutType { DefaultLayout=0, UserPassLayout, PassLayout };
 
     CMainWindow(CApplication* app);
-		~CMainWindow();
+    ~CMainWindow();
 
-		// set methods
-		void setKeepAlive(const bool on)			{ m_bKeepAlive = on; }
-		void setFullScreenOnly(const bool on);
-		void setQuitText(const QString& str)	{ m_pQuitButton->setText(str); }
+    // set methods
+    void setKeepAlive(const bool on)      { m_bKeepAlive = on; }
+    void setFullScreenOnly(const bool on);
+    void setQuitText(const QString& str)  { m_pQuitButton->setText(str); }
 
-		// overloaded methods
-		void keyPressEvent(QKeyEvent* e);
+    // overloaded methods
+    void keyPressEvent(QKeyEvent* e);
     void closeEvent(QCloseEvent* e);
     void showEvent(QShowEvent* e);
 
-	private:
-		void loadServerList();
+  private:
+    void loadServerList();
     void loadMotdText();
-		enum ServerType matchServerType(const QString& string);
+    enum ServerType matchServerType(const QString& string);
     void changeLayout(enum LayoutType type);
     bool passwordDialog(const QString& serverName, QString& username, QString& password);
 
-	private slots:
-		void connectButtonPressed(void);
-		void currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous);
-		void itemDoubleClicked(QTreeWidgetItem* item, int column);
-		void serverTypeChanged(int index);
-		void serverListChanged(const QString& path);
-		void serverComboBoxChanged(int index);
+  private slots:
+    void connectButtonPressed(void);
+    void currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous);
+    void itemDoubleClicked(QTreeWidgetItem* item, int column);
+    void serverTypeChanged(int index);
+    void serverListChanged(const QString& path);
+    void serverComboBoxChanged(int index);
     void startConnection(void);
     void pwButtonCancelClicked(void);
     void pwButtonLoginClicked(void);
     void passwordTimedOut(void);
 
-	private:
-		QLabel*				      m_pLogoLabel;
-		QLabel*				      m_pServerListLabel;
-		QComboBox*		      m_pServerListBox;
-		QLabel*				      m_pScreenResolutionLabel;
-		QComboBox*		      m_pScreenResolutionBox;
+  private:
+    QLabel*             m_pLogoLabel;
+    QLabel*             m_pServerListLabel;
+    QComboBox*          m_pServerListBox;
+    QLabel*             m_pScreenResolutionLabel;
+    QComboBox*          m_pScreenResolutionBox;
     QHBoxLayout*        m_pScreenResolutionLayout;
-		QLabel*				      m_pColorsLabel;
-		QRadioButton*	      m_p8bitColorsButton;
-		QRadioButton*       m_p16bitColorsButton;
-		QRadioButton*       m_p24bitColorsButton;
+    QLabel*             m_pColorsLabel;
+    QRadioButton*       m_p8bitColorsButton;
+    QRadioButton*       m_p16bitColorsButton;
+    QRadioButton*       m_p24bitColorsButton;
     QHBoxLayout*        m_pColorsButtonLayout;
-		QLabel*				      m_pKeyboardLabel;
-		QRadioButton*       m_pGermanKeyboardButton;
-		QRadioButton*       m_pEnglishKeyboardButton;
+    QLabel*             m_pKeyboardLabel;
+    QRadioButton*       m_pGermanKeyboardButton;
+    QRadioButton*       m_pEnglishKeyboardButton;
     QHBoxLayout*        m_pKeyboardButtonLayout;
-		QPushButton*	      m_pQuitButton;
+    QPushButton*        m_pQuitButton;
     QWidget*            m_pSpaceWidget;
-		QPushButton*	      m_pStartButton;
-		QSettings*		      m_pSettings;
+    QPushButton*        m_pStartButton;
+    QSettings*          m_pSettings;
     CServerTreeWidget*  m_pServerTreeWidget;
     QLineEdit*          m_pServerLineEdit;
-		QComboBox*					m_pServerTypeComboBox;
-		QFileSystemWatcher* m_pServerListWatcher;
+    QComboBox*          m_pServerTypeComboBox;
+    QFileSystemWatcher* m_pServerListWatcher;
     QStackedLayout*     m_pStackedLayout;
     QLabel*             m_pPasswordLayoutLabel;
     QLabel*             m_pUsernameLabel;
@@ -121,10 +121,10 @@ class CMainWindow : public QMainWindow
     QWidget*            m_pMotdWidget;
     QLabel*             m_pMotdLabel;
 
-		bool m_bKeepAlive;
-		bool m_bDtLoginMode;
-		bool m_bNoList;
-		QString m_sServerListFile;
+    bool m_bKeepAlive;
+    bool m_bDtLoginMode;
+    bool m_bNoList;
+    QString m_sServerListFile;
 
     // stored result before starting a connection
     QString m_sServerType;

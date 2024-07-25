@@ -28,36 +28,36 @@
 
 class CApplication : public QApplication
 {
-	Q_OBJECT
+  Q_OBJECT
   
-	public:
-		CApplication(int& argc, char** argv);
+  public:
+    CApplication(int& argc, char** argv);
     ~CApplication();
 
-		bool isInitialized() const { return m_bInitialized; }
-		bool wasAborted() const { return m_bAbortFlag; }
-		bool hasFailed() const { return m_bFailedFlag; }		
-		bool dtLoginMode() const { return m_bDtLoginMode; }
-		bool noListDisplay() const { return m_bNoList; }
-		bool noUserName() const { return m_bNoUserName; }
-		bool keepAlive() const { return m_bKeepAlive; }
-		QString customServerListFile() const { return m_sServerListFile; }
+    bool isInitialized() const { return m_bInitialized; }
+    bool wasAborted() const { return m_bAbortFlag; }
+    bool hasFailed() const { return m_bFailedFlag; }    
+    bool dtLoginMode() const { return m_bDtLoginMode; }
+    bool noListDisplay() const { return m_bNoList; }
+    bool noUserName() const { return m_bNoUserName; }
+    bool keepAlive() const { return m_bKeepAlive; }
+    QString customServerListFile() const { return m_sServerListFile; }
 
-	private:
-		bool parseCommandLine(int& argc, char** argv);
+  private:
+    bool parseCommandLine(int& argc, char** argv);
 
-	private:
-		bool m_bInitialized;
-		bool m_bAbortFlag;
-		bool m_bFailedFlag;
-		bool m_bQuietFlag;
+  private:
+    bool m_bInitialized;
+    bool m_bAbortFlag;
+    bool m_bFailedFlag;
+    bool m_bQuietFlag;
 
-		// for our configuration
-		bool		m_bDtLoginMode;
-		bool		m_bNoList;
-		bool		m_bNoUserName;
-		bool		m_bKeepAlive;
-		QString m_sServerListFile;
+    // for our configuration
+    bool    m_bDtLoginMode;
+    bool    m_bNoList;
+    bool    m_bNoUserName;
+    bool    m_bKeepAlive;
+    QString m_sServerListFile;
 };
 
 #endif // _CAPPLICATION_H_

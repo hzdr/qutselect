@@ -59,7 +59,7 @@
 #include <rtdebug.h>
 
 // standard width/height
-#define WINDOW_WIDTH	500
+#define WINDOW_WIDTH  500
 #define WINDOW_HEIGHT 600
 
 // the default startup script pattern
@@ -73,37 +73,37 @@
 enum ColumnNumbers { CN_DISPLAYNAME=0,
                      CN_HOSTNAME,
                      CN_DOMAIN,
-										 CN_SERVERTYPE,
-										 CN_SERVEROS,
-										 CN_DESCRIPTION,
+                     CN_SERVERTYPE,
+                     CN_SERVEROS,
+                     CN_DESCRIPTION,
                      CN_PWPROMPT,
-										 CN_STARTUPSCRIPT
-									 };
+                     CN_STARTUPSCRIPT
+                   };
 
 #include "config.h"
 
 CMainWindow::CMainWindow(CApplication* app)
-	: m_pSettings(NULL),
-		m_bKeepAlive(app->keepAlive()),
-		m_bDtLoginMode(app->dtLoginMode()),
-		m_bNoList(app->noListDisplay()),
-		m_iColorDepth(32)
+  : m_pSettings(NULL),
+    m_bKeepAlive(app->keepAlive()),
+    m_bDtLoginMode(app->dtLoginMode()),
+    m_bNoList(app->noListDisplay()),
+    m_iColorDepth(32)
 {
-	ENTER();
+  ENTER();
 
   // skip automated names
   if(app->noUserName() == false)
   {
-	  QString userName = QString(getenv("USER"));
+    QString userName = QString(getenv("USER"));
     if(userName.startsWith("utku") == false && userName != "root")
       m_sUsername = userName;
   }
 
-	// get/identify the default serverlist file
-	if(app->customServerListFile().isEmpty() == false)
-		m_sServerListFile = app->customServerListFile();
-	else if(QFileInfo(QDir(QApplication::applicationDirPath()).absoluteFilePath(DEFAULT_SLIST_FILE)).exists())
-		m_sServerListFile = QDir(QApplication::applicationDirPath()).absoluteFilePath(DEFAULT_SLIST_FILE);
+  // get/identify the default serverlist file
+  if(app->customServerListFile().isEmpty() == false)
+    m_sServerListFile = app->customServerListFile();
+  else if(QFileInfo(QDir(QApplication::applicationDirPath()).absoluteFilePath(DEFAULT_SLIST_FILE)).exists())
+    m_sServerListFile = QDir(QApplication::applicationDirPath()).absoluteFilePath(DEFAULT_SLIST_FILE);
   else
     m_sServerListFile = QDir::home().absoluteFilePath(".qutselect/" DEFAULT_SLIST_FILE);
 
@@ -111,41 +111,41 @@ CMainWindow::CMainWindow(CApplication* app)
   QWidget* centralWidget = new QWidget;
   setCentralWidget(centralWidget);
 
-	// create a QSettings object to receive the users specific settings
-	// written the last time the user used that application
-	if(m_bDtLoginMode == false)
-		m_pSettings = new QSettings("hzdr.de", "qutselect");
+  // create a QSettings object to receive the users specific settings
+  // written the last time the user used that application
+  if(m_bDtLoginMode == false)
+    m_pSettings = new QSettings("hzdr.de", "qutselect");
 
-	// we put a logo at the top
-	m_pLogoLabel = new QLabel();
+  // we put a logo at the top
+  m_pLogoLabel = new QLabel();
   QPixmap logo(":/images/banner-en.png");
   QPainter paint;
   paint.begin(&logo);
   paint.setPen(Qt::black);
-	char hostName[256];
+  char hostName[256];
   gethostname(hostName, 256);
-	QFont serverNameFont = paint.font();
-	serverNameFont.setBold(true);
+  QFont serverNameFont = paint.font();
+  serverNameFont.setBold(true);
   serverNameFont.setPointSize(12);
   paint.setFont(serverNameFont);
   paint.drawText(195,40,150,100, Qt::AlignLeft|Qt::AlignTop, QString("@ ")+hostName);
   paint.end(); 
-	m_pLogoLabel->setPixmap(logo);
-	//m_pLogoLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-	m_pLogoLabel->setAlignment(Qt::AlignCenter);
-	
+  m_pLogoLabel->setPixmap(logo);
+  //m_pLogoLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+  m_pLogoLabel->setAlignment(Qt::AlignCenter);
+  
   // create the treewidget we are going to populate
   m_pServerTreeWidget = new CServerTreeWidget();
   m_pServerTreeWidget->setRootIsDecorated(false);
   m_pServerTreeWidget->setAllColumnsShowFocus(true);
-	connect(m_pServerTreeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
-					this,								 SLOT(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)));
-	connect(m_pServerTreeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)),
-					this,								 SLOT(itemDoubleClicked(QTreeWidgetItem*, int)));
-	
-	// add the columns with the labels
-	QStringList columnNames;
-	columnNames << tr("Name");
+  connect(m_pServerTreeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
+          this,                SLOT(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)));
+  connect(m_pServerTreeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)),
+          this,                SLOT(itemDoubleClicked(QTreeWidgetItem*, int)));
+  
+  // add the columns with the labels
+  QStringList columnNames;
+  columnNames << tr("Name");
   columnNames << tr("Servername");
   columnNames << tr("Domain");
   columnNames << tr("Type");
@@ -153,61 +153,61 @@ CMainWindow::CMainWindow(CApplication* app)
   columnNames << tr("Description");
   columnNames << tr("PW-Prompt");
   columnNames << tr("Script");
-	m_pServerTreeWidget->setHeaderLabels(columnNames);
+  m_pServerTreeWidget->setHeaderLabels(columnNames);
   m_pServerTreeWidget->setColumnHidden(CN_DOMAIN, true);
   m_pServerTreeWidget->setColumnHidden(CN_SERVERTYPE, true);
   m_pServerTreeWidget->setColumnHidden(CN_PWPROMPT, true);
   m_pServerTreeWidget->setColumnHidden(CN_STARTUPSCRIPT, true);
-	m_pServerTreeWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+  m_pServerTreeWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
   // create the ServerLineEdit
   m_pServerLineEdit = new QLineEdit();
 
-	// create a combobox for the different ServerTypes we have
-	m_pServerTypeComboBox = new QComboBox();
-	m_pServerTypeComboBox->addItem("Linux (TLINC)");
-	m_pServerTypeComboBox->addItem("Windows (RDP)");
-	m_pServerTypeComboBox->addItem("VDI (PVE)");
-	m_pServerTypeComboBox->addItem("VNC");
-	m_pServerTypeComboBox->addItem("Application");
-	m_pServerTypeComboBox->setCurrentIndex(-1);
-	m_pServerTypeComboBox->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
-	connect(m_pServerTypeComboBox, SIGNAL(currentIndexChanged(int)),
-					this,									 SLOT(serverTypeChanged(int)));
+  // create a combobox for the different ServerTypes we have
+  m_pServerTypeComboBox = new QComboBox();
+  m_pServerTypeComboBox->addItem("Linux (TLINC)");
+  m_pServerTypeComboBox->addItem("Windows (RDP)");
+  m_pServerTypeComboBox->addItem("VDI (PVE)");
+  m_pServerTypeComboBox->addItem("VNC");
+  m_pServerTypeComboBox->addItem("Application");
+  m_pServerTypeComboBox->setCurrentIndex(-1);
+  m_pServerTypeComboBox->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+  connect(m_pServerTypeComboBox, SIGNAL(currentIndexChanged(int)),
+          this,                  SLOT(serverTypeChanged(int)));
 
-	// the we need a combobox for the different server a user can select
-	m_pServerListLabel = new QLabel(tr("Server:"));
-	m_pServerListBox = new QComboBox();
-	m_pServerListBox->setCurrentIndex(-1);
-	m_pServerListBox->setEditable(false);
-	connect(m_pServerListBox, SIGNAL(currentIndexChanged(int)),
-					this,							SLOT(serverComboBoxChanged(int)));
+  // the we need a combobox for the different server a user can select
+  m_pServerListLabel = new QLabel(tr("Server:"));
+  m_pServerListBox = new QComboBox();
+  m_pServerListBox->setCurrentIndex(-1);
+  m_pServerListBox->setEditable(false);
+  connect(m_pServerListBox, SIGNAL(currentIndexChanged(int)),
+          this,             SLOT(serverComboBoxChanged(int)));
 
-	// combine the LineEdit or ServerListBox and the TypeCombobox
-	QHBoxLayout* serverLineLayout = new QHBoxLayout();
+  // combine the LineEdit or ServerListBox and the TypeCombobox
+  QHBoxLayout* serverLineLayout = new QHBoxLayout();
 
-	if(m_bNoList == true)
-		serverLineLayout->addWidget(m_pServerListBox);
-	else
-		serverLineLayout->addWidget(m_pServerLineEdit);
+  if(m_bNoList == true)
+    serverLineLayout->addWidget(m_pServerListBox);
+  else
+    serverLineLayout->addWidget(m_pServerLineEdit);
 
-	serverLineLayout->addWidget(m_pServerTypeComboBox);	
+  serverLineLayout->addWidget(m_pServerTypeComboBox); 
 
   // create the serverListLayout
-	QVBoxLayout* serverListLayout = new QVBoxLayout();
+  QVBoxLayout* serverListLayout = new QVBoxLayout();
   serverListLayout->addWidget(m_pServerTreeWidget);
-	if(m_bNoList == false)
-		serverListLayout->addLayout(serverLineLayout);
-	
-	// selection of the screen depth
-	m_pScreenResolutionLabel = new QLabel(tr("Resolution:"));
+  if(m_bNoList == false)
+    serverListLayout->addLayout(serverLineLayout);
+  
+  // selection of the screen depth
+  m_pScreenResolutionLabel = new QLabel(tr("Resolution:"));
 
   // lets find out the aspect ratio and min/max size for width/height of
   // the screen
-	QRect screenSize = app->primaryScreen()->availableGeometry();
+  QRect screenSize = app->primaryScreen()->availableGeometry();
 
   m_pScreenResolutionLayout = new QHBoxLayout();
-	m_pScreenResolutionBox = new QComboBox();
+  m_pScreenResolutionBox = new QComboBox();
   m_pScreenResolutionBox->setEditable(true);
   m_pScreenResolutionLayout->addWidget(m_pScreenResolutionBox, 0, Qt::AlignLeft);
   m_pScreenResolutionLayout->addWidget(new QLabel("max: " + QString::number(screenSize.width()) + "x" + QString::number(screenSize.height())));
@@ -239,165 +239,165 @@ CMainWindow::CMainWindow(CApplication* app)
     m_pScreenResolutionBox->addItem("1920x1200");
 
   // add 'Desktop' and 'Fullscreen' to the end
-	m_pScreenResolutionBox->addItem("Desktop");
-	m_pScreenResolutionBox->addItem("Fullscreen");
+  m_pScreenResolutionBox->addItem("Desktop");
+  m_pScreenResolutionBox->addItem("Fullscreen");
 
-	// we check the QSettings for "resolution" and see if we
-	// can use it or not
+  // we check the QSettings for "resolution" and see if we
+  // can use it or not
   int item = -1;
-	if(m_bDtLoginMode == false && m_pSettings->value("resolution").isValid())
-	{
-		QString resolution = m_pSettings->value("resolution").toString();
+  if(m_bDtLoginMode == false && m_pSettings->value("resolution").isValid())
+  {
+    QString resolution = m_pSettings->value("resolution").toString();
 
     item = m_pScreenResolutionBox->findText(resolution);
     if(item < 0)
       item = m_pScreenResolutionBox->findText("Desktop");
-	}
-	else
-	{
-		if(screenSize.width() >= 1920)
+  }
+  else
+  {
+    if(screenSize.width() >= 1920)
     {
       if(screenSize.height() >= 1200)
-			  item = m_pScreenResolutionBox->findText("1920x1200");
+        item = m_pScreenResolutionBox->findText("1920x1200");
       else
         item = m_pScreenResolutionBox->findText("1920x1080");
     }
-		else if(screenSize.width() >= 1600)
+    else if(screenSize.width() >= 1600)
     {
       if(screenSize.height() >= 1200)
         item = m_pScreenResolutionBox->findText("1600x1200");
       else
         item = m_pScreenResolutionBox->findText("1600x1080");
     }
-		else if(screenSize.width() >= 1280)
+    else if(screenSize.width() >= 1280)
       item = m_pScreenResolutionBox->findText("1280x1024");
     else if(screenSize.width() >= 1152)
       item = m_pScreenResolutionBox->findText("1152x900");
-		else if(screenSize.width() > 1024)
+    else if(screenSize.width() > 1024)
       item = m_pScreenResolutionBox->findText("1024x768");
-		else
+    else
       item = m_pScreenResolutionBox->findText("800x600");
 
     if(item < 0)
       item =  m_pScreenResolutionBox->findText("Fullscreen");
-	}
+  }
 
   // set item as current index
   m_pScreenResolutionBox->setCurrentIndex(item);
 
-	// color depth selection
-	m_pColorsLabel = new QLabel(tr("Colors:"));
-	m_p8bitColorsButton = new QRadioButton(tr("8bit (256)"));
-	m_p16bitColorsButton = new QRadioButton(tr("16bit (65535)"));
-	m_p24bitColorsButton = new QRadioButton(tr("24bit (Millions)"));
-	QButtonGroup* colorsButtonGroup = new QButtonGroup();
-	colorsButtonGroup->addButton(m_p8bitColorsButton);
-	colorsButtonGroup->addButton(m_p16bitColorsButton);
-	colorsButtonGroup->addButton(m_p24bitColorsButton);
-	colorsButtonGroup->setExclusive(true);
-	m_pColorsButtonLayout = new QHBoxLayout();
-	m_pColorsButtonLayout->setContentsMargins(0,0,0,0);
-	m_pColorsButtonLayout->addWidget(m_p8bitColorsButton);
-	m_pColorsButtonLayout->addWidget(m_p16bitColorsButton);
-	m_pColorsButtonLayout->addWidget(m_p24bitColorsButton);
-	m_pColorsButtonLayout->addStretch(1);
+  // color depth selection
+  m_pColorsLabel = new QLabel(tr("Colors:"));
+  m_p8bitColorsButton = new QRadioButton(tr("8bit (256)"));
+  m_p16bitColorsButton = new QRadioButton(tr("16bit (65535)"));
+  m_p24bitColorsButton = new QRadioButton(tr("24bit (Millions)"));
+  QButtonGroup* colorsButtonGroup = new QButtonGroup();
+  colorsButtonGroup->addButton(m_p8bitColorsButton);
+  colorsButtonGroup->addButton(m_p16bitColorsButton);
+  colorsButtonGroup->addButton(m_p24bitColorsButton);
+  colorsButtonGroup->setExclusive(true);
+  m_pColorsButtonLayout = new QHBoxLayout();
+  m_pColorsButtonLayout->setContentsMargins(0,0,0,0);
+  m_pColorsButtonLayout->addWidget(m_p8bitColorsButton);
+  m_pColorsButtonLayout->addWidget(m_p16bitColorsButton);
+  m_pColorsButtonLayout->addWidget(m_p24bitColorsButton);
+  m_pColorsButtonLayout->addStretch(1);
 
-	// now we check the QSettings for the last selected color depth
-	if(m_bDtLoginMode == false)
-	{
-		int depth = m_pSettings->value("colordepth", 16).toInt();
-		switch(depth)
-		{
-			case 8:
-				m_p8bitColorsButton->setChecked(true);
-			break;
+  // now we check the QSettings for the last selected color depth
+  if(m_bDtLoginMode == false)
+  {
+    int depth = m_pSettings->value("colordepth", 16).toInt();
+    switch(depth)
+    {
+      case 8:
+        m_p8bitColorsButton->setChecked(true);
+      break;
 
-			case 24:
-				m_p24bitColorsButton->setChecked(true);
-			break;
+      case 24:
+        m_p24bitColorsButton->setChecked(true);
+      break;
 
-			default:
-				m_p16bitColorsButton->setChecked(true);
-			break;
-		}
-	}
-	else
-		m_p16bitColorsButton->setChecked(true);
+      default:
+        m_p16bitColorsButton->setChecked(true);
+      break;
+    }
+  }
+  else
+    m_p16bitColorsButton->setChecked(true);
 
-	// keyboard layout selection radiobuttons
-	m_pKeyboardLabel = new QLabel(tr("Keyboard:"));
-	m_pGermanKeyboardButton = new QRadioButton(tr("German"));
-	m_pEnglishKeyboardButton = new QRadioButton(tr("English"));
-	QButtonGroup* keyboardGroup = new QButtonGroup();
-	keyboardGroup->addButton(m_pGermanKeyboardButton);
-	keyboardGroup->addButton(m_pEnglishKeyboardButton);
-	keyboardGroup->setExclusive(true);
-	m_pKeyboardButtonLayout = new QHBoxLayout();
-	m_pKeyboardButtonLayout->setContentsMargins(0,0,0,0);
-	m_pKeyboardButtonLayout->addWidget(m_pGermanKeyboardButton);
-	m_pKeyboardButtonLayout->addWidget(m_pEnglishKeyboardButton);
-	m_pKeyboardButtonLayout->addStretch(1);
+  // keyboard layout selection radiobuttons
+  m_pKeyboardLabel = new QLabel(tr("Keyboard:"));
+  m_pGermanKeyboardButton = new QRadioButton(tr("German"));
+  m_pEnglishKeyboardButton = new QRadioButton(tr("English"));
+  QButtonGroup* keyboardGroup = new QButtonGroup();
+  keyboardGroup->addButton(m_pGermanKeyboardButton);
+  keyboardGroup->addButton(m_pEnglishKeyboardButton);
+  keyboardGroup->setExclusive(true);
+  m_pKeyboardButtonLayout = new QHBoxLayout();
+  m_pKeyboardButtonLayout->setContentsMargins(0,0,0,0);
+  m_pKeyboardButtonLayout->addWidget(m_pGermanKeyboardButton);
+  m_pKeyboardButtonLayout->addWidget(m_pEnglishKeyboardButton);
+  m_pKeyboardButtonLayout->addStretch(1);
 
-	// select the german keyboard as default
-	m_pGermanKeyboardButton->setChecked(true);
+  // select the german keyboard as default
+  m_pGermanKeyboardButton->setChecked(true);
 
-	// check the QSettings for the last used keyboard layout
-	if(m_bDtLoginMode == true)
-	{
-		// in dtlogin mode we identify the keyboard vis QApplication::keyboardInputLocale()
-		QLocale keyboardLocale = QApplication::inputMethod()->locale();
+  // check the QSettings for the last used keyboard layout
+  if(m_bDtLoginMode == true)
+  {
+    // in dtlogin mode we identify the keyboard vis QApplication::keyboardInputLocale()
+    QLocale keyboardLocale = QApplication::inputMethod()->locale();
 
-		D("keyboardLocalName: %s", keyboardLocale.name().toLatin1().constData());
-	}
-	else
-	{
-		QString keyboard = m_pSettings->value("keyboard", "de").toString();
-		if(keyboard.toLower() == "en")
-			m_pEnglishKeyboardButton->setChecked(true);
-	}
+    D("keyboardLocalName: %s", keyboardLocale.name().toLatin1().constData());
+  }
+  else
+  {
+    QString keyboard = m_pSettings->value("keyboard", "de").toString();
+    if(keyboard.toLower() == "en")
+      m_pEnglishKeyboardButton->setChecked(true);
+  }
 
-	// put a frame right before our buttons
-	QFrame* buttonFrame = new QFrame();
-	buttonFrame->setFrameStyle(QFrame::HLine | QFrame::Raised);
+  // put a frame right before our buttons
+  QFrame* buttonFrame = new QFrame();
+  buttonFrame->setFrameStyle(QFrame::HLine | QFrame::Raised);
 
-	// our quit and start buttons
-	m_pQuitButton = new QPushButton(tr("Quit"));
-	m_pStartButton = new QPushButton(tr("Connect"));
-	m_pStartButton->setDefault(true);
-	QHBoxLayout* buttonLayout = new QHBoxLayout();
-	buttonLayout->addWidget(m_pQuitButton);
-	buttonLayout->setStretchFactor(m_pQuitButton, 2);
+  // our quit and start buttons
+  m_pQuitButton = new QPushButton(tr("Quit"));
+  m_pStartButton = new QPushButton(tr("Connect"));
+  m_pStartButton->setDefault(true);
+  QHBoxLayout* buttonLayout = new QHBoxLayout();
+  buttonLayout->addWidget(m_pQuitButton);
+  buttonLayout->setStretchFactor(m_pQuitButton, 2);
   m_pSpaceWidget = new QWidget;
   buttonLayout->addWidget(m_pSpaceWidget);
-	buttonLayout->setStretchFactor(m_pSpaceWidget, 1);
-	buttonLayout->addWidget(m_pStartButton);
-	buttonLayout->setStretchFactor(m_pStartButton, 2);
-	connect(m_pQuitButton, SIGNAL(clicked()),
-					this,					 SLOT(close()));
-	connect(m_pStartButton,SIGNAL(clicked()),
-					this,					 SLOT(connectButtonPressed()));
-	
+  buttonLayout->setStretchFactor(m_pSpaceWidget, 1);
+  buttonLayout->addWidget(m_pStartButton);
+  buttonLayout->setStretchFactor(m_pStartButton, 2);
+  connect(m_pQuitButton, SIGNAL(clicked()),
+          this,          SLOT(close()));
+  connect(m_pStartButton,SIGNAL(clicked()),
+          this,          SLOT(connectButtonPressed()));
+  
   QWidget* defaultWidget = new QWidget;
-	QGridLayout* layout = new QGridLayout;
+  QGridLayout* layout = new QGridLayout;
 
-	if(m_bNoList == false)
-		layout->addLayout(serverListLayout, 			  0, 0, 1, 2);
-	else
+  if(m_bNoList == false)
+    layout->addLayout(serverListLayout,         0, 0, 1, 2);
+  else
   {
     layout->addWidget(m_pServerListLabel,       0, 0);
-		layout->addLayout(serverLineLayout,					0, 1);
+    layout->addLayout(serverLineLayout,         0, 1);
   }
 
   m_pOptionsWidget = new QWidget;
   QGridLayout* optionsLayout = new QGridLayout;
   optionsLayout->setSpacing(5);
   optionsLayout->setContentsMargins(0,0,0,0);
-	optionsLayout->addWidget(m_pScreenResolutionLabel,		0, 0);
-	optionsLayout->addLayout(m_pScreenResolutionLayout,	  0, 1);
-	optionsLayout->addWidget(m_pColorsLabel,							1, 0);
-	optionsLayout->addLayout(m_pColorsButtonLayout,			  1, 1);
-	optionsLayout->addWidget(m_pKeyboardLabel,						2, 0);
-	optionsLayout->addLayout(m_pKeyboardButtonLayout,		  2, 1);
+  optionsLayout->addWidget(m_pScreenResolutionLabel,    0, 0);
+  optionsLayout->addLayout(m_pScreenResolutionLayout,   0, 1);
+  optionsLayout->addWidget(m_pColorsLabel,              1, 0);
+  optionsLayout->addLayout(m_pColorsButtonLayout,       1, 1);
+  optionsLayout->addWidget(m_pKeyboardLabel,            2, 0);
+  optionsLayout->addLayout(m_pKeyboardButtonLayout,     2, 1);
   m_pOptionsWidget->setLayout(optionsLayout);
   m_pOptionsWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
 
@@ -411,21 +411,21 @@ CMainWindow::CMainWindow(CApplication* app)
   motdLayout->addWidget(motdFrame);
   m_pMotdLabel = new QLabel;
   motdLayout->addWidget(m_pMotdLabel);
-	motdLayout->addWidget(buttonFrame);
+  motdLayout->addWidget(buttonFrame);
   m_pMotdWidget->setLayout(motdLayout);
   m_pMotdWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
 
   layout->addWidget(m_pOptionsWidget,           1, 0, 1, 2);
   layout->addWidget(m_pMotdWidget,              2, 0, 1, 2);
-	layout->addLayout(buttonLayout,								3, 0, 1, 2);
+  layout->addLayout(buttonLayout,               3, 0, 1, 2);
   defaultWidget->setLayout(layout);
 
   QWidget* passwordWidget = new QWidget;
   QGridLayout* pwLayout = new QGridLayout;
 
   m_pPasswordLayoutLabel = new QLabel;
-	QFont pwlabelFont = m_pPasswordLayoutLabel->font();
-	pwlabelFont.setPointSize(14);
+  QFont pwlabelFont = m_pPasswordLayoutLabel->font();
+  pwlabelFont.setPointSize(14);
   m_pPasswordLayoutLabel->setFont(pwlabelFont);
   m_pPasswordLayoutLabel->setAlignment(Qt::AlignBottom | Qt::AlignHCenter);
 
@@ -475,36 +475,36 @@ CMainWindow::CMainWindow(CApplication* app)
   centralLayout->addWidget(m_pLogoLabel);
   centralLayout->addLayout(m_pStackedLayout);
 
-	centralWidget->setLayout(centralLayout);
+  centralWidget->setLayout(centralLayout);
 
-	// create a FileSystemWatcher to monitor the serverlist file and report 
-	// any changes to it
-	m_pServerListWatcher = new QFileSystemWatcher();
+  // create a FileSystemWatcher to monitor the serverlist file and report 
+  // any changes to it
+  m_pServerListWatcher = new QFileSystemWatcher();
 
-	if(QFileInfo(m_sServerListFile).exists())
-		m_pServerListWatcher->addPath(m_sServerListFile);
+  if(QFileInfo(m_sServerListFile).exists())
+    m_pServerListWatcher->addPath(m_sServerListFile);
 
-	connect(m_pServerListWatcher, SIGNAL(fileChanged(const QString&)),
-					this,									SLOT(serverListChanged(const QString&)));
+  connect(m_pServerListWatcher, SIGNAL(fileChanged(const QString&)),
+          this,                 SLOT(serverListChanged(const QString&)));
 
-	// now we try to open the serverlist file and add the items to our comobox
-	loadServerList();
+  // now we try to open the serverlist file and add the items to our comobox
+  loadServerList();
   loadMotdText();
 
-	// check if the QSettings contains any info about the last position
-	if(m_bDtLoginMode == true)
-	{
-		// make sure to also change some settings according to
-		// the dtlogin mode
-		setKeepAlive(true);
-		setFullScreenOnly(true);
+  // check if the QSettings contains any info about the last position
+  if(m_bDtLoginMode == true)
+  {
+    // make sure to also change some settings according to
+    // the dtlogin mode
+    setKeepAlive(true);
+    setFullScreenOnly(true);
 
     // hide the Quit Button in DtLogin Mode as ESC does the same
     m_pQuitButton->setVisible(false);
     m_pSpaceWidget->setVisible(false);
   }
-	else
-	{
+  else
+  {
     QPoint position = m_pSettings->value("position", QPoint(10, 10)).toPoint();
 
     if(position.x() < 0)
@@ -513,130 +513,130 @@ CMainWindow::CMainWindow(CApplication* app)
     if(position.y() < 0)
       position.setY(10);
 
-		move(position);
-		resize(m_pSettings->value("size", QSize(WINDOW_WIDTH, WINDOW_HEIGHT)).toSize());
-	}
-	
-	setWindowTitle("qutselect v" + QString(PROJECT_VERSION) + " - (c) 2005-2024 hzdr.de");
+    move(position);
+    resize(m_pSettings->value("size", QSize(WINDOW_WIDTH, WINDOW_HEIGHT)).toSize());
+  }
+  
+  setWindowTitle("qutselect v" + QString(PROJECT_VERSION) + " - (c) 2005-2024 hzdr.de");
 
-	LEAVE();
+  LEAVE();
 }
 
 CMainWindow::~CMainWindow()
 {
-	ENTER();
+  ENTER();
 
-	delete m_pServerListWatcher;
-	delete m_pSettings;
-	
-	LEAVE();
+  delete m_pServerListWatcher;
+  delete m_pSettings;
+  
+  LEAVE();
 }
 
 void CMainWindow::serverComboBoxChanged(int index)
 {
-	ENTER();
+  ENTER();
 
-	QString serverName = m_pServerListBox->itemText(index);
+  QString serverName = m_pServerListBox->itemText(index);
   if(serverName.isEmpty() == false)
   {
     serverName = serverName.split("\\s+", Qt::SkipEmptyParts).at(0);
-	  QList<QTreeWidgetItem*> items = m_pServerTreeWidget->findItems(serverName, Qt::MatchStartsWith, CN_HOSTNAME);
+    QList<QTreeWidgetItem*> items = m_pServerTreeWidget->findItems(serverName, Qt::MatchStartsWith, CN_HOSTNAME);
     if(items.isEmpty() == false)
-		  m_pServerTreeWidget->setCurrentItem(items.first());
+      m_pServerTreeWidget->setCurrentItem(items.first());
   }
 
-	LEAVE();
+  LEAVE();
 }
 
 void CMainWindow::serverListChanged(const QString& path)
 {
-	ENTER();
+  ENTER();
 
-	D("FileSystemWatcher triggered: '%s'", path.toLatin1().constData());
-	
-	if(path == m_sServerListFile)
-	{
-		// make sure to wait some seconds before continuing
-		if(QFileInfo(m_sServerListFile).exists() == false)
-			sleep(2);
+  D("FileSystemWatcher triggered: '%s'", path.toLatin1().constData());
+  
+  if(path == m_sServerListFile)
+  {
+    // make sure to wait some seconds before continuing
+    if(QFileInfo(m_sServerListFile).exists() == false)
+      sleep(2);
 
-		if(QFileInfo(m_sServerListFile).exists())
-		{
-			// found server list file changed, so go and reload it
-			D("server list file '%s' changed. reloading...", m_sServerListFile.toLatin1().constData());
-			loadServerList();
+    if(QFileInfo(m_sServerListFile).exists())
+    {
+      // found server list file changed, so go and reload it
+      D("server list file '%s' changed. reloading...", m_sServerListFile.toLatin1().constData());
+      loadServerList();
 
-			// refresh the FileSystemWatcher
-			m_pServerListWatcher->removePath(m_sServerListFile);
-			m_pServerListWatcher->addPath(m_sServerListFile);
-		}
-		else
-			W("server list file '%s' does not exist anymore...", m_sServerListFile.toLatin1().constData());
-	}
+      // refresh the FileSystemWatcher
+      m_pServerListWatcher->removePath(m_sServerListFile);
+      m_pServerListWatcher->addPath(m_sServerListFile);
+    }
+    else
+      W("server list file '%s' does not exist anymore...", m_sServerListFile.toLatin1().constData());
+  }
 
-	LEAVE();
+  LEAVE();
 }
 
 void CMainWindow::serverTypeChanged(int id)
 {
-	ENTER();
+  ENTER();
   enum CMainWindow::ServerType index = static_cast<CMainWindow::ServerType>(id);
 
-	D("serverTypeChanged to '%d'", index);
+  D("serverTypeChanged to '%d'", index);
 
-	switch(index)
-	{
+  switch(index)
+  {
     case TLINC:
     {
-  	  m_pScreenResolutionBox->setEnabled(true);
-			m_p8bitColorsButton->setEnabled(false);
-			m_p16bitColorsButton->setEnabled(false);
-			m_p24bitColorsButton->setEnabled(false);
-			m_pGermanKeyboardButton->setEnabled(false);
-			m_pEnglishKeyboardButton->setEnabled(false);
+      m_pScreenResolutionBox->setEnabled(true);
+      m_p8bitColorsButton->setEnabled(false);
+      m_p16bitColorsButton->setEnabled(false);
+      m_p24bitColorsButton->setEnabled(false);
+      m_pGermanKeyboardButton->setEnabled(false);
+      m_pEnglishKeyboardButton->setEnabled(false);
       m_pServerLineEdit->setEnabled(true);
       m_pStartButton->setText(tr("Connect"));
     }
     break;
 
-		case RDP:
-		{
-			m_pScreenResolutionBox->setEnabled(true);
-			m_p8bitColorsButton->setEnabled(true);
-			m_p16bitColorsButton->setEnabled(true);
-			m_p24bitColorsButton->setEnabled(true);
-			m_pGermanKeyboardButton->setEnabled(true);
-			m_pEnglishKeyboardButton->setEnabled(true);
+    case RDP:
+    {
+      m_pScreenResolutionBox->setEnabled(true);
+      m_p8bitColorsButton->setEnabled(true);
+      m_p16bitColorsButton->setEnabled(true);
+      m_p24bitColorsButton->setEnabled(true);
+      m_pGermanKeyboardButton->setEnabled(true);
+      m_pEnglishKeyboardButton->setEnabled(true);
       m_pServerLineEdit->setEnabled(true);
       m_pStartButton->setText(tr("Connect"));
-		}
-		break;
+    }
+    break;
 
-		case VNC:
-		{
-			// disable the keyboard control only for VNC servers
-			m_pScreenResolutionBox->setEnabled(false);
-			m_p8bitColorsButton->setEnabled(true);
-			m_p16bitColorsButton->setEnabled(true);
-			m_p24bitColorsButton->setEnabled(true);
-			m_pGermanKeyboardButton->setEnabled(false);
-			m_pEnglishKeyboardButton->setEnabled(false);
+    case VNC:
+    {
+      // disable the keyboard control only for VNC servers
+      m_pScreenResolutionBox->setEnabled(false);
+      m_p8bitColorsButton->setEnabled(true);
+      m_p16bitColorsButton->setEnabled(true);
+      m_p24bitColorsButton->setEnabled(true);
+      m_pGermanKeyboardButton->setEnabled(false);
+      m_pEnglishKeyboardButton->setEnabled(false);
       m_pServerLineEdit->setEnabled(true);
       m_pStartButton->setText(tr("Connect"));
-		}
-		break;
+    }
+    break;
 
     case APP:
-		{
-			m_pScreenResolutionBox->setEnabled(false);
-			m_p8bitColorsButton->setEnabled(false);
-			m_p16bitColorsButton->setEnabled(false);
-			m_p24bitColorsButton->setEnabled(false);
-			m_pGermanKeyboardButton->setEnabled(false);
-			m_pEnglishKeyboardButton->setEnabled(false);
+    {
+      m_pScreenResolutionBox->setEnabled(false);
+      m_p8bitColorsButton->setEnabled(false);
+      m_p16bitColorsButton->setEnabled(false);
+      m_p24bitColorsButton->setEnabled(false);
+      m_pGermanKeyboardButton->setEnabled(false);
+      m_pEnglishKeyboardButton->setEnabled(false);
       m_pStartButton->setText(tr("Run Application"));
-		}
-		break;
+    }
+    break;
 
     case PVE:
     {
@@ -650,77 +650,77 @@ void CMainWindow::serverTypeChanged(int id)
       m_pStartButton->setText(tr("Connect"));
     }
     break;
-	}
+  }
 
-	LEAVE();
+  LEAVE();
 }
 
 void CMainWindow::currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem*)
 {
-	ENTER();
+  ENTER();
 
-	if(current != NULL)
-	{
-		D("currentItemChanged to '%s'", current->text(CN_HOSTNAME).toLatin1().constData());
+  if(current != NULL)
+  {
+    D("currentItemChanged to '%s'", current->text(CN_HOSTNAME).toLatin1().constData());
 
     if(current->text(0).isEmpty() == false && current->text(0).startsWith("===") == false)
     {
-		  // update the lineedit with the text of the first column
-		  m_pServerLineEdit->setText(current->text(CN_HOSTNAME));
+      // update the lineedit with the text of the first column
+      m_pServerLineEdit->setText(current->text(CN_HOSTNAME));
 
-		  // make sure the combobox is in sync with the lineedit
-		  m_pServerListBox->setCurrentIndex(m_pServerListBox->findText(current->text(CN_HOSTNAME), Qt::MatchStartsWith));
+      // make sure the combobox is in sync with the lineedit
+      m_pServerListBox->setCurrentIndex(m_pServerListBox->findText(current->text(CN_HOSTNAME), Qt::MatchStartsWith));
 
-		  // now we have to check which server type the currently selected server
-		  // is and then disable some GUI components of qutselect
-		  QString serverType = current->text(CN_SERVERTYPE);
+      // now we have to check which server type the currently selected server
+      // is and then disable some GUI components of qutselect
+      QString serverType = current->text(CN_SERVERTYPE);
 
-		  // sync the ServerType combobox as well
-		  m_pServerTypeComboBox->setCurrentIndex(m_pServerTypeComboBox->findText(serverType, Qt::MatchContains));
+      // sync the ServerType combobox as well
+      m_pServerTypeComboBox->setCurrentIndex(m_pServerTypeComboBox->findText(serverType, Qt::MatchContains));
     }
-	}
-	else
-	{
-		// clear everything
-		m_pServerLineEdit->clear();
-	}
+  }
+  else
+  {
+    // clear everything
+    m_pServerLineEdit->clear();
+  }
 
-	LEAVE();
+  LEAVE();
 }
 
 void CMainWindow::itemDoubleClicked(QTreeWidgetItem*, int)
 {
-	ENTER();
+  ENTER();
 
-	//D("Server '%s' doubleclicked", item->text(CN_HOSTNAME).toLatin1().constData());
+  //D("Server '%s' doubleclicked", item->text(CN_HOSTNAME).toLatin1().constData());
 
-	// a doubleclick is like pressing the "connect" button
-	connectButtonPressed();
+  // a doubleclick is like pressing the "connect" button
+  connectButtonPressed();
 
-	LEAVE();
+  LEAVE();
 }
 
 void CMainWindow::setFullScreenOnly(const bool on)
 {
-	ENTER();
+  ENTER();
 
-	if(on)
-	{
-		m_pScreenResolutionBox->setCurrentIndex(m_pScreenResolutionBox->findText("Fullscreen"));
-		m_pScreenResolutionBox->setEnabled(false);
+  if(on)
+  {
+    m_pScreenResolutionBox->setCurrentIndex(m_pScreenResolutionBox->findText("Fullscreen"));
+    m_pScreenResolutionBox->setEnabled(false);
 
-		// hide some components competely
-		m_pOptionsWidget->setVisible(false);
-	}
-	else
-	{
-		m_pScreenResolutionBox->setEnabled(true);
+    // hide some components competely
+    m_pOptionsWidget->setVisible(false);
+  }
+  else
+  {
+    m_pScreenResolutionBox->setEnabled(true);
 
-		// hide some components competely
-		m_pOptionsWidget->setVisible(true);
-	}
+    // hide some components competely
+    m_pOptionsWidget->setVisible(true);
+  }
 
-	LEAVE();
+  LEAVE();
 }
 
 void CMainWindow::loadMotdText(void)
@@ -733,9 +733,9 @@ void CMainWindow::loadMotdText(void)
     motdFilePath = QDir::home().absoluteFilePath(".qutselect/" DEFAULT_MOTD_FILE);
 
   QFile motdFile(motdFilePath);
-	if(motdFile.open(QFile::ReadOnly))
-	{
-		QTextStream in(&motdFile);
+  if(motdFile.open(QFile::ReadOnly))
+  {
+    QTextStream in(&motdFile);
     QString allText = in.readAll();
 
     if(allText.isEmpty() == false)
@@ -754,124 +754,124 @@ void CMainWindow::loadMotdText(void)
 
 void CMainWindow::connectButtonPressed(void)
 {
-	ENTER();
+  ENTER();
 
-	// save the current position and size of the GUI
-	if(m_bDtLoginMode == false)
-	{
-		m_pSettings->setValue("position", pos());
-		m_pSettings->setValue("size", size());
-	}
+  // save the current position and size of the GUI
+  if(m_bDtLoginMode == false)
+  {
+    m_pSettings->setValue("position", pos());
+    m_pSettings->setValue("size", size());
+  }
 
-	// get the currently selected server name
-	QString serverName;
-	QString domain;
-	if(m_bNoList == true)
-		serverName = m_pServerListBox->currentText().section(" ", 0, 0).toLower();
-	else
-	{
-		serverName = m_pServerLineEdit->text().section(" ", 0, 0).toLower();
+  // get the currently selected server name
+  QString serverName;
+  QString domain;
+  if(m_bNoList == true)
+    serverName = m_pServerListBox->currentText().section(" ", 0, 0).toLower();
+  else
+  {
+    serverName = m_pServerLineEdit->text().section(" ", 0, 0).toLower();
 
-		// check if the serverName contains a @XXXX part and if so this will overwrite
-		// the domain/proxy part
-		QRegularExpression regexp("^(.*)@(.*)$");
-		QRegularExpressionMatch match = regexp.match(serverName);
-		if(match.hasMatch())
-		{
-			serverName = match.captured(1).simplified().toLower();
-			domain = match.captured(2).simplified().toLower();
-		}
-	}
+    // check if the serverName contains a @XXXX part and if so this will overwrite
+    // the domain/proxy part
+    QRegularExpression regexp("^(.*)@(.*)$");
+    QRegularExpressionMatch match = regexp.match(serverName);
+    if(match.hasMatch())
+    {
+      serverName = match.captured(1).simplified().toLower();
+      domain = match.captured(2).simplified().toLower();
+    }
+  }
 
-	if(m_bDtLoginMode == false)
-		m_pSettings->setValue("serverused", serverName);
+  if(m_bDtLoginMode == false)
+    m_pSettings->setValue("serverused", serverName);
 
-	// get the currently selected resolution
-	QString resolution = m_pScreenResolutionBox->currentText().section(" ", 0, 0).toLower();
-	if(m_bDtLoginMode == false && 
-		 m_pScreenResolutionBox->isEnabled() && m_pScreenResolutionBox->isVisible())
-	{
-		m_pSettings->setValue("resolution", resolution);
-	}
+  // get the currently selected resolution
+  QString resolution = m_pScreenResolutionBox->currentText().section(" ", 0, 0).toLower();
+  if(m_bDtLoginMode == false && 
+     m_pScreenResolutionBox->isEnabled() && m_pScreenResolutionBox->isVisible())
+  {
+    m_pSettings->setValue("resolution", resolution);
+  }
 
-	// if the resolution was set to "Desktop" we have to identify the maximum
-	// desktop width here and supply it accordingly.
-	if(resolution == "desktop")
-	{
-	  QRect screenSize = qApp->primaryScreen()->availableGeometry();
+  // if the resolution was set to "Desktop" we have to identify the maximum
+  // desktop width here and supply it accordingly.
+  if(resolution == "desktop")
+  {
+    QRect screenSize = qApp->primaryScreen()->availableGeometry();
 
     // create the resolution string but substract 50 pixel beause the desktop size is always
     // calculated WITH the windows bar in GNOME :(
-		resolution = QString::asprintf("%dx%d", screenSize.width()-8, screenSize.height()-28);
+    resolution = QString::asprintf("%dx%d", screenSize.width()-8, screenSize.height()-28);
 
-		D("Desktop size of '%s' selected", resolution.toLatin1().constData());
-	}
+    D("Desktop size of '%s' selected", resolution.toLatin1().constData());
+  }
 
-	// get the keyboard layout the user wants to have
-	QString keyLayout = m_pGermanKeyboardButton->isChecked() ? "de" : "en";
-	if(m_bDtLoginMode == false)
-		m_pSettings->setValue("keyboard", keyLayout);
+  // get the keyboard layout the user wants to have
+  QString keyLayout = m_pGermanKeyboardButton->isChecked() ? "de" : "en";
+  if(m_bDtLoginMode == false)
+    m_pSettings->setValue("keyboard", keyLayout);
 
-	// get the color depth
-	short colorDepth;
-	if(m_p8bitColorsButton->isChecked())
-		colorDepth = 8;
-	else if(m_p16bitColorsButton->isChecked())
-		colorDepth = 16;
-	else
-		colorDepth = 24;
+  // get the color depth
+  short colorDepth;
+  if(m_p8bitColorsButton->isChecked())
+    colorDepth = 8;
+  else if(m_p16bitColorsButton->isChecked())
+    colorDepth = 16;
+  else
+    colorDepth = 24;
 
-	if(m_bDtLoginMode == false)
-		m_pSettings->setValue("colordepth", colorDepth);
+  if(m_bDtLoginMode == false)
+    m_pSettings->setValue("colordepth", colorDepth);
 
-	// now we get the serverType of the current selection
-	QString serverType;
-	switch(m_pServerTypeComboBox->currentIndex())
-	{
-		case TLINC:
-			serverType = "TLINC";
-		break;
+  // now we get the serverType of the current selection
+  QString serverType;
+  switch(m_pServerTypeComboBox->currentIndex())
+  {
+    case TLINC:
+      serverType = "TLINC";
+    break;
 
-		case RDP:
-			serverType = "RDP";
-		break;
+    case RDP:
+      serverType = "RDP";
+    break;
 
-		case VNC:
-			serverType = "VNC";
-		break;
+    case VNC:
+      serverType = "VNC";
+    break;
 
-		case APP:
-			serverType = "APP";
-		break;
+    case APP:
+      serverType = "APP";
+    break;
 
-		case PVE:
-			serverType = "PVE";
-		break;
-	}
+    case PVE:
+      serverType = "PVE";
+    break;
+  }
 
-	// find the selected server in the tree widget to retrieve some more
+  // find the selected server in the tree widget to retrieve some more
   // information (pw prompt, domain, script, etc.)
-	// startup script name
-	QString startupScript;
+  // startup script name
+  QString startupScript;
   bool pwprompt = false;
-	QList<QTreeWidgetItem*> items = m_pServerTreeWidget->findItems(serverName, Qt::MatchStartsWith, CN_HOSTNAME);
-	if(items.isEmpty() == false && items.first()->text(CN_SERVERTYPE) == serverType)
-	{
-		startupScript = items.first()->text(CN_STARTUPSCRIPT);
-		if(domain.isEmpty())
-			domain = items.first()->text(CN_DOMAIN);
+  QList<QTreeWidgetItem*> items = m_pServerTreeWidget->findItems(serverName, Qt::MatchStartsWith, CN_HOSTNAME);
+  if(items.isEmpty() == false && items.first()->text(CN_SERVERTYPE) == serverType)
+  {
+    startupScript = items.first()->text(CN_STARTUPSCRIPT);
+    if(domain.isEmpty())
+      domain = items.first()->text(CN_DOMAIN);
     pwprompt = items.first()->text(CN_PWPROMPT) == "TRUE" ? true : false;
-	}
-	else
-	{
-		// if this didn't work out we use the pattern to create a generic script
-		startupScript = QString(DEFAULT_SCRIPT_PATTERN).arg(serverType.toLower());
+  }
+  else
+  {
+    // if this didn't work out we use the pattern to create a generic script
+    startupScript = QString(DEFAULT_SCRIPT_PATTERN).arg(serverType.toLower());
 
     // now we find out if we will show a password prompt or not by using the default values
     // for certain protocols
     if(serverType == "RDP" || serverType == "VNC" || serverType == "TLINC" || serverType == "PVE")
       pwprompt = true;
-	}
+  }
 
   // set most of the connection relevant parameters now
   m_sServerType = serverType;
@@ -926,29 +926,29 @@ void CMainWindow::startConnection(void)
 {
   ENTER();
 
-	// now we construct the commandline arguments
-	QStringList cmdArgs;
+  // now we construct the commandline arguments
+  QStringList cmdArgs;
 
-	// 1.Option: the 'pid' of this application
-	cmdArgs << QString::number(QApplication::applicationPid());
+  // 1.Option: the 'pid' of this application
+  cmdArgs << QString::number(QApplication::applicationPid());
 
-	// 2.Option: supply the servertype (RDP, etc)
-	cmdArgs << m_sServerType;
+  // 2.Option: supply the servertype (RDP, etc)
+  cmdArgs << m_sServerType;
 
-	// 3.Option: say "true" if dtLoginMode is enabled
-	cmdArgs << QString(m_bDtLoginMode == true ? "true" : "false");
+  // 3.Option: say "true" if dtLoginMode is enabled
+  cmdArgs << QString(m_bDtLoginMode == true ? "true" : "false");
 
-	// 4.Option: the resolution (either "fullscreen" or "WxH"
-	cmdArgs << m_sResolution.toLower();
+  // 4.Option: the resolution (either "fullscreen" or "WxH"
+  cmdArgs << m_sResolution.toLower();
 
-	// 5.Option: the selected color depth
-	cmdArgs << QString::number(m_iColorDepth);
+  // 5.Option: the selected color depth
+  cmdArgs << QString::number(m_iColorDepth);
 
-	// 6.Option: the current color depth of the screen
-	cmdArgs << QString::number(QPixmap().depth());
+  // 6.Option: the current color depth of the screen
+  cmdArgs << QString::number(QPixmap().depth());
 
-	// 7.Option: the selected keyboard (e.g. 'de' or 'en')
-	cmdArgs << m_sKeyLayout.toLower();
+  // 7.Option: the selected keyboard (e.g. 'de' or 'en')
+  cmdArgs << m_sKeyLayout.toLower();
 
   // 8.Option: the domain (e.g. FZR, UKD88)
   cmdArgs << (m_sDomain.isEmpty() ? "NULL" : m_sDomain);
@@ -956,14 +956,14 @@ void CMainWindow::startConnection(void)
   // 9.Option: the username
   cmdArgs << (m_sUsername.isEmpty() ? "NULL" : m_sUsername);
 
-	// 10.Option: the servername we connect to
-	cmdArgs << m_sServerName;
-	
-	// now we can create a QProcess object and execute the
-	// startup script
-	D("executing: %s %s", m_sStartupScript.toLatin1().constData(), cmdArgs.join(" ").toLatin1().constData());
+  // 10.Option: the servername we connect to
+  cmdArgs << m_sServerName;
+  
+  // now we can create a QProcess object and execute the
+  // startup script
+  D("executing: %s %s", m_sStartupScript.toLatin1().constData(), cmdArgs.join(" ").toLatin1().constData());
 
-	// start it now with the working directory pointing at the
+  // start it now with the working directory pointing at the
   // directory where the app resists
   QProcess script;
   script.setWorkingDirectory(QApplication::applicationDirPath());
@@ -978,9 +978,9 @@ void CMainWindow::startConnection(void)
 
     script.closeWriteChannel();
   
-		// sync the QSettings only in non dtlogin mode
-		if(m_bDtLoginMode == false)
-			m_pSettings->sync();
+    // sync the QSettings only in non dtlogin mode
+    if(m_bDtLoginMode == false)
+      m_pSettings->sync();
 
     // wait until the script finished
     if(script.waitForFinished() == false)
@@ -1004,8 +1004,8 @@ void CMainWindow::startConnection(void)
     if(standardErr.isEmpty() == false)
       std::cerr << standardErr.toLatin1().constData() << std::endl;
 
-		if(m_bKeepAlive == false)
-			close();
+    if(m_bKeepAlive == false)
+      close();
   }
   else
   {
@@ -1017,36 +1017,36 @@ void CMainWindow::startConnection(void)
   // default layout
   changeLayout(CMainWindow::DefaultLayout);
 
-	LEAVE();
+  LEAVE();
 }
 
 void CMainWindow::keyPressEvent(QKeyEvent* e)
 {
-	ENTER();
+  ENTER();
 
   D("key %d pressed", e->key());
 
-	// we check wheter the user has pressed ESC or RETURN
-	switch(e->key())
-	{
-		case Qt::Key_Escape:
-		{
+  // we check wheter the user has pressed ESC or RETURN
+  switch(e->key())
+  {
+    case Qt::Key_Escape:
+    {
       // depending on the layout we perform differently
       if(m_pStackedLayout->currentIndex() != CMainWindow::DefaultLayout)
         changeLayout(CMainWindow::DefaultLayout);
       else
-			  close();
+        close();
 
-			e->accept();
+      e->accept();
 
-			LEAVE();
-			return;
-		}
-		break;
+      LEAVE();
+      return;
+    }
+    break;
 
-		case Qt::Key_Return:
-		case Qt::Key_Enter:
-		{
+    case Qt::Key_Return:
+    case Qt::Key_Enter:
+    {
       // depending on the layout we perform differently
       if(m_pStackedLayout->currentIndex() != CMainWindow::DefaultLayout)
       {
@@ -1058,25 +1058,25 @@ void CMainWindow::keyPressEvent(QKeyEvent* e)
           pwButtonLoginClicked();
       }
       else
-			  connectButtonPressed();
+        connectButtonPressed();
 
-			e->accept();
+      e->accept();
 
-			LEAVE();
-			return;
-		}
-		break;
-	}
+      LEAVE();
+      return;
+    }
+    break;
+  }
 
   // activate the window which otherwise causes problems
   // if no window manager is running while qutselect is executed.
   if(m_bDtLoginMode)
     activateWindow();
 
-	// unknown key pressed
-	e->ignore();
+  // unknown key pressed
+  e->ignore();
 
-	LEAVE();
+  LEAVE();
 }
 
 void CMainWindow::closeEvent(QCloseEvent* e)
@@ -1110,9 +1110,9 @@ void CMainWindow::showEvent(QShowEvent* e)
     // make sure the sizes (width/height) are correct before continuing
     adjustSize();
 
-		// now we make sure we centre the new window on the current
-		// primary screen
-	  QRect screenSize = qApp->primaryScreen()->availableGeometry();
+    // now we make sure we centre the new window on the current
+    // primary screen
+    QRect screenSize = qApp->primaryScreen()->availableGeometry();
     move(QPoint((screenSize.width() - width())/2, (screenSize.height() - height())/2));
   }
 
@@ -1121,79 +1121,79 @@ void CMainWindow::showEvent(QShowEvent* e)
 
 void CMainWindow::loadServerList()
 {
-	ENTER();
+  ENTER();
 
-	// we have to clear all things we are going to populate here
-	m_pServerTreeWidget->clear();
-	m_pServerListBox->clear();
+  // we have to clear all things we are going to populate here
+  m_pServerTreeWidget->clear();
+  m_pServerListBox->clear();
 
-	QFile serverListFile(m_sServerListFile);
-	if(serverListFile.open(QFile::ReadOnly))
-	{
-		QTextStream in(&serverListFile);
-		QRegularExpression regexp("^(.*);(.*);(.*);(.*);(.*);(.*);(.*);(.*)");
-		QString curLine;
+  QFile serverListFile(m_sServerListFile);
+  if(serverListFile.open(QFile::ReadOnly))
+  {
+    QTextStream in(&serverListFile);
+    QRegularExpression regexp("^(.*);(.*);(.*);(.*);(.*);(.*);(.*);(.*)");
+    QString curLine;
 
     // parse through the file now and add things to the ServerList and ComboBox
-		while((curLine = in.readLine()).isNull() == false)
-		{
+    while((curLine = in.readLine()).isNull() == false)
+    {
       QRegularExpressionMatch match = regexp.match(curLine);
 
-			// skip any comment line starting with '#'
-			if(curLine.at(0) != '#' && curLine.at(0) != '=' && match.hasMatch())
-			{
+      // skip any comment line starting with '#'
+      if(curLine.at(0) != '#' && curLine.at(0) != '=' && match.hasMatch())
+      {
         QString displayname = match.captured(CN_DISPLAYNAME+1).simplified();
-				QString hostname = match.captured(CN_HOSTNAME+1).simplified().toLower();
+        QString hostname = match.captured(CN_HOSTNAME+1).simplified().toLower();
         QString domain = match.captured(CN_DOMAIN+1).simplified();
         QString serverType = match.captured(CN_SERVERTYPE+1).simplified();
         QString osType = match.captured(CN_SERVEROS+1).simplified();
-				QString description = match.captured(CN_DESCRIPTION+1).simplified();
+        QString description = match.captured(CN_DESCRIPTION+1).simplified();
         QString pwprompt = match.captured(CN_PWPROMPT+1).simplified();
-				QString script = match.captured(CN_STARTUPSCRIPT+1).simplified();
+        QString script = match.captured(CN_STARTUPSCRIPT+1).simplified();
 
-				// filter out all legacy servertypes not available in Version 3.0+
+        // filter out all legacy servertypes not available in Version 3.0+
         // anymore
-				if(serverType != "SRSS" && serverType != "XDM")
-				{
-					// add the server to our listview
-					QStringList columnList;
+        if(serverType != "SRSS" && serverType != "XDM")
+        {
+          // add the server to our listview
+          QStringList columnList;
           columnList << displayname;
-					columnList << hostname;
+          columnList << hostname;
           columnList << domain;
-					columnList << serverType;
-					columnList << osType;
-					columnList << description;
+          columnList << serverType;
+          columnList << osType;
+          columnList << description;
           columnList << pwprompt;
-					columnList << script;
+          columnList << script;
 
-					// create a new QTreeWidget and set the font for the first column to bold
-					QTreeWidgetItem* item = new QTreeWidgetItem(columnList);
-					QFont displayNameFont = item->font(CN_DISPLAYNAME);
-					displayNameFont.setBold(true);
-	        if(m_bDtLoginMode == true)
-					  displayNameFont.setPointSize(18);
+          // create a new QTreeWidget and set the font for the first column to bold
+          QTreeWidgetItem* item = new QTreeWidgetItem(columnList);
+          QFont displayNameFont = item->font(CN_DISPLAYNAME);
+          displayNameFont.setBold(true);
+          if(m_bDtLoginMode == true)
+            displayNameFont.setPointSize(18);
           else
-					  displayNameFont.setPointSize(12);
-					item->setFont(CN_DISPLAYNAME, displayNameFont);
+            displayNameFont.setPointSize(12);
+          item->setFont(CN_DISPLAYNAME, displayNameFont);
 
-					// add an icon depending on the OS type
-					QIcon serverIcon;
-					if(osType.contains("linux", Qt::CaseInsensitive))
-						serverIcon = QIcon(":/images/linux-logo.png");
-					else if(osType.contains("windows", Qt::CaseInsensitive))
-						serverIcon = QIcon(":/images/windows-logo.png");
-					else if(osType.contains("macos", Qt::CaseInsensitive))
-						serverIcon = QIcon(":/images/macos-logo.png");
-					else if(osType.contains("firefox", Qt::CaseInsensitive))
-						serverIcon = QIcon(":/images/firefox-logo.png");
+          // add an icon depending on the OS type
+          QIcon serverIcon;
+          if(osType.contains("linux", Qt::CaseInsensitive))
+            serverIcon = QIcon(":/images/linux-logo.png");
+          else if(osType.contains("windows", Qt::CaseInsensitive))
+            serverIcon = QIcon(":/images/windows-logo.png");
+          else if(osType.contains("macos", Qt::CaseInsensitive))
+            serverIcon = QIcon(":/images/macos-logo.png");
+          else if(osType.contains("firefox", Qt::CaseInsensitive))
+            serverIcon = QIcon(":/images/firefox-logo.png");
 
-					// add the icon to our items
-					item->setIcon(0, serverIcon);
-					m_pServerListBox->addItem(serverIcon, hostname + " - " + description);
+          // add the icon to our items
+          item->setIcon(0, serverIcon);
+          m_pServerListBox->addItem(serverIcon, hostname + " - " + description);
 
-					m_pServerTreeWidget->addTopLevelItem(item);
-				}
-			}
+          m_pServerTreeWidget->addTopLevelItem(item);
+        }
+      }
       else if(curLine.startsWith("==="))
       {
         QTreeWidgetItem* item = new QTreeWidgetItem();
@@ -1204,79 +1204,79 @@ void CMainWindow::loadServerList()
         for(int i=0; i < m_pServerTreeWidget->columnCount(); i++)
         {
           QFrame* hbarFrame = new QFrame;
-	        hbarFrame->setFrameStyle(QFrame::HLine | QFrame::Raised);
+          hbarFrame->setFrameStyle(QFrame::HLine | QFrame::Raised);
           hbarFrame->setAutoFillBackground(true);
           m_pServerTreeWidget->setItemWidget(item, i, hbarFrame);
         }
       }
-		}
-		
-		// close the file
-		serverListFile.close();
+    }
+    
+    // close the file
+    serverListFile.close();
 
-		// resize all columns to its content
-		m_pServerTreeWidget->resizeColumnToContents(CN_DISPLAYNAME);
+    // resize all columns to its content
+    m_pServerTreeWidget->resizeColumnToContents(CN_DISPLAYNAME);
     m_pServerTreeWidget->header()->setSectionResizeMode(CN_DISPLAYNAME, QHeaderView::ResizeToContents);
-		m_pServerTreeWidget->resizeColumnToContents(CN_HOSTNAME);
+    m_pServerTreeWidget->resizeColumnToContents(CN_HOSTNAME);
     m_pServerTreeWidget->header()->setSectionResizeMode(CN_HOSTNAME, QHeaderView::ResizeToContents);
-		m_pServerTreeWidget->resizeColumnToContents(CN_SERVEROS);
+    m_pServerTreeWidget->resizeColumnToContents(CN_SERVEROS);
     m_pServerTreeWidget->header()->setSectionResizeMode(CN_SERVEROS, QHeaderView::ResizeToContents);
-		m_pServerTreeWidget->resizeColumnToContents(CN_DESCRIPTION);
+    m_pServerTreeWidget->resizeColumnToContents(CN_DESCRIPTION);
     m_pServerTreeWidget->header()->setSectionResizeMode(CN_DESCRIPTION, QHeaderView::ResizeToContents);
     m_pServerTreeWidget->updateGeometry();
 
     QString selectServerName;
-		bool serverFound = false;
-		if(m_bDtLoginMode == true)
-		{
-			// set the current item in the ServerTreeWidget to the hostname of the server
+    bool serverFound = false;
+    if(m_bDtLoginMode == true)
+    {
+      // set the current item in the ServerTreeWidget to the hostname of the server
       // this qutselect runs on
-		  char hostName[256];
+      char hostName[256];
       if(gethostname(hostName, 256) == 0)
-			  selectServerName = QString(hostName).toLower();
+        selectServerName = QString(hostName).toLower();
 
-			D("got hostname: '%s'", selectServerName.toLatin1().constData());
-		}
-		else
-		{
-			// now we check the QSettings of the user and which server he last used
-			if(m_pSettings->value("serverused").isValid())
-			{
-				selectServerName = m_pSettings->value("serverused").toString().toLower();
+      D("got hostname: '%s'", selectServerName.toLatin1().constData());
+    }
+    else
+    {
+      // now we check the QSettings of the user and which server he last used
+      if(m_pSettings->value("serverused").isValid())
+      {
+        selectServerName = m_pSettings->value("serverused").toString().toLower();
 
-				D("read serverused from QSettings: '%s'", selectServerName.toLatin1().constData());
+        D("read serverused from QSettings: '%s'", selectServerName.toLatin1().constData());
       }
     }
 
-		// now we iterate through our combobox items and check if there is 
-		// one with the last server used hostname
-		for(int i=0; i < m_pServerListBox->count(); i++)
-		{
-			if(m_pServerListBox->itemText(i).section(" ", 0, 0).toLower() == selectServerName)
-			{
-				D("setting ServerListComboBox to %d item", i);
+    // now we iterate through our combobox items and check if there is 
+    // one with the last server used hostname
+    for(int i=0; i < m_pServerListBox->count(); i++)
+    {
+      if(m_pServerListBox->itemText(i).section(" ", 0, 0).toLower() == selectServerName)
+      {
+        D("setting ServerListComboBox to %d item", i);
 
         m_pServerTreeWidget->setCurrentItem(m_pServerTreeWidget->topLevelItem(i));
 
-				m_pServerListBox->setCurrentIndex(-1);
-				m_pServerListBox->setCurrentIndex(i);
-				serverFound = true;
-				break;
-			}
-		}
-		
+        m_pServerListBox->setCurrentIndex(-1);
+        m_pServerListBox->setCurrentIndex(i);
+        serverFound = true;
+        break;
+      }
+    }
+    
 
-		if(serverFound == false)
+    if(serverFound == false)
       m_pServerTreeWidget->setCurrentItem(m_pServerTreeWidget->topLevelItem(0));
-	}
-	else
-	{
-		W("couldn't open server list file: '%s'", m_sServerListFile.toLatin1().constData());
-		m_pServerListBox->setEditable(true);
-		m_pServerTypeComboBox->setCurrentIndex(RDP);
-	}
+  }
+  else
+  {
+    W("couldn't open server list file: '%s'", m_sServerListFile.toLatin1().constData());
+    m_pServerListBox->setEditable(true);
+    m_pServerTypeComboBox->setCurrentIndex(RDP);
+  }
 
-	LEAVE();
+  LEAVE();
 }
 
 void CMainWindow::changeLayout(enum LayoutType type)

@@ -35,7 +35,7 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
-	int returnCode = 1; // 0 is no error
+  int returnCode = 1; // 0 is no error
 
   // You want this, unless you mix streams output with C output.
   // Read  http://gcc.gnu.org/onlinedocs/libstdc++/27_io/howto.html#8 for an explanation.
@@ -43,68 +43,68 @@ int main(int argc, char* argv[])
 
   // before we start anything serious, we need to initialize our
   // debug class
-	#if defined(DEBUG)
-	#if defined(ANSI_COLOR)
-	CRTDebug::instance()->setHighlighting(true);
-	#else
-	CRTDebug::instance()->setHighlighting(false);
-	#endif
-	#endif
+  #if defined(DEBUG)
+  #if defined(ANSI_COLOR)
+  CRTDebug::instance()->setHighlighting(true);
+  #else
+  CRTDebug::instance()->setHighlighting(false);
+  #endif
+  #endif
 
-	ENTER();
+  ENTER();
 
-	// lets init the resource (images and so on)
-	Q_INIT_RESOURCE(qutselect);
+  // lets init the resource (images and so on)
+  Q_INIT_RESOURCE(qutselect);
 
-	// force some style settings
+  // force some style settings
   QApplication::setDesktopSettingsAware(false);
   QApplication::setStyle("windows");
 
-	// let us generate the console application object now.
+  // let us generate the console application object now.
   CApplication app(argc, argv);
 
-	if(app.isInitialized())
-	{
-		W("active language: %d (%s)", QLocale::system().language(), QLocale::system().name().toLatin1().constData());
+  if(app.isInitialized())
+  {
+    W("active language: %d (%s)", QLocale::system().language(), QLocale::system().name().toLatin1().constData());
 
-		// we now load & initialize eventually existing
-		// translation files for the system's default
-		QTranslator qtTranslator;
-		if(qtTranslator.load(":/lang/qt_de"))
-			D("successfully loaded 'qt_de' translation file.");
-		else if(qtTranslator.load(":/lang/qt_"+QLocale::system().name()))
-			D("successfully loaded 'qt_%s' translation file.", QLocale::system().name().toLatin1().constData());
-		else
-			E("couldn't load any Qt translation file.");
+    // we now load & initialize eventually existing
+    // translation files for the system's default
+    QTranslator qtTranslator;
+    if(qtTranslator.load(":/lang/qt_de"))
+      D("successfully loaded 'qt_de' translation file.");
+    else if(qtTranslator.load(":/lang/qt_"+QLocale::system().name()))
+      D("successfully loaded 'qt_%s' translation file.", QLocale::system().name().toLatin1().constData());
+    else
+      E("couldn't load any Qt translation file.");
 
-		// install the translator
-		app.installTranslator(&qtTranslator);
+    // install the translator
+    app.installTranslator(&qtTranslator);
 
-		QTranslator myTranslator;
-		if(myTranslator.load(":/lang/qutselect_de"))
-			D("successfully loaded 'qutselect_de' translation file.");
-		else if(myTranslator.load(":/lang/qutselect_"+QLocale::system().name()))
-			D("successfully loaded 'qutselect_%s' translation file.", QLocale::system().name().toLatin1().constData());
-		else
-			E("couldn't load any qutselect translation file.");
+    QTranslator myTranslator;
+    if(myTranslator.load(":/lang/qutselect_de"))
+      D("successfully loaded 'qutselect_de' translation file.");
+    else if(myTranslator.load(":/lang/qutselect_"+QLocale::system().name()))
+      D("successfully loaded 'qutselect_%s' translation file.", QLocale::system().name().toLatin1().constData());
+    else
+      E("couldn't load any qutselect translation file.");
 
-		// install the translator
-		app.installTranslator(&myTranslator);	
+    // install the translator
+    app.installTranslator(&myTranslator); 
 
-		// now we do execute our application
-		returnCode = app.exec();
+    // now we do execute our application
+    returnCode = app.exec();
 
-		// in case the app was aborted we signal a failure to
-		// our caller
-		if(returnCode == EXIT_SUCCESS && (app.wasAborted() || app.hasFailed()))
-			returnCode = EXIT_FAILURE;		
-	}
+    // in case the app was aborted we signal a failure to
+    // our caller
+    if(returnCode == EXIT_SUCCESS && (app.wasAborted() || app.hasFailed()))
+      returnCode = EXIT_FAILURE;    
+  }
 
-	RETURN(returnCode);
+  RETURN(returnCode);
 
-	#if defined(DEBUG)
-	CRTDebug::destroy();
-	#endif
+  #if defined(DEBUG)
+  CRTDebug::destroy();
+  #endif
 
   return returnCode;
 }
