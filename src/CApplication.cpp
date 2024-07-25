@@ -187,6 +187,7 @@ bool CApplication::parseCommandLine(int& argc, char** argv)
          << "Options:" << endl
          << "  -dtlogin   : start qutselect in dtlogin mode (e.g. kiosk, etc)" << endl
          << "  -nolist    : display no list of servers but only a combobox" << endl
+         << "  -nouser    : do not take username from USER env variable" << endl
          << "  -keep      : do not quit after establishing the connection" << endl
          << "  -q         : keep quiet as much as possible." << endl
          << "  -v         : drop some more detailed version information." << endl
