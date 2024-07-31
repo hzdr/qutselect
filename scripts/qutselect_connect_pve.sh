@@ -63,7 +63,13 @@ fi
 
 # fallback to fwppve.fz-rossendorf.de as PVE proxy
 if [[ -z ${proxy} ]] || [[ "${proxy}" == "NULL" ]]; then
-  proxy=fwppve.fz-rossendorf.de
+  proxy="fwppve.fz-rossendorf.de:443"
+fi
+
+# if no port has been explicity specified we add the
+# standard PVE port (8006)
+if [[ ! ${proxy} =~ ":" ]]; then
+  proxy="${proxy}:8006"
 fi
 
 # read the password from stdin if not specified yet
@@ -180,6 +186,13 @@ if [[ "${dtlogin}" == "true" ]]; then
   SPICE_FULLSCREEN=
   SPICE_CURSOR=
   cmdArgs="${cmdArgs} --kiosk --kiosk-quit=on-disconnect"
+
+  # Define USB redirection rule when in dtlogin/kiosk mode
+  # (0x03) - no HID devices / mouse/keyboard
+  # (0xE0) - no wireless/bluetooth
+  # (-1)   - all the rest allowed
+  USBREDIR="0x03,-1,-1,-1,0|0xE0,-1,-1,-1,0|-1,-1,-1,-1,1"
+  cmdArgs="${cmdArgs} --spice-usbredir-auto-redirect-filter=${USBREDIR} --spice-usbredir-redirect-on-connect=${USBREDIR}"
 fi
 
 # GENERATE REMOTE-VIEWER CONNECTION FILE
@@ -192,17 +205,22 @@ delete-this-file=${SPICE_DELETE}
 proxy=${SPICE_PROXY}
 type=${SPICE_TYPE}
 ca=${SPICE_CA}
-toggle-fullscreen=${SPICE_FULLSCREEN}
 title=${SPICE_TITLE}
 host=${SPICE_HOST}
 password=${SPICE_PASSWORD}
 host-subject=${SPICE_SUBJECT}
-release-cursor=${SPICE_CURSOR}
 tls-port=${SPICE_PORT}
 EOL
 
+if [[ -n "${SPICE_FULLSCREEN}" ]]; then
+  echo "toggle-fullscreen=${SPICE_FULLSCREEN}" >>"${TMPFILE}"
+fi
+if [[ -n "${SPICE_CURSOR}" ]]; then
+  echo "release-cursor=${SPICE_CURSOR}" >>"${TMPFILE}"
+fi
+
 # shellcheck disable=SC2086
-${REMOTEVIEWER} ${cmdArgs} "${TMPFILE}" &
+${REMOTEVIEWER} ${cmdArgs} --verbose "${TMPFILE}" >/tmp/remote-viewer-${USER}-$$.log 2>&1 &
 res=$?
 
 if [[ ${res} != 0 ]]; then
