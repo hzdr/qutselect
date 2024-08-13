@@ -62,7 +62,7 @@ if [[ ! ${username} =~ "@" ]]; then
 fi
 
 # fallback to fwppve.fz-rossendorf.de as PVE proxy
-if [[ -z ${proxy} ]] || [[ "${proxy}" == "NULL" ]]; then
+if [[ -z "${proxy}" ]] || [[ "${proxy}" == "NULL" ]]; then
   proxy="fwppve.fz-rossendorf.de:443"
 fi
 
@@ -145,7 +145,7 @@ else
   VMTYPE=$(echo "${RESPONSE}" | jq -r ".data[] | select(.vmid==${serverName}) | .type")
 fi
 
-if [[ -z ${VMID} ]] || [[ -z ${VMNODE} ]] || [[ -z ${VMSTATUS} ]] || [[ -z ${VMNAME} ]] || [[ -z ${VMTYPE} ]]; then
+if [[ -z "${VMID}" ]] || [[ -z "${VMNODE}" ]] || [[ -z "${VMSTATUS}" ]] || [[ -z "${VMNAME}" ]] || [[ -z "${VMTYPE}" ]]; then
   echo "ERROR: could not get all info for ${serverName}"
   exit 1
 fi
@@ -161,7 +161,7 @@ fi
 
 #####
 # GET SPICE CONFIGURATION
-if ! RESPONSE=$(curl -L -f -s -S -k -b "PVEAuthCookie=${TICKET}" -H "CSRFPreventionToken: ${CSRF}" "https://${VMNODE}:8006/api2/json/nodes/${VMNODE}/${VMTYPE}/${VMID}/spiceproxy" -d "proxy=${VMNODE}") || [[ -z ${RESPONSE} ]]; then
+if ! RESPONSE=$(curl -L -f -s -S -k -b "PVEAuthCookie=${TICKET}" -H "CSRFPreventionToken: ${CSRF}" "https://${VMNODE}:8006/api2/json/nodes/${VMNODE}/${VMTYPE}/${VMID}/spiceproxy" -d "proxy=${VMNODE}") || [[ -z "${RESPONSE}" ]]; then
   echo "ERROR: could not get spice config (mayba proxmox api changed?)"
   exit 1
 fi
