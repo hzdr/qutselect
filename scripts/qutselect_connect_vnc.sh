@@ -70,7 +70,7 @@ if [[ "${password}" != "NULL" ]]; then
     echo "${VNCVIEWER} ${cmdArgs} ${serverName}"
   fi
   # shellcheck disable=SC2086
-  VNC_PASSWORD="${password}" ${VNCVIEWER} ${cmdArgs} "${serverName}" 2>/dev/null >/dev/null
+  VNC_PASSWORD="${password}" ${VNCVIEWER} ${cmdArgs} "${serverName}" >/tmp/vnc-${USER}-$$.log 2>&1
   res=$?
 else
   # make sure a password dialog pops up
@@ -79,7 +79,7 @@ else
     echo "${VNCVIEWER} ${cmdArgs} ${serverName}"
   fi
   # shellcheck disable=SC2086
-  ${VNCVIEWER} ${cmdArgs} "${serverName}" &>/dev/null
+  ${VNCVIEWER} ${cmdArgs} "${serverName}" >/tmp/vnc-${USER}-$$.log 2>&1
   res=$?
 fi
 

@@ -61,11 +61,11 @@ if [[ "$(hostname)" != "${serverName}" ]]; then
     # than supplying it on command-line
     cmdArgs="$cmdArgs -P cat"
     # shellcheck disable=SC2086
-    echo ${password} | ${TLCLIENT} ${cmdArgs} ${serverName} &>/dev/null &
+    echo ${password} | ${TLCLIENT} ${cmdArgs} ${serverName} >/tmp/tlinc-${USER}-$$.log 2>&1 &
     res=$?
   else
     # shellcheck disable=SC2086
-    ${TLCLIENT} ${cmdArgs} ${serverName} &>/dev/null &
+    ${TLCLIENT} ${cmdArgs} ${serverName} >/tmp/tlinc-${USER}-$$.log 2>&1 &
     res=$?
   fi
 
