@@ -63,7 +63,7 @@ if [[ "${app}" == "zoom" ]]; then
     # remove all previous data
     rm -rf "${HOME}/.zoom" "${HOME}/.config/zoom.conf" "${HOME}/.config/zoomus.conf"
 
-    /opt/zoom/ZoomLauncher >"/tmp/zoom-${USER}-$$.log" 2>&1 &
+    USER="Enter your name" /opt/zoom/ZoomLauncher >"/tmp/zoom-${USER}-$$.log" 2>&1 &
     res=$?
 
     kill -9 ${yad_pid}
