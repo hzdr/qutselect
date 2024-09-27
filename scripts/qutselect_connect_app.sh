@@ -63,7 +63,7 @@ if [[ "${app}" == "zoom" ]]; then
     # remove all previous data
     rm -rf "${HOME}/.zoom" "${HOME}/.config/zoom.conf" "${HOME}/.config/zoomus.conf"
 
-    /opt/zoom/ZoomLauncher >/tmp/zoom-${USER}-$$.log 2>&1 &
+    /opt/zoom/ZoomLauncher >"/tmp/zoom-${USER}-$$.log" 2>&1 &
     res=$?
 
     kill -9 ${yad_pid}
@@ -95,10 +95,10 @@ elif [[ "${app}" == "chrome" ]] || [[ "${app}" == "bbb" ]]; then
 
     # start chromium in kiosk mode
     if [[ "${app}" == "bbb" ]]; then
-      /opt/chrome/chrome --app=https://bbb.hzdr.de --start-fullscreen --kiosk --test-type --noerrdialogs --no-first-run --disable-translate --disk-cache-dir=/dev/null --no-sandbox --disable-extensions >/tmp/chrome-${USER}-$$.log 2>&1 &
+      /opt/chrome/chrome --app=https://bbb.hzdr.de --start-fullscreen --kiosk --test-type --noerrdialogs --no-first-run --disable-translate --disk-cache-dir=/dev/null --no-sandbox --disable-extensions >"/tmp/chrome-${USER}-$$.log" 2>&1 &
       res=$?
     else
-      /opt/chrome/chrome --start-maximized --test-type --noerrdialogs --no-first-run --disable-translate --disk-cache-dir=/dev/null --no-sandbox --disable-extensions >/tmp/chrome-${USER}-$$.log 2>&1 &
+      /opt/chrome/chrome --start-maximized --test-type --noerrdialogs --no-first-run --disable-translate --disk-cache-dir=/dev/null --no-sandbox --disable-extensions >"/tmp/chrome-${USER}-$$.log 2>&1" &
       res=$?
     fi
 
