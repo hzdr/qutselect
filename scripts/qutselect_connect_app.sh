@@ -60,7 +60,7 @@ if [[ "${app}" == "zoom" ]]; then
     yad_pid=$!
 
     # remove all previous data
-    rm -rf ${HOME}/.zoom ${HOME}/.config/zoom*
+    rm -rf "${HOME}/.zoom" "${HOME}/.config/zoom.conf" "${HOME}/.config/zoomus.conf"
 
     /opt/zoom/ZoomLauncher &
     kill -9 ${yad_pid}
@@ -86,8 +86,9 @@ elif [[ "${app}" == "chrome" ]] || [[ "${app}" == "bbb" ]]; then
   else
     yad --center --text="Starting chrome..." --no-buttons &
     yad_pid=$!
+
     # remove all previous data
-    rm -rf ${HOME}/.config/chrome
+    rm -rf "${HOME}/.config/chrome"
 
     # start chromium in kiosk mode
     if [[ "${app}" == "bbb" ]]; then
