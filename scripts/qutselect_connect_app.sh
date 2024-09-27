@@ -34,9 +34,71 @@ fi
 #keyLayout="${7}"
 #domain="${8}"
 #username="${9}"
-serverName="${10}"
+app="${10}"
 
-if [[ "${serverName}" == "firefox" ]]; then
+TMPDIR=/tmp
+
+if [[ "${app}" == "zoom" ]]; then
+
+  if [[ ! -d /opt/zoom ]]; then
+    yad --center --text="Downloading zoom.pkg...." --title "Zoom Installation" --no-buttons &
+    yad_pid=$!
+    /usr/bin/wget -q "${BASE_PATH}/pkgs/zoom.pkg" -O "${TMPDIR}/zoom.pkg"
+    kill -9 ${yad_pid}
+
+    yad --center --text="Installing zoom.pkg...." --title "Zoom Installation" --no-buttons &
+    yad_pid=$!
+    tar -C / -xf "${TMPDIR}/zoom.pkg"
+    rm -f "${TMPDIR}/zoom.pkg"
+    kill -9 ${yad_pid}
+  fi
+
+  if [[ ! -x /opt/zoom/ZoomLauncher ]]; then
+    yad --center --text="ERROR: Installation of Zoom failed"
+  else
+    yad --center --text="Starting zoom..." --no-buttons &
+    yad_pid=$!
+
+    # remove all previous data
+    rm -rf ${HOME}/.zoom ${HOME}/.config/zoom*
+
+    /opt/zoom/ZoomLauncher &
+    kill -9 ${yad_pid}
+  fi
+
+elif [[ "${app}" == "chrome" ]] || [[ "${app}" == "bbb" ]]; then
+
+  if [[ ! -d /opt/chrome ]]; then
+    yad --center --text="Downloading chrome.pkg...." --title "Chrome Installation" --no-buttons &
+    yad_pid=$!
+    /usr/bin/wget -q "${BASE_PATH}/pkgs/chrome.pkg" -O "${TMPDIR}/chrome.pkg"
+    kill -9 ${yad_pid}
+
+    yad --center --text="Installing chrome.pkg...." --title "Chrome Installation" --no-buttons &
+    yad_pid=$!
+    tar -C / -xf "${TMPDIR}/chrome.pkg"
+    rm -f "${TMPDIR}/chrome.pkg"
+    kill -9 ${yad_pid}
+  fi
+
+  if [[ ! -x /opt/chrome/chrome ]]; then
+    yad --center --text="ERROR: Installation of Chrome failed"
+  else
+    yad --center --text="Starting chrome..." --no-buttons &
+    yad_pid=$!
+    # remove all previous data
+    rm -rf ${HOME}/.config/chrome
+
+    # start chromium in kiosk mode
+    if [[ "${app}" == "bbb" ]]; then
+      /opt/chrome/chrome --app=https://bbb.hzdr.de --start-fullscreen --kiosk --test-type --noerrdialogs --no-first-run --disable-translate --disk-cache-dir=/dev/null --no-sandbox --disable-extensions &
+    else
+      /opt/chrome/chrome --start-maximized --test-type --noerrdialogs --no-first-run --disable-translate --disk-cache-dir=/dev/null --no-sandbox --disable-extensions &
+    fi
+    kill -9 ${yad_pid}
+  fi
+
+elif [[ "${app}" == "firefox" ]]; then
 
   # start the firefox browser
   if ! /bin/firefox-startup.sh; then
