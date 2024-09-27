@@ -191,7 +191,13 @@ if [[ "${dtlogin}" == "true" ]]; then
   # (0x03) - no HID devices / mouse/keyboard
   # (0xE0) - no wireless/bluetooth
   # (-1)   - all the rest allowed
-  USBREDIR="0x03,-1,-1,-1,0|0xE0,-1,-1,-1,0|-1,-1,-1,-1,1"
+  if [[ -z "${SESSION_0_QUTSELECT_PVE_USBREDIR}" ]]; then
+    USBREDIR="0x03,-1,-1,-1,0|0xE0,-1,-1,-1,0|-1,-1,-1,-1,1"
+  else
+    # take the usb-redirection rules from a global variable, if set.
+    USBREDIR=${SESSION_0_QUTSELECT_PVE_USBREDIR}
+  fi
+
   cmdArgs="${cmdArgs} --spice-usbredir-auto-redirect-filter=${USBREDIR} --spice-usbredir-redirect-on-connect=${USBREDIR}"
 fi
 
