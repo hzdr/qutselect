@@ -1191,6 +1191,12 @@ void CMainWindow::loadServerList()
             serverIcon = QIcon(":/images/macos-logo.png");
           else if(osType.contains("firefox", Qt::CaseInsensitive))
             serverIcon = QIcon(":/images/firefox-logo.png");
+          else if(osType.contains("chrome", Qt::CaseInsensitive))
+            serverIcon = QIcon(":/images/chrome-logo.png");
+          else if(osType.contains("bbb", Qt::CaseInsensitive) || osType.contains("button", Qt::CaseInsensitive))
+            serverIcon = QIcon(":/images/bbb-logo.png");
+          else if(osType.contains("zoom", Qt::CaseInsensitive))
+            serverIcon = QIcon(":/images/zoom-logo.png");
 
           // add the icon to our items
           item->setIcon(0, serverIcon);

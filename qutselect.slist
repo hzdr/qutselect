@@ -11,3 +11,7 @@ WWW-Browser   ; firefox         ;             ; APP   ; Firefox      ; Firefox  
 ===
 FWPVM40       ; fwpvm40         ; fwppve.fz-rossendorf.de:443 ; PVE   ; Windows      ; VDI           ; TRUE  ; scripts/qutselect_connect_pve.sh
 FWP112VM      ; fwp112vm        ; fwp112      ; PVE   ; Windows      ; VDI           ; TRUE  ; scripts/qutselect_connect_pve.sh
+===
+BigBlueButton ; bbb             ;             ; APP   ; BigBlueButton; Local HZDR Video Conferencing       ; FALSE ; scripts/qutselect_connect_app.sh
+Zoom          ; zoom            ;             ; APP   ; Zoom         ; Local Zoom Video Conferencing       ; FALSE ; scripts/qutselect_connect_app.sh
+Google Chrome ; chrome          ;             ; APP   ; Google Chrome; Local Webbrowser       ; FALSE ; scripts/qutselect_connect_app.sh
