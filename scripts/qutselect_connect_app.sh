@@ -65,10 +65,10 @@ if [[ "${app}" == "zoom" ]]; then
 
     # add manual proxy settings in case HTTP_PROXY is set
     if [[ -n "${HTTP_PROXY}" ]] || [[ -n "${HTTPS_PROXY}" ]]; then
-      http_host=$(echo ${HTTP_PROXY} | cut -d/ -f3 | cut -d: -f1)
-      http_port=$(echo ${HTTP_PROXY} | cut -d: -f3)
-      https_host=$(echo ${HTTPS_PROXY} | cut -d/ -f3 | cut -d: -f1)
-      https_port=$(echo ${HTTPS_PROXY} | cut -d: -f3)
+      http_host=$(echo "${HTTP_PROXY}" | cut -d/ -f3 | cut -d: -f1)
+      http_port=$(echo "${HTTP_PROXY}" | cut -d: -f3)
+      https_host=$(echo "${HTTPS_PROXY}" | cut -d/ -f3 | cut -d: -f1)
+      https_port=$(echo "${HTTPS_PROXY}" | cut -d: -f3)
       {
         echo "[General]"
         echo "cefhttpProxyHost=${http_host}"
@@ -81,7 +81,7 @@ if [[ "${app}" == "zoom" ]]; then
         echo "httpsProxyHost=${https_host}"
         echo "httpsProxyPort=${https_port}"
         echo "proxyType=manual"
-      } >${HOME}/.config/zoomus.conf
+      } >"${HOME}/.config/zoomus.conf"
     fi
 
     USER="Enter your name here" /opt/zoom/ZoomLauncher >"/tmp/zoom-${USER}-$$.log" 2>&1 &
