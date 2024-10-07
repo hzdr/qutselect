@@ -63,7 +63,28 @@ if [[ "${app}" == "zoom" ]]; then
     # remove all previous data
     rm -rf "${HOME}/.zoom" "${HOME}/.config/zoom.conf" "${HOME}/.config/zoomus.conf"
 
-    USER="Enter your name" /opt/zoom/ZoomLauncher >"/tmp/zoom-${USER}-$$.log" 2>&1 &
+    # add manual proxy settings in case HTTP_PROXY is set
+    if [[ -n "${HTTP_PROXY}" ]] || [[ -n "${HTTPS_PROXY}" ]]; then
+      http_host=$(echo ${HTTP_PROXY} | cut -d/ -f3 | cut -d: -f1)
+      http_port=$(echo ${HTTP_PROXY} | cut -d: -f3)
+      https_host=$(echo ${HTTPS_PROXY} | cut -d/ -f3 | cut -d: -f1)
+      https_port=$(echo ${HTTPS_PROXY} | cut -d: -f3)
+      {
+        echo "[General]"
+        echo "cefhttpProxyHost=${http_host}"
+        echo "cefhttpProxyPort=${http_port}"
+        echo "cefhttpsProxyHost=${https_host}"
+        echo "cefhttpsProxyPort=${https_port}"
+        echo "cefproxyType=manual"
+        echo "httpProxyHost=${http_host}"
+        echo "httpProxyPort=${http_port}"
+        echo "httpsProxyHost=${https_host}"
+        echo "httpsProxyPort=${https_port}"
+        echo "proxyType=manual"
+      } >${HOME}/.config/zoomus.conf
+    fi
+
+    USER="Enter your name here" /opt/zoom/ZoomLauncher >"/tmp/zoom-${USER}-$$.log" 2>&1 &
     res=$?
 
     kill -9 ${yad_pid}
