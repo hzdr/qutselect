@@ -151,10 +151,34 @@ if [[ -z "${VMID}" ]] || [[ -z "${VMNODE}" ]] || [[ -z "${VMSTATUS}" ]] || [[ -z
 fi
 
 #####
-# START VM (if not running yet)
-if [[ ${VMSTATUS} == "stopped" ]]; then
-  echo "WARNING: VM not running. Trying to start"
-  RESPONSE=$(curl -L -d "" -f -s -S -k -b "PVEAuthCookie=${TICKET}" -H "CSRFPreventionToken: ${CSRF}" "https://${VMNODE}:8006/api2/json/nodes/${VMNODE}/${VMTYPE}/${VMID}/status/start")
+# Perform VMACTION based on SESSION_0_QUTSELECT_PVE_VMACTION (default: start)
+if [[ -z "${SESSION_0_QUTSELECT_PVE_VMACTION}" ]]; then # start is default
+  if [[ ${VMSTATUS} == "stopped" ]]; then
+    VMACTION=start
+  elif [[ ${VMSTATUS} == "paused" ]]; then
+    VMACTION=resume
+  fi
+else
+  VMACTION=${SESSION_0_QUTSELECT_PVE_VMACTION}
+fi
+
+# if "ignore" do nothing
+if [[ ${VMACTION} == "ignore" ]]; then
+  VMACTION=
+elif [[ ${VMACTION} == "reboot" ]] ||
+     [[ ${VMACTION} == "reset" ]] ||
+     [[ ${VMACTION} == "resume" ]]; then
+
+  # if VM is stopped start the VM instead
+  if [[ ${VMSTATUS} == "stopped" ]]; then
+    VMACTION=start
+  fi
+fi
+
+# perform VMACTION
+if [[ -n "${VMACTION}" ]]; then
+  echo "INFO: Trying to ${VMACTION} VM ${VMID}..."
+  RESPONSE=$(curl -L -d "" -f -s -S -k -b "PVEAuthCookie=${TICKET}" -H "CSRFPreventionToken: ${CSRF}" "https://${VMNODE}:8006/api2/json/nodes/${VMNODE}/${VMTYPE}/${VMID}/status/${VMACTION}")
   echo "Waiting 10 seconds before trying Spice connection ..."
   sleep 10
 fi
