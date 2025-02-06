@@ -158,7 +158,7 @@ CMainWindow::CMainWindow(CApplication* app)
   m_pServerTreeWidget->setColumnHidden(CN_SERVERTYPE, true);
   m_pServerTreeWidget->setColumnHidden(CN_PWPROMPT, true);
   m_pServerTreeWidget->setColumnHidden(CN_STARTUPSCRIPT, true);
-  m_pServerTreeWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+  //m_pServerTreeWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum); // disabled due to "Abort" jumping
 
   // create the ServerLineEdit
   m_pServerLineEdit = new QLineEdit();
@@ -1110,10 +1110,6 @@ void CMainWindow::showEvent(QShowEvent* e)
   {
     // make sure the sizes (width/height) are correct before continuing
     adjustSize();
-
-    // WORKAROUND: add pixels in height for the treewidget to not show
-    // any vertical scrollbar
-    resize(width(), height()+10);
 
     // now we make sure we centre the new window on the current
     // primary screen
