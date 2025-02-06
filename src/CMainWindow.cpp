@@ -69,6 +69,9 @@
 #define DEFAULT_SLIST_FILE "qutselect.slist"
 #define DEFAULT_MOTD_FILE  "qutselect.motd"
 
+// default password clearance timer
+#define PASSWORD_CLEAR_TIMER 60000 // ms
+
 // the column numbers
 enum ColumnNumbers { CN_DISPLAYNAME=0,
                      CN_HOSTNAME,
@@ -1324,8 +1327,8 @@ void CMainWindow::changeLayout(enum LayoutType type)
         m_pUsernameLineEdit->setFocus(Qt::OtherFocusReason);
 
       // now we start a QTimer() which resets the layout to the default one and removes
-      // the password stuff after 30 seconds for security reasons.
-      m_pPasswordEnterTimer->start(30000);
+      // the password stuff after X seconds for security reasons.
+      m_pPasswordEnterTimer->start(PASSWORD_CLEAR_TIMER);
     }
     break;
 
@@ -1340,8 +1343,8 @@ void CMainWindow::changeLayout(enum LayoutType type)
       m_pPasswordLineEdit->setFocus(Qt::OtherFocusReason);
 
       // now we start a QTimer() which resets the layout to the default one and removes
-      // the password stuff after 30 seconds for security reasons.
-      m_pPasswordEnterTimer->start(30000);
+      // the password stuff after X seconds for security reasons.
+      m_pPasswordEnterTimer->start(PASSWORD_CLEAR_TIMER);
     }
     break;
  
