@@ -1,7 +1,7 @@
 /* vim:set ts=2 nowrap: ****************************************************
 
  qutselect - A simple Qt-based GUI frontend for remote terminals
- Copyright (C) 2008-2024 by Jens Maus <mail@jens-maus.de>
+ Copyright (C) 2005-2025 by Jens Maus <mail@jens-maus.de>
 
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -520,7 +520,7 @@ CMainWindow::CMainWindow(CApplication* app)
     resize(m_pSettings->value("size", QSize(WINDOW_WIDTH, WINDOW_HEIGHT)).toSize());
   }
   
-  setWindowTitle("qutselect v" + QString(PROJECT_VERSION) + " - (c) 2005-2024 hzdr.de");
+  setWindowTitle("qutselect " + QString(PROJECT_VERSION) + " - (c) 2005-2025 hzdr.de");
 
   LEAVE();
 }
