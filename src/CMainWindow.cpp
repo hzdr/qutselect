@@ -125,13 +125,11 @@ CMainWindow::CMainWindow(CApplication* app)
   QPainter paint;
   paint.begin(&logo);
   paint.setPen(Qt::black);
-  char hostName[256];
-  gethostname(hostName, 256);
   QFont serverNameFont = paint.font();
   serverNameFont.setBold(true);
   serverNameFont.setPointSize(12);
   paint.setFont(serverNameFont);
-  paint.drawText(195,40,150,100, Qt::AlignLeft|Qt::AlignTop, QString("@ ")+hostName);
+  paint.drawText(195,40,150,100, Qt::AlignLeft|Qt::AlignTop, QString("@ ")+QHostInfo::localHostName());
   paint.end(); 
   m_pLogoLabel->setPixmap(logo);
   //m_pLogoLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -1241,9 +1239,7 @@ void CMainWindow::loadServerList()
     {
       // set the current item in the ServerTreeWidget to the hostname of the server
       // this qutselect runs on
-      char hostName[256];
-      if(gethostname(hostName, 256) == 0)
-        selectServerName = QString(hostName).toLower();
+      selectServerName = QHostInfo::localHostName().toLower();
 
       D("got hostname: '%s'", selectServerName.toLatin1().constData());
     }
