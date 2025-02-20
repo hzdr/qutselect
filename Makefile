@@ -107,9 +107,10 @@ MXEDIR    = /usr/local/mxe
 # the cmake call
 ifeq ($(OS), w64)
   ##############################
-  # Windows 64-bit static
+  # Windows 64-bit shared
   ifneq ($(HOST), Windows64)
-    TARGET_PATH = $(MXEDIR)/usr/x86_64-w64-mingw32.shared
+    CMAKE = $(MXEDIR)/usr/bin/x86_64-w64-mingw32.shared-cmake
+    CMAKE_OPTIONS :=-DCROSS_OS=$(OS)
   endif
 endif
 
@@ -117,15 +118,17 @@ ifeq ($(OS), w64s)
   ##############################
   # Windows 64-bit static
   ifneq ($(HOST), Windows64)
-    TARGET_PATH = $(MXEDIR)/usr/x86_64-w64-mingw32.static
+    CMAKE = $(MXEDIR)/usr/bin/x86_64-w64-mingw32.static-cmake
+    CMAKE_OPTIONS :=-DCROSS_OS=$(OS)
   endif
 endif
 
 ifeq ($(OS), w32)
   ##############################
-  # Windows 32-bit static
+  # Windows 32-bit shared
   ifneq ($(HOST), Windows64)
-    TARGET_PATH = $(MXEDIR)/usr/i686-w64-mingw32.shared
+    CMAKE = $(MXEDIR)/usr/bin/i686-w64-mingw32.shared-cmake
+    CMAKE_OPTIONS :=-DCROSS_OS=$(OS)
   endif
 endif
 
@@ -133,14 +136,9 @@ ifeq ($(OS), w32s)
   ##############################
   # Windows 32-bit static
   ifneq ($(HOST), Windows64)
-    TARGET_PATH = $(MXEDIR)/usr/i686-w64-mingw32.static
+    CMAKE = $(MXEDIR)/usr/bin/i686-w64-mingw32.static-cmake
+    CMAKE_OPTIONS :=-DCROSS_OS=$(OS)
   endif
-endif
-
-# depending on TARGET_PATH we enable cross compiling 
-# for cmake or not
-ifneq ($(TARGET_PATH),)
-  CMAKE_OPTIONS := -DCMAKE_TOOLCHAIN_FILE=$(TARGET_PATH)/share/cmake/mxe-conf.cmake -DCROSS_OS=$(OS)
 endif
 
 ###################
