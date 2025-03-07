@@ -184,22 +184,6 @@ CMainWindow::CMainWindow(CApplication* app)
   connect(m_pServerListBox, SIGNAL(currentIndexChanged(int)),
           this,             SLOT(serverComboBoxChanged(int)));
 
-  // combine the LineEdit or ServerListBox and the TypeCombobox
-  QHBoxLayout* serverLineLayout = new QHBoxLayout();
-
-  if(m_bNoList == true)
-    serverLineLayout->addWidget(m_pServerListBox);
-  else
-    serverLineLayout->addWidget(m_pServerLineEdit);
-
-  serverLineLayout->addWidget(m_pServerTypeComboBox); 
-
-  // create the serverListLayout
-  QVBoxLayout* serverListLayout = new QVBoxLayout();
-  serverListLayout->addWidget(m_pServerTreeWidget);
-  if(m_bNoList == false)
-    serverListLayout->addLayout(serverLineLayout);
-  
   // selection of the screen depth
   m_pScreenResolutionLabel = new QLabel(tr("Resolution:"));
 
@@ -211,37 +195,33 @@ CMainWindow::CMainWindow(CApplication* app)
   m_pScreenResolutionBox = new QComboBox();
   m_pScreenResolutionBox->setEditable(true);
   m_pScreenResolutionLayout->addWidget(m_pScreenResolutionBox, 0, Qt::AlignLeft);
-  m_pScreenResolutionLayout->addWidget(new QLabel("max: " + QString::number(screenSize.width()) + "x" + QString::number(screenSize.height())));
-  m_pScreenResolutionLayout->addStretch(100);
+  if(m_bDtLoginMode == false)
+  {
+    m_pScreenResolutionLayout->addWidget(new QLabel("max: " + QString::number(screenSize.width()) + "x" + QString::number(screenSize.height())));
+    m_pScreenResolutionLayout->addStretch(100);
+  }
+
+  // add 'Window' and 'Fullscreen' to the start
+  m_pScreenResolutionBox->addItem("Fullscreen");
+  m_pScreenResolutionBox->addItem("Window");
 
   // now fill the screen resolutionbox with resolutions this screen can handle
-  if(screenSize.width() >= 800 && screenSize.height() >= 600)
-    m_pScreenResolutionBox->addItem("800x600");
-
-  if(screenSize.width() >= 1024 && screenSize.height() >= 768)
-    m_pScreenResolutionBox->addItem("1024x768");
-
-  if(screenSize.width() >= 1152 && screenSize.height() >= 900)
-    m_pScreenResolutionBox->addItem("1152x900");
-
-  if(screenSize.width() >= 1280 && screenSize.height() >= 1024)
-    m_pScreenResolutionBox->addItem("1280x1024");
-
-  if(screenSize.width() >= 1600 && screenSize.height() >= 900)
-    m_pScreenResolutionBox->addItem("1600x900");
-
-  if(screenSize.width() >= 1600 && screenSize.height() >= 1200)
-    m_pScreenResolutionBox->addItem("1600x1200");
-
-  if(screenSize.width() >= 1920 && screenSize.height() >= 1080)
-    m_pScreenResolutionBox->addItem("1920x1080");
-
   if(screenSize.width() >= 1920 && screenSize.height() >= 1200)
     m_pScreenResolutionBox->addItem("1920x1200");
-
-  // add 'Desktop' and 'Fullscreen' to the end
-  m_pScreenResolutionBox->addItem("Desktop");
-  m_pScreenResolutionBox->addItem("Fullscreen");
+  if(screenSize.width() >= 1920 && screenSize.height() >= 1080)
+    m_pScreenResolutionBox->addItem("1920x1080");
+  if(screenSize.width() >= 1600 && screenSize.height() >= 1200)
+    m_pScreenResolutionBox->addItem("1600x1200");
+  if(screenSize.width() >= 1600 && screenSize.height() >= 900)
+    m_pScreenResolutionBox->addItem("1600x900");
+  if(screenSize.width() >= 1280 && screenSize.height() >= 1024)
+    m_pScreenResolutionBox->addItem("1280x1024");
+  if(screenSize.width() >= 1152 && screenSize.height() >= 900)
+    m_pScreenResolutionBox->addItem("1152x900");
+  if(screenSize.width() >= 1024 && screenSize.height() >= 768)
+    m_pScreenResolutionBox->addItem("1024x768");
+  if(screenSize.width() >= 800 && screenSize.height() >= 600)
+    m_pScreenResolutionBox->addItem("800x600");
 
   // we check the QSettings for "resolution" and see if we
   // can use it or not
@@ -252,7 +232,7 @@ CMainWindow::CMainWindow(CApplication* app)
 
     item = m_pScreenResolutionBox->findText(resolution);
     if(item < 0)
-      item = m_pScreenResolutionBox->findText("Desktop");
+      item = m_pScreenResolutionBox->findText("Window");
   }
   else
   {
@@ -285,6 +265,24 @@ CMainWindow::CMainWindow(CApplication* app)
 
   // set item as current index
   m_pScreenResolutionBox->setCurrentIndex(item);
+
+  // combine the LineEdit or ServerListBox and the TypeCombobox
+  QHBoxLayout* serverLineLayout = new QHBoxLayout();
+
+  if(m_bNoList == true)
+    serverLineLayout->addWidget(m_pServerListBox);
+  else
+    serverLineLayout->addWidget(m_pServerLineEdit);
+
+  serverLineLayout->addWidget(m_pServerTypeComboBox);
+  if(m_bDtLoginMode == true)
+    serverLineLayout->addLayout(m_pScreenResolutionLayout);
+
+  // create the serverListLayout
+  QVBoxLayout* serverListLayout = new QVBoxLayout();
+  serverListLayout->addWidget(m_pServerTreeWidget);
+  if(m_bNoList == false)
+    serverListLayout->addLayout(serverLineLayout);
 
   // color depth selection
   m_pColorsLabel = new QLabel(tr("Colors:"));
@@ -393,8 +391,11 @@ CMainWindow::CMainWindow(CApplication* app)
   QGridLayout* optionsLayout = new QGridLayout;
   optionsLayout->setSpacing(5);
   optionsLayout->setContentsMargins(0,0,0,0);
-  optionsLayout->addWidget(m_pScreenResolutionLabel,    0, 0);
-  optionsLayout->addLayout(m_pScreenResolutionLayout,   0, 1);
+  if(m_bDtLoginMode == false)
+  {
+    optionsLayout->addWidget(m_pScreenResolutionLabel,    0, 0);
+    optionsLayout->addLayout(m_pScreenResolutionLayout,   0, 1);
+  }
   optionsLayout->addWidget(m_pColorsLabel,              1, 0);
   optionsLayout->addLayout(m_pColorsButtonLayout,       1, 1);
   optionsLayout->addWidget(m_pKeyboardLabel,            2, 0);
@@ -616,7 +617,7 @@ void CMainWindow::serverTypeChanged(int id)
     case VNC:
     {
       // disable the keyboard control only for VNC servers
-      m_pScreenResolutionBox->setEnabled(false);
+      m_pScreenResolutionBox->setEnabled(true);
       m_p8bitColorsButton->setEnabled(true);
       m_p16bitColorsButton->setEnabled(true);
       m_p24bitColorsButton->setEnabled(true);
@@ -629,7 +630,7 @@ void CMainWindow::serverTypeChanged(int id)
 
     case APP:
     {
-      m_pScreenResolutionBox->setEnabled(false);
+      m_pScreenResolutionBox->setEnabled(true);
       m_p8bitColorsButton->setEnabled(false);
       m_p16bitColorsButton->setEnabled(false);
       m_p24bitColorsButton->setEnabled(false);
@@ -641,7 +642,7 @@ void CMainWindow::serverTypeChanged(int id)
 
     case PVE:
     {
-      m_pScreenResolutionBox->setEnabled(false);
+      m_pScreenResolutionBox->setEnabled(true);
       m_p8bitColorsButton->setEnabled(false);
       m_p16bitColorsButton->setEnabled(false);
       m_p24bitColorsButton->setEnabled(false);
@@ -708,7 +709,8 @@ void CMainWindow::setFullScreenOnly(const bool on)
   if(on)
   {
     m_pScreenResolutionBox->setCurrentIndex(m_pScreenResolutionBox->findText("Fullscreen"));
-    m_pScreenResolutionBox->setEnabled(false);
+    if(m_bDtLoginMode == false)
+      m_pScreenResolutionBox->setEnabled(false);
 
     // hide some components competely
     m_pOptionsWidget->setVisible(false);
@@ -795,15 +797,18 @@ void CMainWindow::connectButtonPressed(void)
     m_pSettings->setValue("resolution", resolution);
   }
 
-  // if the resolution was set to "Desktop" we have to identify the maximum
+  // if the resolution was set to "Window" we have to identify the maximum
   // desktop width here and supply it accordingly.
-  if(resolution == "desktop")
+  if(resolution == "window")
   {
     QRect screenSize = qApp->primaryScreen()->availableGeometry();
 
     // create the resolution string but substract 50 pixel beause the desktop size is always
     // calculated WITH the windows bar in GNOME :(
-    resolution = QString::asprintf("%dx%d", screenSize.width()-8, screenSize.height()-28);
+    if(m_bDtLoginMode == false)
+      resolution = QString::asprintf("%dx%d", screenSize.width()-8, screenSize.height()-28);
+    else
+      resolution = QString::asprintf("%dx%d", screenSize.width(), screenSize.height());
 
     D("Desktop size of '%s' selected", resolution.toLatin1().constData());
   }

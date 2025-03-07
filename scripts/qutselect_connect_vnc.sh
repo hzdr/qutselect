@@ -46,15 +46,18 @@ resolution="${4}"
 #username="${9}"
 serverName="${10}"
 
+# make sure files are generated for user only
+umask 077
+
 # read the password from stdin
 read -r password
 
 # variable to prepare the command arguments
-cmdArgs="-shared -menukey="
+cmdArgs="-shared"
 
 # resolution
 if [[ "${resolution}" == "fullscreen" ]]; then
-  cmdArgs="$cmdArgs -fullscreen -fullscreensystemkeys"
+  cmdArgs="$cmdArgs -fullscreen -fullscreensystemkeys -menukey="
 fi
 
 # color depth
@@ -70,7 +73,7 @@ if [[ "${password}" != "NULL" ]]; then
     echo "${VNCVIEWER} ${cmdArgs} ${serverName}"
   fi
   # shellcheck disable=SC2086
-  VNC_PASSWORD="${password}" ${VNCVIEWER} ${cmdArgs} "${serverName}" >/tmp/vnc-${USER}-$$.log 2>&1
+  VNC_PASSWORD="${password}" ${VNCVIEWER} ${cmdArgs} "${serverName}" >/tmp/vnc-${USER}-$$.log 2>&1 &
   res=$?
 else
   # make sure a password dialog pops up
@@ -79,7 +82,7 @@ else
     echo "${VNCVIEWER} ${cmdArgs} ${serverName}"
   fi
   # shellcheck disable=SC2086
-  ${VNCVIEWER} ${cmdArgs} "${serverName}" >/tmp/vnc-${USER}-$$.log 2>&1
+  ${VNCVIEWER} ${cmdArgs} "${serverName}" >/tmp/vnc-${USER}-$$.log 2>&1 &
   res=$?
 fi
 

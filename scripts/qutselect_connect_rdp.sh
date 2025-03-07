@@ -49,6 +49,9 @@ domain="${8}"
 username="${9}"
 serverName="${10}"
 
+# make sure files are generated for user only
+umask 077
+
 # if this is a ThinLinc session we can grab the password
 # using the tl-sso-password command in case the user wants
 # to connect to one of our servers (FZR domain)

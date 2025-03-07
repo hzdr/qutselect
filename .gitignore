@@ -1,5 +1,6 @@
 .DS_Store
 .AppleDouble
+/CMakeFiles
 /autom4te.cache
 /config.log
 /config.status

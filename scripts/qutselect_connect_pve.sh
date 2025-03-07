@@ -48,6 +48,9 @@ proxy="${8}"
 username="${9}"
 serverName="${10}"
 
+# make sure files are generated for user only
+umask 077
+
 # if this is a ThinLinc session we can grab the password
 # using the tl-sso-password command in case the user wants
 # to connect to one of our servers (FZR domain)
@@ -153,9 +156,9 @@ fi
 #####
 # Perform VMACTION based on SESSION_0_QUTSELECT_PVE_VMACTION (default: start)
 if [[ -z "${SESSION_0_QUTSELECT_PVE_VMACTION}" ]]; then # start is default
-  if [[ ${VMSTATUS} == "stopped" ]]; then
+  if [[ "${VMSTATUS}" == "stopped" ]]; then
     VMACTION=start
-  elif [[ ${VMSTATUS} == "paused" ]]; then
+  elif [[ "${VMSTATUS}" == "paused" ]]; then
     VMACTION=resume
   fi
 else
@@ -163,14 +166,14 @@ else
 fi
 
 # if "ignore" do nothing
-if [[ ${VMACTION} == "ignore" ]]; then
+if [[ "${VMACTION}" == "ignore" ]]; then
   VMACTION=
-elif [[ ${VMACTION} == "reboot" ]] ||
-     [[ ${VMACTION} == "reset" ]] ||
-     [[ ${VMACTION} == "resume" ]]; then
+elif [[ "${VMACTION}" == "reboot" ]] ||
+     [[ "${VMACTION}" == "reset" ]] ||
+     [[ "${VMACTION}" == "resume" ]]; then
 
   # if VM is stopped start the VM instead
-  if [[ ${VMSTATUS} == "stopped" ]]; then
+  if [[ "${VMSTATUS}" == "stopped" ]]; then
     VMACTION=start
   fi
 fi
@@ -204,14 +207,18 @@ SPICE_SUBJECT=$(echo "${RESPONSE}" | jq -r '.data."host-subject"')
 SPICE_CURSOR=$(echo "${RESPONSE}" | jq -r '.data."release-cursor"')
 SPICE_PORT=$(echo "${RESPONSE}" | jq -r '.data."tls-port"')
 
-# if we are in dtlogin mode we we disable the
+# if we should start in fullscreen we disable the
 # full-screen toggling and release cursor hotkeys
-if [[ "${dtlogin}" == "true" ]]; then
+if [[ "${resolution}" == "fullscreen" ]]; then
   SPICE_FULLSCREEN=
   SPICE_CURSOR=
-  cmdArgs="${cmdArgs} --kiosk --kiosk-quit=on-disconnect"
+  if [[ "${dtlogin}" == "true" ]]; then
+    cmdArgs="${cmdArgs} --kiosk --kiosk-quit=on-disconnect"
+  fi
+fi
 
-  # Define USB redirection rule when in dtlogin/kiosk mode
+# Define USB redirection rule when in dtlogin/kiosk mode
+if [[ "${dtlogin}" == "true" ]]; then
   # (0x03) - no HID devices / mouse/keyboard
   # (0xE0) - no wireless/bluetooth
   # (-1)   - all the rest allowed
@@ -226,7 +233,6 @@ if [[ "${dtlogin}" == "true" ]]; then
 fi
 
 # GENERATE REMOTE-VIEWER CONNECTION FILE
-umask 077
 TMPFILE=$(mktemp)
 cat >"${TMPFILE}" <<EOL
 [virt-viewer]

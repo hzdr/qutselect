@@ -28,13 +28,16 @@ fi
 #parentPID="${1}"
 #serverType="${2}"
 #dtlogin="${3}"
-#resolution="${4}"
+resolution="${4}"
 #colorDepth="${5}"
 #curDepth="${6}"
 #keyLayout="${7}"
 #domain="${8}"
 #username="${9}"
 app="${10}"
+
+# make sure files are generated for user only
+umask 077
 
 TMPDIR=/tmp
 
@@ -116,9 +119,14 @@ elif [[ "${app}" == "chrome" ]] || [[ "${app}" == "bbb" ]]; then
 
     # start chromium in kiosk mode
     if [[ "${app}" == "bbb" ]]; then
-      /opt/chrome/chrome --app=https://bbb.hzdr.de --start-fullscreen --kiosk --test-type --noerrdialogs --no-first-run --disable-translate --disk-cache-dir=/dev/null --no-sandbox --disable-extensions >"/tmp/chrome-${USER}-$$.log" 2>&1 &
+      if [[ "${resolution}" == "fullscreen" ]]; then
+        CMDOPT="--start-fullscreen"
+      fi
+      # shellcheck disable=SC2086
+      /opt/chrome/chrome --app=https://bbb.hzdr.de ${CMDOPT} --kiosk --test-type --noerrdialogs --no-first-run --disable-translate --disk-cache-dir=/dev/null --no-sandbox --disable-extensions >"/tmp/chrome-${USER}-$$.log" 2>&1 &
       res=$?
     else
+      # or start just a maximized browser which users can make small and use right away
       /opt/chrome/chrome --start-maximized --test-type --noerrdialogs --no-first-run --disable-translate --disk-cache-dir=/dev/null --no-sandbox --disable-extensions >"/tmp/chrome-${USER}-$$.log 2>&1" &
       res=$?
     fi
