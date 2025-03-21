@@ -117,19 +117,23 @@ elif [[ "${app}" == "chrome" ]] || [[ "${app}" == "bbb" ]]; then
     # remove all previous data
     rm -rf "${HOME}/.config/chrome"
 
-    # start chromium in kiosk mode
-    if [[ "${app}" == "bbb" ]]; then
-      if [[ "${resolution}" == "fullscreen" ]]; then
-        CMDOPT="--start-fullscreen"
-      fi
-      # shellcheck disable=SC2086
-      /opt/chrome/chrome --app=https://bbb.hzdr.de ${CMDOPT} --kiosk --test-type --noerrdialogs --no-first-run --disable-translate --disk-cache-dir=/dev/null --no-sandbox --disable-extensions >"/tmp/chrome-${USER}-$$.log" 2>&1 &
-      res=$?
+    if [[ "${resolution}" == "fullscreen" ]]; then
+      CMDOPT="--start-fullscreen"
     else
-      # or start just a maximized browser which users can make small and use right away
-      /opt/chrome/chrome --start-maximized --test-type --noerrdialogs --no-first-run --disable-translate --disk-cache-dir=/dev/null --no-sandbox --disable-extensions >"/tmp/chrome-${USER}-$$.log 2>&1" &
-      res=$?
+      CMDOPT="--start-maximized"
     fi
+
+    # add some options for BBB mode
+    if [[ "${app}" == "bbb" ]]; then
+      CMDOPT="${CMDOPT} --app=https://bbb.hzdr.de/"
+      if [[ "${resolution}" == "fullscreen" ]]; then
+        CMDOPT="${CMDOPT} --kiosk"
+      fi
+    fi
+
+    # shellcheck disable=SC2086
+    /opt/chrome/chrome ${CMDOPT} --test-type --noerrdialogs --no-first-run --disable-translate --disk-cache-dir=/dev/null --no-sandbox --disable-extensions >"/tmp/chrome-${USER}-$$.log" 2>&1 &
+    res=$?
 
     kill -9 ${yad_pid}
   fi
