@@ -36,7 +36,7 @@ endif()
 project(qutselect)
 set(PROJECT_LONGNAME "qutselect")
 set(PROJECT_VERSION_MAJOR 3)
-set(PROJECT_VERSION_MINOR 12)
+set(PROJECT_VERSION_MINOR 13)
 set(PROJECT_VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR})
 
 # change output directory to top-level 'bin' dir.
