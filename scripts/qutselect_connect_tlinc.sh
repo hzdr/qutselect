@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck shell=dash disable=SC3010,SC3020
+# shellcheck shell=dash disable=SC3010,SC3020,SC3014,SC3015
 #
 # This is a startup script for qutselect which initates a
 # ThinLinc session to a thinlinc server

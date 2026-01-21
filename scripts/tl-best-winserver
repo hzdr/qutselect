@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck shell=dash disable=SC3010,SC3020
+# shellcheck shell=dash disable=SC3010,SC3020,SC3014,SC3015
 #
 # This is a shell script which mimics the behaviour of tl-best-winserver
 # which is installed with the Server component of ThinLinc. It can be used

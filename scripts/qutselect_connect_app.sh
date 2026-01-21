@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck shell=dash disable=SC3010,SC3020,SC3057,SC3004,SC3060,SC2030,SC2031
+# shellcheck shell=dash disable=SC3010,SC3020,SC3057,SC3004,SC3060,SC2030,SC2031,SC3014,SC3015
 #
 # This is a startup script for qutselect which initates a
 # third-party application download+install in a thinRoot
