@@ -92,8 +92,22 @@ if [[ "${app}" == "zoom" ]]; then
   else
     osd_splash "Starting zoom..."
 
+    # make sure to kill any old zoom
+    pkill zoom
+
     # remove all previous data
     rm -rf "${HOME}/.zoom" "${HOME}/.config/zoom.conf" "${HOME}/.config/zoomus.conf"
+
+    # try to avoid that zoom stays open upon closing the window
+    {
+      echo "[General]"
+      echo "forceEnableTrayIcon=false"
+      echo "showSystemTitlebar=true"
+      echo "sso_domain=hzdr-de.zoom.us"
+      echo "useSystemTheme=true"
+      echo "timeFormat12HoursEnable=false"
+      echo "bForceMaximizeWM=true"
+    } >"${HOME}/.config/zoomus.conf"
 
     # add manual proxy settings in case HTTP_PROXY is set
     if [[ -n "${HTTP_PROXY}" ]] || [[ -n "${HTTPS_PROXY}" ]]; then
@@ -102,7 +116,6 @@ if [[ "${app}" == "zoom" ]]; then
       https_host=$(echo "${HTTPS_PROXY}" | cut -d/ -f3 | cut -d: -f1)
       https_port=$(echo "${HTTPS_PROXY}" | cut -d: -f3)
       {
-        echo "[General]"
         echo "cefhttpProxyHost=${http_host}"
         echo "cefhttpProxyPort=${http_port}"
         echo "cefhttpsProxyHost=${https_host}"
@@ -113,12 +126,13 @@ if [[ "${app}" == "zoom" ]]; then
         echo "httpsProxyHost=${https_host}"
         echo "httpsProxyPort=${https_port}"
         echo "proxyType=manual"
-      } >"${HOME}/.config/zoomus.conf"
+      } >>"${HOME}/.config/zoomus.conf"
     fi
 
     USER="Enter your name here" /opt/zoom/ZoomLauncher >"/tmp/zoom-${USER}-$$.log" 2>&1 &
     res=$?
 
+    sleep 4
     osd_close
   fi
 
@@ -211,10 +225,13 @@ elif [[ "${app}" == "chrome" ]] || [[ "${app}" == "bbb" ]]; then
       ) </dev/null >/dev/null 2>&1 &
 
       # parent should return immediately
+      sleep 4
       exit 0
     else
       /opt/chrome/chrome ${CMDOPT} --test-type --noerrdialogs --no-first-run --disable-translate --disk-cache-dir=/dev/null --disable-extensions >"/tmp/chrome-${USER}-$$.log" 2>&1 &
       res=$?
+
+      sleep 4
       osd_close
     fi
   fi
