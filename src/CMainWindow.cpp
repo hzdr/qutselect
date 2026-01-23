@@ -989,14 +989,18 @@ void CMainWindow::startConnection(void)
     if(m_bDtLoginMode == false)
       m_pSettings->sync();
 
-    // wait until the script finished
-    if(script.waitForFinished() == false)
-      std::cout << "ERROR: Failed to wait for script being finished" << std::endl;
+    // wait a max of 90s until the script finished (default is 30s)
+    if(script.waitForFinished(90 * 1000) == false) // in ms
+      std::cerr << "ERROR: waitForFinished timed out or failed. "
+                << "state=" << script.state()
+                << " error=" << script.error()
+                << " errorString=" << script.errorString().toStdString()
+                << std::endl;
 
     // check the exit code
     if(script.exitCode() != 0)
     {
-      std::cout << "ERROR: startup script '" << m_sStartupScript.toLatin1().constData() << "' returned an error code " << script.exitCode() << std::endl;
+      std::cerr << "ERROR: startup script '" << m_sStartupScript.toLatin1().constData() << "' returned an error code " << script.exitCode() << std::endl;
 
       QMessageBox::warning(this, tr("Could not start application"),
                                  tr("An Error occurred during startup. This could be caused because the application is not yet available. Please retry later."));
@@ -1016,7 +1020,7 @@ void CMainWindow::startConnection(void)
   }
   else
   {
-    std::cout << "ERROR: Failed to execute startup script " << m_sStartupScript.toLatin1().constData() << std::endl;
+    std::cerr << "ERROR: Failed to execute startup script " << m_sStartupScript.toLatin1().constData() << std::endl;
     QApplication::beep();
   }
 
