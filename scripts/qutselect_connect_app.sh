@@ -171,10 +171,11 @@ elif [[ "${app}" == "chrome" ]] || [[ "${app}" == "bbb" ]]; then
         # when we start a BBB session we have to ask for a
         # potential room identifier
         BBB_BASE="https://bbb.hzdr.de/"
-        ROOM_RE='^[A-Za-z0-9]{3}(-[A-Za-z0-9]{3}){3}$'   # xxx-xxx-xxx-xxx
+        bbb_url="${BBB_BASE}"
         room=""
 
         while true; do
+          bbb_url="${BBB_BASE}"
           room="$(
             yad --entry \
                 --title="https://bbb.hzdr.de/b/xxx-xxx-xxx-xxx" \
@@ -195,24 +196,31 @@ elif [[ "${app}" == "chrome" ]] || [[ "${app}" == "bbb" ]]; then
           # Optional: remote whitespaces and if someone added the url, extract it
           room="${room//[[:space:]]/}"
           room="${room#"${BBB_BASE}"b/}" # removes "https://bbb.hzdr.de/b/" if there
-          room=$(echo "${room}" | LC_ALL=C tr '[:upper:]' '[:lower:]')
+          #room=$(echo "${room}" | LC_ALL=C tr '[:upper:]' '[:lower:]')
 
-          if [[ "$room" =~ $ROOM_RE ]]; then
-            break
+          # now try to access the supplied URL and continue only if
+          # a 200
+          code=0
+          if [[ -n "${room}" ]]; then
+            bbb_url="${BBB_BASE}b/${room}"
+            code="$(curl -sS -o /dev/null -L \
+                         --connect-timeout 5 --max-time 15 \
+                         -w '%{http_code}' \
+                         "${bbb_url}"
+                   )" || code=600
+
+            # http-error: 4xx/5xx
+            if [[ "${code}" -lt 400 ]]; then
+              break
+            fi
           fi
 
           yad --error \
-              --title="Invalid Room-ID" \
+              --title="Invalid Room-ID (${code}: ${bbb_url})" \
               --text="<span font_desc=\"${YAD_FONT_DESC}\"><b>The entered Room-ID was invalid.</b></span>\n\nExpected: xxx-xxx-xxx-xxx (each 3 alphanumerical characters)." \
               --window-type=dialog --on-top --center --fixed \
               --button="Retry":0
         done
-
-        if [[ -n "${room}" ]]; then
-          bbb_url="${BBB_BASE}b/${room}"
-        else
-          bbb_url="${BBB_BASE}"
-        fi
 
         CMDOPT="${CMDOPT} --app=${bbb_url}"
         if [[ "${resolution}" == "fullscreen" ]]; then
