@@ -157,7 +157,7 @@ elif [[ "${app}" == "chrome" ]] || [[ "${app}" == "bbb" ]]; then
     osd_splash "Starting chrome..."
 
     # remove all previous data
-    rm -rf "${HOME}/.config/chrome"
+    rm -rf "${HOME}/.config/chrome" "${HOME}/.config/chromium"
 
     if [[ "${resolution}" == "fullscreen" ]]; then
       CMDOPT="--start-fullscreen"
