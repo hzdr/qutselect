@@ -135,9 +135,9 @@ cmdArgs="$cmdArgs /bpp:32"
 
 # keyboard
 if [[ "${keyLayout}" == "de" ]]; then
-   cmdArgs="$cmdArgs /kbd:0x407" # German
+   cmdArgs="$cmdArgs /kbd:layout:0x407" # German
 else
-   cmdArgs="$cmdArgs /kbd:0x409" # US
+   cmdArgs="$cmdArgs /kbd:layout:0x409" # US
 fi
 
 # add domain
@@ -158,7 +158,7 @@ fi
 cmdArgs="$cmdArgs /t:${username}@${serverName}"
 
 # ignore the certificate in case of encryption
-cmdArgs="$cmdArgs /cert-ignore"
+cmdArgs="$cmdArgs /cert:ignore"
 
 # add the usb path as a local path. if TLSESSIONDATA is set
 # we are in a thinlinc session and thus have to forward
@@ -177,7 +177,7 @@ cmdArgs="$cmdArgs /sound:sys:pulse"
 cmdArgs="$cmdArgs /microphone:sys:pulse"
 
 # performance optimization options
-cmdArgs="$cmdArgs +multitransport +auto-reconnect +fonts +window-drag -menu-anims -themes +wallpaper +heartbeat /dynamic-resolution /gdi:hw /rfx /gfx:avc444 /video /network:auto"
+cmdArgs="$cmdArgs +multitransport +auto-reconnect +fonts +window-drag -menu-anims -themes +wallpaper +heartbeat /dynamic-resolution /gdi:hw /rfx /gfx:avc444 /video /network:auto /dvc:rdpecam"
 
 # exception for old servers with weak security footprints
 if [[ "${serverName}" == "fwpdev01" ]]; then
@@ -191,7 +191,7 @@ if [[ "${dtlogin}" != "true" ]]; then
   # add clipboard synchronization (only required in non-dtlogin mode)
   cmdArgs="$cmdArgs /clipboard"
 
-  echo "${XFREERDP} ${cmdArgs} /v:${serverName}"
+  echo "${XFREERDP} ${cmdArgs} /v:${serverName}" >>"/tmp/xfreerdp-${USER}-$$.log" 2>&1
 else
   # disable the full-screen toggling in case we are in dtlogin mode
   cmdArgs="$cmdArgs -toggle-fullscreen"
@@ -203,12 +203,13 @@ cmdArgs="$cmdArgs /log-level:INFO"
 # run xfreerdp finally
 if [[ "${password}" != "NULL" ]]; then
   cmdArgs="$cmdArgs /from-stdin"
+  echo "${XFREERDP} ${cmdArgs} /v:${serverName}" >>"/tmp/xfreerdp-${USER}-$$.log" 2>&1
   # shellcheck disable=SC2086
-  echo "${password}" | ${XFREERDP} ${cmdArgs} /v:"${serverName}" >/tmp/xfreerdp-${USER}-$$.log 2>&1 &
+  echo "${password}" | ${XFREERDP} ${cmdArgs} /v:"${serverName}" >>"/tmp/xfreerdp-${USER}-$$.log" 2>&1 &
   res=$?
 else
   # shellcheck disable=SC2086
-  ${XFREERDP} ${cmdArgs} /v:"${serverName}" >/tmp/xfreerdp-${USER}-$$.log 2>&1 &
+  ${XFREERDP} ${cmdArgs} /v:"${serverName}" >>/tmp/xfreerdp-${USER}-$$.log 2>&1 &
   res=$?
 fi
 
